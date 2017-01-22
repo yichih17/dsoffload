@@ -7,7 +7,8 @@
 #define AP_power 23
 
 
-enum BS_type{macro, ap};
+enum device_type{macro, ap, ue};
+
 extern int BS_number;
 
 /*attribute of UE*/
@@ -28,10 +29,10 @@ typedef struct BS
 {
 	double coor_X, coor_Y;
 	double systemT;
-	BS_type type;
+	device_type type;
 };
 
-void distributioninit();
+void distribution(device_type dtype);
 double getSINR(UE ue, BS bs);
 
 

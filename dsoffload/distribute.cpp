@@ -26,37 +26,42 @@ void uniformdistribution(T &equip)
 	equip.coor_Y = r * std::cos(angel);
 }
 
-void distributioninit()
+/* Generate UE/BS distribution */
+void distribution(device_type dtype)
 {
-	/*generate UE*/
-	UE* ue;
-	ue = new UE[UE_number];
-	fstream UEWrite;
-	UEWrite.open("UE_dis.txt", ios::out | ios::trunc);
-	if (UEWrite.fail())
-		cout << "檔案無法開啟" << endl;
-	else
-		for (int i = 0; i < UE_number; i++)
-		{
-			uniformdistribution(ue[i]);
-			UEWrite << ue[i].coor_X << " " << ue[i].coor_Y << endl;
-		}
-	UEWrite.close();
+	if (dtype == ue)
+	{
+		/*generate UE*/
+		fstream UEWrite;
+		UEWrite.open("UE_dis.txt", ios::out | ios::trunc);
+		if (UEWrite.fail())
+			cout << "檔案無法開啟" << endl;
+		else
+			for (int i = 0; i < UE_number; i++)
+			{
+				UE ue;
+				uniformdistribution(ue);
+				UEWrite << ue.coor_X << " " << ue.coor_Y << endl;
+			}
+		UEWrite.close();
+	}
 
-	/*generate AP*/
-	BS* AP;
-	AP = new BS[AP_number];
-	fstream APWrite;
-	APWrite.open("AP_dis.txt", ios::out | ios::trunc);
-	if (APWrite.fail())
-		cout << "檔案無法開啟" << endl;
-	else
-		for (int i = 0; i < AP_number; i++)
-		{
-			uniformdistribution(AP[i]);
-			APWrite << AP[i].coor_X << " " << AP[i].coor_Y << endl;
-		}
-	APWrite.close();
+	if (dtype == ap)
+	{
+		/*generate AP*/
+		fstream APWrite;
+		APWrite.open("AP_dis.txt", ios::out | ios::trunc);
+		if (APWrite.fail())
+			cout << "檔案無法開啟" << endl;
+		else
+			for (int i = 0; i < AP_number; i++)
+			{
+				BS ap;
+				uniformdistribution(ap);
+				APWrite << ap.coor_X << " " << ap.coor_Y << endl;
+			}
+		APWrite.close();
+	}
 }
 
 double getSINR(UE ue, BS bs)

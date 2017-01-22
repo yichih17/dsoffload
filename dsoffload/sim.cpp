@@ -21,7 +21,7 @@ void initialconfig()
 	BS macro;
 	macro.coor_X = 0;
 	macro.coor_Y = 0;
-	macro.type = BS_type::macro;
+	macro.type = device_type::macro;
 	vbslist.push_back(macro);
 }
 
@@ -30,12 +30,15 @@ void readUE()
 	ifstream freadUE;
 	freadUE.open("UE_dis.txt", ios::in);
 	if (freadUE.fail())						//抓計事本內的UE座標
-		cout << "UE位置無法抓取\n" << endl;
+	{
+		cout << "UE分布不存在\n產生新分布" << endl;
+		distribution(ue);
+		readUE();
+	}
 	else
 	{
 		while (!freadUE.eof())
 		{
-			double coor_x, coor_y;
 			char bufferx[10], buffery[10];
 			freadUE >> bufferx;				//讀取x座標
 			freadUE >> buffery;				//讀取y座標
@@ -57,12 +60,15 @@ void readAP()
 	ifstream freadAP;
 	freadAP.open("AP_dis.txt", ios::in);
 	if (freadAP.fail())						//抓計事本內的UE座標
-		cout << "AP位置無法抓取\n" << endl;
+	{
+		cout << "AP分布不存在\n產生新分布" << endl;
+		distribution(ap);
+		readAP();
+	}
 	else
 	{
 		while (!freadAP.eof())
 		{
-			double coor_x, coor_y;
 			char bufferx[10], buffery[10];
 			freadAP >> bufferx;				//讀取x座標
 			freadAP >> buffery;				//讀取y座標
@@ -81,9 +87,6 @@ void readAP()
 
 int main()
 {
-/* distribution generate */
-	//distributioninit();
-
 	initialconfig();
 
 /* UE and AP location initial */
@@ -101,6 +104,7 @@ int main()
 		cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
 	}
 	*/
+	
 
 
 
