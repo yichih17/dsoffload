@@ -11,15 +11,14 @@ using std::cin;
 using std::endl;
 using std::ios;
 
-
-
 template <class T>
 void uniformdistribution(T &equip)
 {
-	std::random_device rd;
-	std::mt19937 gen(rd());
-	std::uniform_real_distribution<> theta(0, 360);
-	std::uniform_real_distribution<> k(0, 1);
+	std::random_device rd;		//integer random number generator that produces non-deterministic random numbers. 
+	std::mt19937 gen(rd());		//Mersenne Twister 19937 generator, generate a random number seed
+	std::uniform_real_distribution<> theta(0, 360);		//definition of a uniform distribution range, a random number between 0 and 360
+	std::uniform_real_distribution<> k(0, 1);		//definition of a uniform distribution range, a random number between 0 and 1
+	/*random a angle and random a radius, to gennerate a coordinate for UE*/
 	double r = R * sqrt(k(gen));
 	double angel = (theta(gen));
 	equip.coor_X = r * std::sin(angel);
@@ -29,9 +28,9 @@ void uniformdistribution(T &equip)
 /* Generate UE/BS distribution */
 void distribution(device_type dtype)
 {
+	/*generate UE distribution*/
 	if (dtype == ue)
 	{
-		/*generate UE*/
 		fstream UEWrite;
 		UEWrite.open("UE_dis.txt", ios::out | ios::trunc);
 		if (UEWrite.fail())
@@ -45,10 +44,9 @@ void distribution(device_type dtype)
 			}
 		UEWrite.close();
 	}
-
+	/*generate AP distribution*/
 	if (dtype == ap)
 	{
-		/*generate AP*/
 		fstream APWrite;
 		APWrite.open("AP_dis.txt", ios::out | ios::trunc);
 		if (APWrite.fail())
