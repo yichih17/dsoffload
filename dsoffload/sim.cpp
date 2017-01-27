@@ -10,10 +10,10 @@ using namespace std;
 vector<UE> vuelist;
 vector<BS> vbslist;
 
-int macro_cover[] = { 303, 357, 407, 449, 512, 565, 623, 688, 784, 894, 1019, 1162, 1325, 1511, 1732 };
-int ap_cover[] = { 26, 28, 30, 39, 50, 60, 68, 82 };
-int macro_SINR[] = { 19.5, 17, 15, 13.5, 11.5, 10, 8.5, 7, 5, 3, 1, -1, -3, -5, -7 };
-int ap_SINR[] = { 4, 7, 9, 12, 16, 20, 21, 22 };
+int macro_cover[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
+int ap_cover[] = { 82, 68, 60, 50, 39, 30, 28, 26 };
+double macro_SINR[] = { -7, -5, -3, -1, 1, 3, 5, 7, 8.5, 10, 11.5, 13.5, 15, 17, 19.5 };
+int ap_SINR[] = { 22, 21, 20, 16, 12, 9, 7, 4 };
 
 
 void initialconfig()
@@ -86,16 +86,16 @@ void readAP()
 	freadAP.close();
 }
 
-double getCQI(UE u, BS b)
+int getCQI(UE u, BS b)
 {
-	int CQI;
-	double distance = sqrt(pow((b.coor_X - u.coor_X), 2) - pow((b.coor_Y - u.coor_Y), 2));
+	int CQI = 0 ;
+	double distance = sqrt(pow((b.coor_X - u.coor_X), 2) + pow((b.coor_Y - u.coor_Y), 2));
 	if (b.type == macro)
 	{
 		for (int i = 0; i < 15; i++)
 		{
-			if (distance > macro_cover[i])
-				CQI = i + 1;
+			if (distance < macro_cover[i])
+				CQI = i+1;
 			else
 				return CQI;
 		}
@@ -104,12 +104,13 @@ double getCQI(UE u, BS b)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			if (distance > ap_cover[i])
-				CQI = i + 1;
+			if (distance < ap_cover[i])
+				CQI = i+1;
 			else
 				return CQI;
 		}
 	}
+	return CQI;
 }
 
 
@@ -117,34 +118,36 @@ int main()
 {
 	initialconfig();
 
-/* UE and AP location initial */
+	//UE and AP location initial
 	readUE();		//Åª¤JUE
 	cout << "Number of UE :" << vuelist.size() << "\n";
 	readAP();		//Åª¤JBS
 	cout << "Number of BS :" << vbslist.size() << "\n";
-	/*
+
+/*	// Show UE coordinates
 	for (int i = 0; i < vuelist.size(); i++)
-	{
 		cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
-	}
 	for (int i = 0; i < vbslist.size(); i++)
-	{
 		cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
-	}
-	*/
-	
-	
+*/
+
+	//
 	for (int i = 0; i < vuelist.size(); i++)
-	{
-		vector <int> CQI;
 		for (int j = 0; j < vbslist.size(); j++)
 		{
-			if (int C = getCQI(vuelist[i], vbslist[j]) != 0)
-				CQI.push_back(C);
+			int CQI = getCQI(vuelist[i], vbslist[j]);
+			if (CQI != 0)
+			{
+				vuelist[i].CQI_to_neiborBS.push_back(CQI);
+				vuelist[i].neiborBS.push_back(&vbslist[j]);
+			}
 		}
-	}
-
-
+	
+	//Show # of neibor BS
+/*	for (int i = 0; i < vuelist.size(); i++)
+		cout << vuelist[i].neiborBS.size() << ", ";
+*/
+	
 
 	return 0;
 }
