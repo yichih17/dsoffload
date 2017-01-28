@@ -2,7 +2,7 @@
 #define _DEFIEN_H
 
 #define UE_number 500	//UE個數
-#define AP_number 1000	//AP個數
+#define AP_number 500	//AP個數
 #define R 1723			//Macro eNB半徑
 #define Macro_power 46	//Macro eNB transmissino power
 #define AP_power 23		//AP transmission power
