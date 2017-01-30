@@ -2,7 +2,7 @@
 #define _DEFIEN_H
 
 #define UE_number 500	//UE個數
-#define AP_number 1000	//AP個數
+#define AP_number 500	//AP個數
 #define R 1723			//Macro eNB半徑
 #define Macro_power 46	//Macro eNB transmissino power
 #define AP_power 23		//AP transmission power
@@ -39,10 +39,7 @@ struct UE
 {
 	int UEnum;
 	double coor_X, coor_Y;
-	std::vector <int> CQI_to_neiborBS;
-	std::vector <BS*> neiborBS;
-	std::vector <double> C_to_BS;			//capacity C*
-	std::vector <double> T_to_BS;			//system time T*
+	std::vector <BS*> availBS;
 	double Xij;
 	BS* connecting_BS;
 
@@ -51,18 +48,16 @@ struct UE
 	int psize;
 };
 
-//distribute.cpp
+//function declare
+//in distribute.cpp
 extern void distribution(device_type dtype);
-
-//function.cpp
+//in function.cpp
 extern double getdis(UE* u, BS* b);
-extern int getCQI2(UE* u, BS* b);
+extern int getCQI(UE* u, BS* b);
 extern double predictCapa(UE* u, BS* b);
-extern double getCapa(UE* u);
+extern double getCapa(UE* u, BS* b);
 extern double predictT(UE* u, BS* b);
-extern double getT(BS* b);
-
-
-
+extern BS* findbs(UE* u);
+extern void refresh();
 
 #endif // !_DEFIEN_H
