@@ -17,8 +17,11 @@
 #include<vector>
 
 enum device_type{macro, ap, ue};
-extern struct BS;
-extern struct UE;
+
+struct BS;
+struct UE;
+extern std::vector <BS> vbslist;
+extern std::vector <UE> vuelist;
 
 /*attribute of BS*/
 struct BS
@@ -27,7 +30,6 @@ struct BS
 	double coor_X, coor_Y;
 	double lambda;
 	double systemT;
-	double capacity;
 	std::vector <UE*> connectingUE;
 	device_type type;
 };
@@ -46,11 +48,20 @@ struct UE
 
 	int delaybg;
 	double lambdai;
+	int psize;
 };
 
+//distribute.cpp
+extern void distribution(device_type dtype);
 
+//function.cpp
+extern double getdis(UE* u, BS* b);
+extern int getCQI2(UE* u, BS* b);
+extern double predictCapa(UE* u, BS* b);
+extern double getCapa(UE* u);
+extern double predictT(UE* u, BS* b);
+extern double getT(BS* b);
 
-void distribution(device_type dtype);
 
 
 
