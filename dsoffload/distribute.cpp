@@ -12,7 +12,7 @@ using std::endl;
 using std::ios;
 
 template <class T>
-void uniformdistribution(T &equip)
+void uniformdistribution(T* equip)
 {
 	std::random_device rd;		//integer random number generator that produces non-deterministic random numbers. 
 	std::mt19937 gen(rd());		//Mersenne Twister 19937 generator, generate a random number seed
@@ -21,8 +21,8 @@ void uniformdistribution(T &equip)
 	/*random a angle and random a radius, to gennerate a coordinate for UE*/
 	double r = R * sqrt(k(gen));
 	double angel = (theta(gen));
-	equip.coor_X = r * std::sin(angel);
-	equip.coor_Y = r * std::cos(angel);
+	equip->coor_X = r * std::sin(angel);
+	equip->coor_Y = r * std::cos(angel);
 }
 
 /* Generate UE/BS distribution */
@@ -39,7 +39,7 @@ void distribution(device_type dtype)
 			for (int i = 0; i < UE_number; i++)
 			{
 				UE ue;
-				uniformdistribution(ue);
+				uniformdistribution(&ue);
 				UEWrite << ue.coor_X << " " << ue.coor_Y << endl;
 			}
 		UEWrite.close();
@@ -55,7 +55,7 @@ void distribution(device_type dtype)
 			for (int i = 0; i < AP_number; i++)
 			{
 				BS ap;
-				uniformdistribution(ap);
+				uniformdistribution(&ap);
 				APWrite << ap.coor_X << " " << ap.coor_Y << endl;
 			}
 		APWrite.close();

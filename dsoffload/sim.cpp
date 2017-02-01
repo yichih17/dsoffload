@@ -44,6 +44,7 @@ void readUE()
 	else
 	{
 		int num = 1;
+		
 		while (!freadUE.eof())
 		{
 			char bufferx[10], buffery[10];
@@ -125,7 +126,7 @@ void updata_CQI()
 
 int main()
 {
-	initialconfig();	
+	initialconfig();
 
 	//UE and AP location initial
 	readAP();		//Åª¤JBS
@@ -133,12 +134,12 @@ int main()
 	readUE();		//Åª¤JUE
 	cout << "Number of UE :" << vuelist.size() << "\n";
 
-/*	// Show UE coordinates
-	for (int i = 0; i < vuelist.size(); i++)
-		cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
-	for (int i = 0; i < vbslist.size(); i++)
-		cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
-*/
+	/*	// Show UE coordinates
+		for (int i = 0; i < vuelist.size(); i++)
+			cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
+		for (int i = 0; i < vbslist.size(); i++)
+			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
+	*/
 	//updata_CQI();
 
 	//UEs associate
@@ -146,12 +147,17 @@ int main()
 	{
 		vuelist[i].connecting_BS = findbs(&vuelist[i]);
 		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
-	//	cout << vuelist[i].connecting_BS->BSnum << ", ";
+		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
 	}
 
 	//debug
 	cout << "BS has m UE:\n";
+	int count = 0;
 	for (int i = 0; i < vbslist.size(); i++)
+	{
 		cout << vbslist[i].connectingUE.size() << ", ";
+		count += vbslist[i].connectingUE.size();
+	}
+	cout << count;
 	return 0;
 }

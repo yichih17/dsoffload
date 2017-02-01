@@ -144,13 +144,3 @@ BS* findbs(UE* u)
 	}
 	return minTbs;
 }
-
-void refresh()
-{
-	for (int i = 0; i < vbslist.size(); i++)
-	{
-		double lambda = 0;
-		for (int j = 0; j < vbslist[i].connectingUE.size(); j++)
-			lambda += vbslist[i].connectingUE[j]->lambdai;
-	}
-}
