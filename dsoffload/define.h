@@ -7,7 +7,7 @@
 #define Macro_power 46	//Macro eNB transmissino power
 #define AP_power 23		//AP transmission power
 
-#define pktsize 500		//Packet size (bit)
+#define pktsize 500.0		//Packet size (bit)
 #define subcarrier 12	//number of subcarrier (12)
 #define	total_symbol 14	//number of symbol in a RB (14)
 #define ctrl_symbol 2	//number of symbol for control signal in a RB (1~3)
@@ -45,7 +45,7 @@ struct UE
 
 	int delaybg;
 	double lambdai;
-	int psize;
+	double psize;
 };
 
 //function declare
@@ -54,10 +54,11 @@ extern void distribution(device_type dtype);
 //in function.cpp
 extern double getdis(UE* u, BS* b);
 extern int getCQI(UE* u, BS* b);
-extern double predictCapa(UE* u, BS* b);
-extern double getCapa(UE* u, BS* b);
+extern double predictCapacity(UE* u, BS* b);
+extern double getCapacity(UE* u, BS* b);
+extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
 extern BS* findbs(UE* u);
-extern void refresh();
+extern void BSbaddUEu(UE* u, BS* b);
 
 #endif // !_DEFIEN_H

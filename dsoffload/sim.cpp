@@ -11,7 +11,7 @@ int macro_cover[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512
 int ap_cover[] = { 82, 68, 60, 50, 39, 30, 28, 26 };
 double macro_SINR[] = { -7, -5, -3, -1, 1, 3, 5, 7, 8.5, 10, 11.5, 13.5, 15, 17, 19.5 };
 int ap_SINR[] = { 22, 21, 20, 16, 12, 9, 7, 4 };
-double lte_eff[15] = { 0.1523, 0.2344, 0.377, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234, 5.1152, 5.5546 };
+double lte_eff[15] = { 0.1523, 0.2344, 0.3770, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234, 5.1152, 5.5547 };
 double wifi_capacity[8] = { 6500, 13000, 19500, 26000,	39000, 52000, 58500, 65000 };
 
 vector <UE> vuelist;
@@ -56,6 +56,7 @@ void readUE()
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//§â®y¼Ðµ¹UE
 				temp.lambdai = 3;
+				temp.connecting_BS = NULL;
 				temp.psize = pktsize;
 				temp.UEnum = num++;
 				vuelist.push_back(temp);
@@ -145,8 +146,11 @@ int main()
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{
+		//BS* newbs = findbs(&vuelist[i]);
+		//BSbaddUEu(&vuelist[i], newbs);
 		vuelist[i].connecting_BS = findbs(&vuelist[i]);
 		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
+		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
 		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
 	}
 
