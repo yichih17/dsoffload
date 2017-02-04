@@ -57,7 +57,7 @@ void readUE()
 				temp.coor_Y = stof(buffery);//把座標給UE
 				temp.lambdai = 3;
 				temp.connecting_BS = NULL;
-				temp.psize = pktsize;
+				temp.packet_size = pktsize;
 				temp.UEnum = num++;
 				vuelist.push_back(temp);
 			}
@@ -127,6 +127,7 @@ void updata_CQI()
 
 int main()
 {
+
 	initialconfig();
 
 	//UE and AP location initial
@@ -143,6 +144,33 @@ int main()
 	*/
 	//updata_CQI();
 
+
+	//設定UE的service type
+	//未來可加入多種類型的UE
+	for (int i = 0; i < UE_number; i++)
+	{
+		//Voip: bit rate(10Kbps) packet size(800bits)
+		vuelist[i].bit_rate = 10;
+		vuelist[i].packet_size = 800;
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{

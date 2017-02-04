@@ -45,7 +45,10 @@ struct UE
 
 	int delaybg;
 	double lambdai;
-	double psize;
+	double packet_size;
+	double bit_rate;
+
+
 };
 
 //function declare

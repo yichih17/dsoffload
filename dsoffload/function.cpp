@@ -86,14 +86,14 @@ double predictT(UE* u, BS* b)
 	double Xj = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
 	{
-		double packetsize = b->connectingUE[i]->psize;
+		double packetsize = b->connectingUE[i]->packet_size;
 		double capacity = getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1);
 		double weight = b->connectingUE[i]->lambdai / lambda;
 		Xj += packetsize / capacity * weight;
 	}
 //	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
 //		Xj += b->connectingUE[i]->psize / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)) * b->connectingUE[i]->lambdai / lambda;
-	double packetsize_u = u->psize;
+	double packetsize_u = u->packet_size;
 	double capacity_u = predictCapacity(u, b);
 	double capacity_test = getCapacity(u, b) / (b->connectingUE.size() + 1);
 	double weight = u->lambdai / lambda;
@@ -102,8 +102,8 @@ double predictT(UE* u, BS* b)
 	//計算u加入b後的Xj^2
 	double Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij2加起來
-		Xj2 += pow(b->connectingUE[i]->psize / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)), 2) * b->connectingUE[i]->lambdai / lambda;
-	Xj2 += pow(u->psize / predictCapacity(u, b), 2) * (u->lambdai / lambda);
+		Xj2 += pow(b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)), 2) * b->connectingUE[i]->lambdai / lambda;
+	Xj2 += pow(u->packet_size / predictCapacity(u, b), 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
 	return Xj + lambda * Xj2 / (1 - lambda*Xj);
 }
@@ -169,7 +169,7 @@ void BSsystemTupdate(BS* b)
 	{
 		//Xij = packet_size / capacity
 		//Xj = sigma( Xij*(lambdai/lambda) )
-		Xj += b->connectingUE[i]->psize / (getCapacity(b->connectingUE[i], b) / b->connectingUE.size()) * (b->connectingUE[i]->lambdai / b->lambda);
+		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / b->connectingUE.size()) * (b->connectingUE[i]->lambdai / b->lambda);
 	}
 
 }
