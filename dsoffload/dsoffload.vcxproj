@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClCompile Include="distribute.cpp" />
     <ClCompile Include="function.cpp" />
+    <ClCompile Include="packet_arrival.cpp" />
     <ClCompile Include="sim.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -14,6 +14,8 @@
 #define resource_element (total_symbol-ctrl_symbol)*subcarrier	//number of resource element per RB for data
 #define total_RBG 100
 
+#define TTI 1000
+
 #include<vector>
 
 enum device_type{macro, ap, ue};
@@ -43,7 +45,7 @@ struct UE
 	double Xij;
 	BS* connecting_BS;
 
-	int delaybg;
+	int delay_budget;
 	double lambdai;
 	double packet_size;
 	double bit_rate;
@@ -54,6 +56,8 @@ struct UE
 //function declare
 //in distribute.cpp
 extern void distribution(device_type dtype);
+//in packet_arrival.cpp
+extern void packet_arrival();
 //in function.cpp
 extern double getdis(UE* u, BS* b);
 extern int getCQI(UE* u, BS* b);

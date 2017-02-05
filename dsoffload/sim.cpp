@@ -136,6 +136,7 @@ int main()
 	readUE();		//讀入UE
 	cout << "Number of UE :" << vuelist.size() << "\n";
 
+	packet_arrival();
 	/*	// Show UE coordinates
 		for (int i = 0; i < vuelist.size(); i++)
 			cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
@@ -144,33 +145,6 @@ int main()
 	*/
 	//updata_CQI();
 
-
-	//設定UE的service type
-	//未來可加入多種類型的UE
-	for (int i = 0; i < UE_number; i++)
-	{
-		//Voip: bit rate(10Kbps) packet size(800bits)
-		vuelist[i].bit_rate = 10;
-		vuelist[i].packet_size = 800;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{
