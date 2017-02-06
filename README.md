@@ -9,12 +9,13 @@ delay-sensitive offloading algorithm
   3.選擇T最小的加入(T一樣比Capacity)
   
 已知問題
-- rho(lambda/mu)會大於1，導致T計算出來變負值，而所有UE都加入macro eNB
+- rho(lambda/mu)會大於1，導致T計算出來有負值
 
 預期新增之功能
 - 計算UE加入後，會影響的UE數量
-- 產生packet實際模擬UE的資料傳送
 - 加入dsoffload演算法
-- 對照組
+- 對照組(不同K值、SINR)
+--------------------------------------------------
+- 產生packet實際模擬UE的資料傳送
 - 計算評估效能的參數(Throughput, capacity, delay)
 - 輸出結果
