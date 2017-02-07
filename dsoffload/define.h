@@ -1,22 +1,24 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define UE_number 2500	//UE计
-#define AP_number 500	//AP计
+#define number_ue 5000	//UE计
+#define number_ap 500	//AP计
+#define power_macro 46	//transmissino power of macro eNB
+#define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB畖
-#define Macro_power 46	//Macro eNB transmissino power
-#define AP_power 23		//AP transmission power
 
-#define pktsize 500.0		//Packet size (bit)
+#define pktsize 500.0	//Packet size (bit)
 #define subcarrier 12	//number of subcarrier (12)
 #define	total_symbol 14	//number of symbol in a RB (14)
 #define ctrl_symbol 2	//number of symbol for control signal in a RB (1~3)
-#define resource_element (total_symbol-ctrl_symbol)*subcarrier	//number of resource element per RB for data
-#define total_RBG 100
+#define resource_element (total_symbol - ctrl_symbol) * subcarrier	//number of resource element per RB for data
+#define total_RBG 100	//number of total RBG(Resource Block Group)
 
-#define TTI 1000
+#define TTI 1000		//total simulation time (TTI)
+
 
 #include<vector>
+
 
 enum device_type{macro, ap, ue};
 
@@ -49,8 +51,6 @@ struct UE
 	double lambdai;
 	double packet_size;
 	double bit_rate;
-
-
 };
 
 //function declare
@@ -59,9 +59,10 @@ extern void distribution(device_type dtype);
 //in packet_arrival.cpp
 extern void packet_arrival();
 //in function.cpp
-extern double getdis(UE* u, BS* b);
+extern void countAPrange();
+extern double getDistance(UE* u, BS* b);
 extern int getCQI(UE* u, BS* b);
-extern double predictCapacity(UE* u, BS* b);
+extern double predict_Capacity(UE* u, BS* b);
 extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);

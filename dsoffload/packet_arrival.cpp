@@ -29,7 +29,7 @@ void packet_arrival()
 {
 	//定義UE服務類型 (*未來可增加UE的多樣性，混入各不同服務類型的UE)
 	//VoIP: bit rate(10K bps) packet size(800 bits)
-	for (int i = 0; i < UE_number; i++)
+	for (int i = 0; i < number_ue; i++)
 	{
 		//Voip: bit rate(10Kbps) packet size(800bits) delay budget(100ms)
 		vuelist[i].bit_rate = 10;
@@ -46,7 +46,7 @@ void packet_arrival()
 	bool across_TTI;					// 用來判斷UE的時間軸，packet的inter-arrival time有無跨過此TTI
 	srand((unsigned)time(NULL));		// 亂數種子
 
-	for (int i = 0; i < UE_number; i++)
+	for (int i = 0; i < number_ue; i++)
 	{
 		buffer_timer = 0.0;
 		across_TTI = false;
