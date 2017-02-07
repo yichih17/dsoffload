@@ -2,7 +2,7 @@
 #define _DEFIEN_H
 
 #define number_ue 5000	//UE個數
-#define number_ap 500	//AP個數
+#define number_ap 100	//AP個數
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB半徑
@@ -20,7 +20,8 @@
 #include<vector>
 
 
-enum device_type{macro, ap, ue};
+enum type_bs { macro, ap, ue };
+enum type_ue { type1, type2, type3, type4};
 
 struct BS;
 struct UE;
@@ -30,32 +31,31 @@ extern std::vector <UE> vuelist;
 /*attribute of BS*/
 struct BS
 {
-	int BSnum;
+	int num;
+	type_bs type;
 	double coor_X, coor_Y;
 	double lambda;
 	double systemT;
 	std::vector <UE*> connectingUE;
-	device_type type;
 };
 
 /*attribute of UE*/
 struct UE
 {
-	int UEnum;
+	int num;
+	type_ue type;
 	double coor_X, coor_Y;
-	std::vector <BS*> availBS;
-	double Xij;
-	BS* connecting_BS;
-
-	int delay_budget;
 	double lambdai;
+	int delay_budget;
 	double packet_size;
 	double bit_rate;
+	BS* connecting_BS;
+	std::vector <BS*> availBS;
 };
 
 //function declare
 //in distribute.cpp
-extern void distribution(device_type dtype);
+extern void distribution(type_bs dtype);
 //in packet_arrival.cpp
 extern void packet_arrival();
 //in function.cpp

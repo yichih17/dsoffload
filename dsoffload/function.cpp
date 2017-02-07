@@ -1,4 +1,5 @@
 #include<iostream>
+#include<math.h>
 #include "define.h"
 
 using namespace std;
@@ -78,7 +79,7 @@ double getCapacity(UE* u, BS* b)
 double getCapacity(UE* u)
 {
 	if (u->connecting_BS = NULL)
-		cout << "Error, UE" << u->UEnum << " no connecting BS.\n";
+		cout << "Error, UE" << u->num << " no connecting BS.\n";
 	else
 	{
 		if (u->connecting_BS->type == macro)
@@ -92,38 +93,45 @@ double getCapacity(UE* u)
 /* 試算UE加入BS後，BS的Avg. system time(T*) */
 double predictT(UE* u, BS* b)
 {
-	//計算u加入b後的lambda
+	//試算u加入b後的lambda
 	double lambda = b->lambda + u->lambdai;
 	//計算u加入b後的Xj
 	double Xj = 0;
 
-/*	// debug用
-	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
+/*	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
 	{
 		double packetsize = b->connectingUE[i]->packet_size;
 		double capacity = getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1);
 		double weight = b->connectingUE[i]->lambdai / lambda;
 		Xj += packetsize / capacity * weight;
-	}*/
-
-	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
-		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)) * b->connectingUE[i]->lambdai / lambda;
-
-/*	// debug用
+	}
 	double packetsize_u = u->packet_size;
 	double capacity_u = predict_Capacity(u, b);
 	double weight = u->lambdai / lambda;
 	Xj += packetsize_u / capacity_u * weight;*/
 
-	Xj += u->packet_size / predict_Capacity(u, b) * (u->lambdai / lambda);
+	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
+		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)) * b->connectingUE[i]->lambdai / lambda;
+	Xj += u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)) * (u->lambdai / lambda);
 	
 	//計算u加入b後的Xj^2
 	double Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij2加起來
 		Xj2 += pow(b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)), 2) * b->connectingUE[i]->lambdai / lambda;
-	Xj2 += pow(u->packet_size / predict_Capacity(u, b), 2) * (u->lambdai / lambda);
+	Xj2 += pow(u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)), 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
-	return Xj + lambda * Xj2 / (1 - lambda*Xj);
+	return Xj + lambda * Xj2 / (1 - lambda * Xj);
+}
+
+double getT(BS* b)
+{
+	double Xj = 0;
+	for (int i = 0; i < b->connectingUE.size(); i++)	//在b的UE的Xij加起來
+		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / b->connectingUE.size()) * b->connectingUE[i]->lambdai / b->lambda;
+	double Xj2 = 0;
+	for (int i = 0; i < b->connectingUE.size(); i++)	//在b的UE的Xij2加起來
+		Xj2 += pow(b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / b->connectingUE.size()), 2) * b->connectingUE[i]->lambdai / b->lambda;
+	return Xj + b->lambda * Xj2 / (1 - b->lambda * Xj);
 }
 
 //UE尋找合適的BS
@@ -140,7 +148,7 @@ BS* findbs(UE* u)
 		case -1:
 			break;
 		case 0:
-			cout << "UE" << u->UEnum << " to BS" << vbslist[i].BSnum << " CQI is 0" << endl;
+			cout << "UE" << u->num << " to BS" << vbslist[i].num << " CQI is 0" << endl;
 			break;
 		default:
 			u->availBS.push_back(&vbslist[i]);
@@ -151,14 +159,14 @@ BS* findbs(UE* u)
 	//預設最佳BS為macro eNB
 	BS* minTbs = u->availBS[0];
 	double T_minTbs = predictT(u, u->availBS[0]);
-	if (T_minTbs <= 0)
-		cout << "UE" << u->UEnum << " to BS" << minTbs->BSnum << "T is " << T_minTbs << endl;
+//	if (T_minTbs <= 0)
+//		cout << "UE" << u->UEnum << " to BS" << minTbs->num << "T is " << T_minTbs << endl;
 	double T;
 	for (int i = 1; i < u->availBS.size(); i++)
 	{
 		T = predictT(u, u->availBS[i]);
 		if (T <= 0)
-			cout << "UE" << u->UEnum << " to BS" << minTbs->BSnum << "T is " << T << endl;
+			cout << "UE" << u->num << " to BS" << minTbs->num << "T is " << T << endl;
 		//T比較小
 		if (T < T_minTbs)
 		{
@@ -166,7 +174,7 @@ BS* findbs(UE* u)
 			minTbs = u->availBS[i];
 		}
 		//T相同，比C
-		if (T == T_minTbs)
+		else if (T == T_minTbs)
 		{
 			double C_minTbs = predict_Capacity(u, minTbs);
 			double C = predict_Capacity(u, u->availBS[i]);
@@ -180,35 +188,23 @@ BS* findbs(UE* u)
 	return minTbs;
 }
 
-void BSsystemTupdate(BS* b)
-{
-	double Xj = 0;
-	for (int i = 0; i < b->connectingUE.size(); i++)
-	{
-		//Xij = packet_size / capacity
-		//Xj = sigma( Xij*(lambdai/lambda) )
-		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / b->connectingUE.size()) * (b->connectingUE[i]->lambdai / b->lambda);
-	}
-
-}
-
 void BSbaddUEu(UE* u, BS* b)
 {
 	if (u->connecting_BS != NULL)
 	{
-		cout << "UE移出BS" << u->connecting_BS->BSnum << "前:\nBS有" << u->connecting_BS->connectingUE.size() << "個UE" << endl;
+		cout << "UE移出BS" << u->connecting_BS->num << "前:\nBS有" << u->connecting_BS->connectingUE.size() << "個UE" << endl;
 		u->connecting_BS->lambda -= u->lambdai;
 		int i;
 		for (i = 0; i < u->connecting_BS->connectingUE.size(); i++)
 		{
-			if (u->connecting_BS->connectingUE[i]->UEnum == u->UEnum)
+			if (u->connecting_BS->connectingUE[i]->num == u->num)
 				break;
 		}
 		u->connecting_BS->connectingUE.erase(u->connecting_BS->connectingUE.begin() + i - 1);
-		cout << "UE移出BS" << u->connecting_BS->BSnum << "後:\nBS有" << u->connecting_BS->connectingUE.size() << "個UE" << endl;
+		cout << "UE移出BS" << u->connecting_BS->num << "後:\nBS有" << u->connecting_BS->connectingUE.size() << "個UE" << endl;
 	}
 	u->connecting_BS = b;
 	b->lambda += u->lambdai;
 	b->connectingUE.push_back(u);
-	BSsystemTupdate(b);
+	b->systemT = getT(b);
 }

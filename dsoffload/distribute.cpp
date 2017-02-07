@@ -26,7 +26,7 @@ void uniformdistribution(T* equip)
 }
 
 /* Generate UE/BS distribution */
-void distribution(device_type dtype)
+void distribution(type_bs dtype)
 {
 	/*generate UE distribution*/
 	if (dtype == ue)

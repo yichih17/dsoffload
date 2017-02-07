@@ -17,8 +17,8 @@ void initialconfig()
 	BS macro;
 	macro.coor_X = 0;
 	macro.coor_Y = 0;
-	macro.type = device_type::macro;
-	macro.BSnum = 0;
+	macro.type = type_bs::macro;
+	macro.num = 0;
 	macro.lambda = 0;
 	vbslist.push_back(macro);
 }
@@ -46,7 +46,7 @@ void readUE()
 			if (bufferx[0] != '\0')
 			{
 				UE temp;
-				temp.UEnum = num++;
+				temp.num = num++;
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給UE
 				temp.connecting_BS = NULL;
@@ -82,11 +82,14 @@ void readAP()
 			if (bufferx[0] != '\0')
 			{
 				BS temp;
+				temp.num = i++;
+				temp.type = ap;				//設定基地台類型(AP)
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給AP
-				temp.type = ap;				//設定基地台類型(AP)
-				temp.BSnum = i++;
+				//initialize
+				temp.connectingUE.clear();
 				temp.lambda = 0;
+				temp.systemT = 0;			
 				vbslist.push_back(temp);
 			}
 		}
@@ -142,20 +145,20 @@ int main()
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{
-		//BS* newbs = findbs(&vuelist[i]);
-		//BSbaddUEu(&vuelist[i], newbs);
-		vuelist[i].connecting_BS = findbs(&vuelist[i]);
-		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
-		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
+		BS* newbs = findbs(&vuelist[i]);
+		BSbaddUEu(&vuelist[i], newbs);
+//		vuelist[i].connecting_BS = findbs(&vuelist[i]);
+//		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
+//		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
 		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
 	}
 
 	//debug
-	cout << "BS has m UE:\n";
-	int count = 0;
+	size_t count = 0;
 	for (int i = 0; i < vbslist.size(); i++)
 	{
-		cout << vbslist[i].connectingUE.size() << ", ";
+		printf("BS%3d has %4zd UE, T is ", vbslist[i].num, vbslist[i].connectingUE.size());
+		cout << vbslist[i].systemT << "\n";
 		count += vbslist[i].connectingUE.size();
 	}
 	cout << count;
