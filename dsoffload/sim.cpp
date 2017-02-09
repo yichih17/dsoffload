@@ -55,10 +55,12 @@ void readUE()
 				UE temp;
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給UE
-				temp.lambdai = 3;
 				temp.connecting_BS = NULL;
-				temp.packet_size = pktsize;
 				temp.UEnum = num++;
+				temp.bit_rate = 10;
+				temp.packet_size = 800;
+				temp.delay_budget = 100;
+				temp.lambdai = temp.bit_rate / temp.packet_size;
 				vuelist.push_back(temp);
 			}
 		}
@@ -136,7 +138,7 @@ int main()
 	readUE();		//讀入UE
 	cout << "Number of UE :" << vuelist.size() << "\n";
 
-	packet_arrival();
+	//packet_arrival();
 	/*	// Show UE coordinates
 		for (int i = 0; i < vuelist.size(); i++)
 			cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
@@ -148,11 +150,11 @@ int main()
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{
-		//BS* newbs = findbs(&vuelist[i]);
-		//BSbaddUEu(&vuelist[i], newbs);
-		vuelist[i].connecting_BS = findbs(&vuelist[i]);
-		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
-		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
+		BS* newbs = findbs(&vuelist[i]);
+		BSbaddUEu(&vuelist[i], newbs);
+		//vuelist[i].connecting_BS = findbs(&vuelist[i]);
+		//vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
+		//vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
 		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
 	}
 

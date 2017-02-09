@@ -108,6 +108,18 @@ double predictT(UE* u, BS* b)
 	return Xj + lambda * Xj2 / (1 - lambda*Xj);
 }
 
+BS* findbs_SINR(UE* u)
+{
+	//預設Macro為
+	double min_dis = getdis(u, &vbslist[0]);
+	BS* min_disbs = &vbslist[0];
+
+	for (int i = 0; i < vbslist.size(); i++)
+	{
+	
+	}
+}
+
 //UE尋找合適的BS
 BS* findbs(UE* u)
 {
@@ -133,7 +145,8 @@ BS* findbs(UE* u)
 	//預設最佳BS為macro eNB
 	BS* minTbs = u->availBS[0];
 	double T_minTbs = predictT(u, u->availBS[0]);
-
+//	if (T_minTbs < 0)
+//		cout << T_minTbs << endl;
 	double T;
 	for (int i = 1; i < u->availBS.size(); i++)
 	{
