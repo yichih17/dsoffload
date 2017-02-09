@@ -53,6 +53,11 @@ struct UE
 	std::vector <BS*> availBS;
 };
 
+struct result
+{
+	int outage_number;
+};
+
 //function declare
 //in distribute.cpp
 extern void distribution(type_bs dtype);
@@ -66,7 +71,7 @@ extern double predict_Capacity(UE* u, BS* b);
 extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
-extern BS* findbs_minT(UE* u);
+extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
 extern void add_UE_to_BS(UE* u, BS* b);
 
 #endif // !_DEFIEN_H

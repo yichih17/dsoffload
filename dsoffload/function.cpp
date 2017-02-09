@@ -136,11 +136,11 @@ double getT(BS* b)
 }
 
 //UE´M§ä¦X¾AªºBS
-BS* findbs_minT(UE* u)
+BS* findbs_minT(UE *u, vector <BS> *bslist)
 {
-	for (int i = 0; i < vbslist.size(); i++)
+	for (int i = 0; i < bslist->size(); i++)
 	{
-		int CQI = getCQI(u, &vbslist[i]);
+		int CQI = getCQI(u, &bslist->at(i));
 		switch (CQI)
 		{
 		case 16:
@@ -149,10 +149,10 @@ BS* findbs_minT(UE* u)
 		case -1:
 			break;
 		case 0:
-			cout << "UE" << u->num << " to BS" << vbslist[i].num << " CQI is 0" << endl;
+			cout << "UE" << u->num << " to BS" << bslist->at(i).num << " CQI is 0" << endl;
 			break;
 		default:
-			u->availBS.push_back(&vbslist[i]);
+			u->availBS.push_back(&bslist->at(i));
 			break;
 		}
 	}

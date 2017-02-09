@@ -10,16 +10,26 @@ using namespace std;
 vector <UE> vuelist;
 vector <BS> vbslist;
 
+result minT_algorithm(vector <UE> uelist, vector <BS> bslist);
+result proposed_algorithm(vector <UE> uelist, vector <BS> bslist);
+
+/*Outage: 當UE可連接的基地台皆超出負荷，就會沒有基地台可連接，因此定義為outage */
+//int outage_minT = 0;			//min T algorithm的outage UE數量
+int outage_sinr = 0;			//sinr algorithm的outage UE數量	**未完成
+int outage_proposed = 0;		//proposed algorithm的outage UE數量	**未完成
+
 /*環境初始設定*/
 void initialconfig()
 {
 	//Define Macro eNB
 	BS macro;
+	macro.num = 0;
+	macro.type = type_bs::macro;
 	macro.coor_X = 0;
 	macro.coor_Y = 0;
-	macro.type = type_bs::macro;
-	macro.num = 0;
+	macro.connectingUE.clear();
 	macro.lambda = 0;
+	macro.systemT = 0;
 	vbslist.push_back(macro);
 }
 
@@ -117,33 +127,35 @@ int main()
 			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
 	*/
 
-	/*Outage: 當UE可連接的基地台皆超出負荷，就會沒有基地台可連接，因此定義為outage */
-	int outage_minT = 0;			//min T algorithm的outage UE數量
-	int outage_sinr = 0;			//sinr algorithm的outage UE數量	**未完成
-	int outage_proposed = 0;		//proposed algorithm的outage UE數量	**未完成
+	minT_algorithm(vuelist, vbslist);
 
-	//UEs associate
-	for (int i = 0; i < vuelist.size(); i++)
+	return 0;
+}
+
+result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
+{
+	int outage_minT = 0;
+	for (int i = 0; i < uelist.size(); i++)
 	{
-		BS* target_bs = findbs_minT(&vuelist[i]);
+		BS *target_bs = findbs_minT(&uelist[i], &bslist);
 		if (target_bs == NULL)
 			outage_minT++;
 		else
-			add_UE_to_BS(&vuelist[i], target_bs);
-//		vuelist[i].connecting_BS = findbs(&vuelist[i]);
-//		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
-//		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
-		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
+			add_UE_to_BS(&uelist[i], target_bs);
 	}
 
-	//debug
-	size_t count = 0;
-	for (int i = 0; i < vbslist.size(); i++)
+	result result_minT;
+	result_minT.outage_number = outage_minT;
+
+	//For debug
+	cout << "==============Result for minT algorithm==============" << endl;
+	for (int i = 0; i < bslist.size(); i++)
 	{
-		printf("BS%3d has %4zd UE, T is ", vbslist[i].num, vbslist[i].connectingUE.size());
-		cout << vbslist[i].systemT << "\n";
-		count += vbslist[i].connectingUE.size();
+		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
+		cout << bslist[i].systemT << "\n";
 	}
-	cout << outage_minT;
-	return 0;
+	cout << "Number of outage UE is:" << result_minT.outage_number << endl;
+	cout << "=========================End=========================" << endl;
+
+	return result_minT;
 }
