@@ -134,18 +134,6 @@ double getT(BS* b)
 	return Xj + b->lambda * Xj2 / (1 - b->lambda * Xj);
 }
 
-BS* findbs_SINR(UE* u)
-{
-	//預設Macro為
-	double min_dis = getdis(u, &vbslist[0]);
-	BS* min_disbs = &vbslist[0];
-
-	for (int i = 0; i < vbslist.size(); i++)
-	{
-	
-	}
-}
-
 //UE尋找合適的BS
 BS* findbs(UE* u)
 {
