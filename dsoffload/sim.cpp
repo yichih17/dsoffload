@@ -36,19 +36,19 @@ void readUE()
 	}
 	else
 	{
-		int num = 1;
-		
+		int num = 1;						//num = UE編號
 		while (!freadUE.eof())
 		{
 			char bufferx[10], buffery[10];
 			freadUE >> bufferx;				//讀取x座標
 			freadUE >> buffery;				//讀取y座標
-			if (bufferx[0] != '\0')
+			if (bufferx[0] != '\0')			//txt檔最後一行是換行符號，遇到就結束讀取
 			{
 				UE temp;
-				temp.num = num++;
+				temp.num = num++;			//assign編號，然後index++
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給UE
+				//initialize
 				temp.connecting_BS = NULL;
 				temp.bit_rate = 10;
 				temp.packet_size = 800;
@@ -97,31 +97,6 @@ void readAP()
 	}
 	freadAP.close();
 }
-/*
-更新所有UE的neiborBS清單、與neiborBS的CQIB
-void updata_CQI()
-{
-	//Count the CQI to all BS of a UE
-	for (int i = 0; i < vuelist.size(); i++)
-	{
-		vuelist[i].CQI_to_neiborBS.clear();
-		vuelist[i].neiborBS.clear();
-		for (int j = 0; j < vbslist.size(); j++)
-		{
-			int CQI = getCQI2(&vuelist[i], &vbslist[j]);		//計算UE與BS的CQI
-			if (CQI != 0)									//如果UE在BS的範圍內
-			{
-				vuelist[i].CQI_to_neiborBS.push_back(CQI);	//紀錄CQI
-				vuelist[i].neiborBS.push_back(&vbslist[j]);	//將BS加入neighborBS清單
-			}
-		}
-	}
-		
-	//Show # of neibor BS
-	for (int i = 0; i < vuelist.size(); i++)
-		cout << vuelist[i].neiborBS.size() << ", ";
-
-}*/
 
 int main()
 {
@@ -141,13 +116,20 @@ int main()
 		for (int i = 0; i < vbslist.size(); i++)
 			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
 	*/
-	//updata_CQI();
+
+	/*Outage: 當UE可連接的基地台皆超出負荷，就會沒有基地台可連接，因此定義為outage */
+	int outage_minT = 0;			//min T algorithm的outage UE數量
+	int outage_sinr = 0;			//sinr algorithm的outage UE數量	**未完成
+	int outage_proposed = 0;		//proposed algorithm的outage UE數量	**未完成
 
 	//UEs associate
 	for (int i = 0; i < vuelist.size(); i++)
 	{
-		BS* newbs = findbs(&vuelist[i]);
-		BSbaddUEu(&vuelist[i], newbs);
+		BS* target_bs = findbs_minT(&vuelist[i]);
+		if (target_bs == NULL)
+			outage_minT++;
+		else
+			add_UE_to_BS(&vuelist[i], target_bs);
 //		vuelist[i].connecting_BS = findbs(&vuelist[i]);
 //		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
 //		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
@@ -162,6 +144,6 @@ int main()
 		cout << vbslist[i].systemT << "\n";
 		count += vbslist[i].connectingUE.size();
 	}
-	cout << count;
+	cout << outage_minT;
 	return 0;
 }

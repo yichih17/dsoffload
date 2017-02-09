@@ -113,7 +113,8 @@ double predictT(UE* u, BS* b)
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
 		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)) * b->connectingUE[i]->lambdai / lambda;
 	Xj += u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)) * (u->lambdai / lambda);
-	
+	if (Xj * lambda > 1)								//When Rho > 1, return 0;
+		return 0;
 	//計算u加入b後的Xj^2
 	double Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij2加起來
@@ -135,7 +136,7 @@ double getT(BS* b)
 }
 
 //UE尋找合適的BS
-BS* findbs(UE* u)
+BS* findbs_minT(UE* u)
 {
 	for (int i = 0; i < vbslist.size(); i++)
 	{
@@ -159,35 +160,48 @@ BS* findbs(UE* u)
 	//預設最佳BS為macro eNB
 	BS* minTbs = u->availBS[0];
 	double T_minTbs = predictT(u, u->availBS[0]);
-
+	if (T_minTbs <= 0)
+	{
+		if (u->availBS.size() <= 1)
+			return NULL;
+		else
+		{
+			T_minTbs = 999999;
+			minTbs = NULL;
+		}			
+	}
 	double T;
 	for (int i = 1; i < u->availBS.size(); i++)
 	{
 		T = predictT(u, u->availBS[i]);
 		if (T <= 0)
-			cout << "UE" << u->num << " to BS" << minTbs->num << "T is " << T << endl;
-		//T比較小
-		if (T < T_minTbs)
+			return NULL;
+		else
 		{
-			T_minTbs = T;
-			minTbs = u->availBS[i];
-		}
-		//T相同，比C
-		else if (T == T_minTbs)
-		{
-			double C_minTbs = predict_Capacity(u, minTbs);
-			double C = predict_Capacity(u, u->availBS[i]);
-			if (C < C_minTbs)
+			//T比較小
+			if (T < T_minTbs)
 			{
 				T_minTbs = T;
 				minTbs = u->availBS[i];
-			}			
+			}
+			//T相同，比C
+			else if (T == T_minTbs)
+			{
+				double C_minTbs = predict_Capacity(u, minTbs);
+				double C = predict_Capacity(u, u->availBS[i]);
+				if (C < C_minTbs)
+				{
+					T_minTbs = T;
+					minTbs = u->availBS[i];
+				}
+			}
 		}
+		
 	}
 	return minTbs;
 }
 
-void BSbaddUEu(UE* u, BS* b)
+void add_UE_to_BS(UE* u, BS* b)
 {
 	if (u->connecting_BS != NULL)
 	{
