@@ -7,13 +7,6 @@
 
 using namespace std;
 
-int macro_cover[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
-int ap_cover[] = { 82, 68, 60, 50, 39, 30, 28, 26 };
-double macro_SINR[] = { -7, -5, -3, -1, 1, 3, 5, 7, 8.5, 10, 11.5, 13.5, 15, 17, 19.5 };
-int ap_SINR[] = { 22, 21, 20, 16, 12, 9, 7, 4 };
-double lte_eff[15] = { 0.1523, 0.2344, 0.3770, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234, 5.1152, 5.5547 };
-double wifi_capacity[8] = { 6500, 13000, 19500, 26000,	39000, 52000, 58500, 65000 };
-
 vector <UE> vuelist;
 vector <BS> vbslist;
 
@@ -24,8 +17,8 @@ void initialconfig()
 	BS macro;
 	macro.coor_X = 0;
 	macro.coor_Y = 0;
-	macro.type = device_type::macro;
-	macro.BSnum = 0;
+	macro.type = type_bs::macro;
+	macro.num = 0;
 	macro.lambda = 0;
 	vbslist.push_back(macro);
 }
@@ -53,10 +46,10 @@ void readUE()
 			if (bufferx[0] != '\0')
 			{
 				UE temp;
+				temp.num = num++;
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給UE
 				temp.connecting_BS = NULL;
-				temp.UEnum = num++;
 				temp.bit_rate = 10;
 				temp.packet_size = 800;
 				temp.delay_budget = 100;
@@ -90,11 +83,14 @@ void readAP()
 			if (bufferx[0] != '\0')
 			{
 				BS temp;
+				temp.num = i++;
+				temp.type = ap;				//設定基地台類型(AP)
 				temp.coor_X = stof(bufferx);//String to double
 				temp.coor_Y = stof(buffery);//把座標給AP
-				temp.type = ap;				//設定基地台類型(AP)
-				temp.BSnum = i++;
+				//initialize
+				temp.connectingUE.clear();
 				temp.lambda = 0;
+				temp.systemT = 0;			
 				vbslist.push_back(temp);
 			}
 		}
@@ -131,7 +127,7 @@ int main()
 {
 
 	initialconfig();
-
+	countAPrange();
 	//UE and AP location initial
 	readAP();		//讀入BS
 	cout << "Number of BS :" << vbslist.size() << "\n";
@@ -152,18 +148,18 @@ int main()
 	{
 		BS* newbs = findbs(&vuelist[i]);
 		BSbaddUEu(&vuelist[i], newbs);
-		//vuelist[i].connecting_BS = findbs(&vuelist[i]);
-		//vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
-		//vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
+//		vuelist[i].connecting_BS = findbs(&vuelist[i]);
+//		vuelist[i].connecting_BS->connectingUE.push_back(&vuelist[i]);
+//		vuelist[i].connecting_BS->lambda += vuelist[i].lambdai;
 		//	cout << vuelist[i].connecting_BS->BSnum << ", ";
 	}
 
 	//debug
-	cout << "BS has m UE:\n";
-	int count = 0;
+	size_t count = 0;
 	for (int i = 0; i < vbslist.size(); i++)
 	{
-		cout << vbslist[i].connectingUE.size() << ", ";
+		printf("BS%3d has %4zd UE, T is ", vbslist[i].num, vbslist[i].connectingUE.size());
+		cout << vbslist[i].systemT << "\n";
 		count += vbslist[i].connectingUE.size();
 	}
 	cout << count;

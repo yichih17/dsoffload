@@ -26,7 +26,7 @@ void uniformdistribution(T* equip)
 }
 
 /* Generate UE/BS distribution */
-void distribution(device_type dtype)
+void distribution(type_bs dtype)
 {
 	/*generate UE distribution*/
 	if (dtype == ue)
@@ -36,7 +36,7 @@ void distribution(device_type dtype)
 		if (UEWrite.fail())
 			cout << "檔案無法開啟" << endl;
 		else
-			for (int i = 0; i < UE_number; i++)
+			for (int i = 0; i < number_ue; i++)
 			{
 				UE ue;
 				uniformdistribution(&ue);
@@ -52,7 +52,7 @@ void distribution(device_type dtype)
 		if (APWrite.fail())
 			cout << "檔案無法開啟" << endl;
 		else
-			for (int i = 0; i < AP_number; i++)
+			for (int i = 0; i < number_ap; i++)
 			{
 				BS ap;
 				uniformdistribution(&ap);
