@@ -1,5 +1,6 @@
-#include<iostream>
-#include<math.h>
+#include <iostream>
+#include <math.h>
+#include <algorithm>
 #include "define.h"
 
 using namespace std;
@@ -199,6 +200,190 @@ BS* findbs_minT(UE *u, vector <BS> *bslist)
 		
 	}
 	return minTbs;
+}
+
+int calc_influence(UE *u, vector <BS> *bslist)
+{
+	u->availBS.clear();
+	for (int i = 0; i < bslist->size(); i++)
+	{
+		if (&bslist[i].at(i) == u->connecting_BS)
+			continue;
+		int CQI = getCQI(u, &bslist->at(i));
+		switch (CQI)
+		{
+		case 16:
+			cout << "CQI error, BS type is neither macro nor ap." << endl;
+			break;
+		case -1:
+			break;
+		case 0:
+			cout << "UE" << u->num << " to BS" << bslist->at(i).num << " CQI is 0" << endl;
+			break;
+		default:
+			u->availBS.push_back(&bslist->at(i));
+			break;
+		}
+	}
+	for (int i = 0; i < u->availBS.size(); i++)
+	{
+		int influence = 0;
+		double T = predictT(u, u->availBS[i]);
+		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
+		{
+			if (T > u->availBS[i]->connectingUE[j]->delay_budget)
+				influence++;
+		}
+		if (influence == 0)
+			return 0;
+	}
+	return -1;
+}
+
+bool uecompare(UE *a, UE *b) { return (a->lambdai/getCapacity(a)) < (b->lambdai/getCapacity(b)); }
+/*
+BS *findbs_proposed(UE *u, vector <BS> *bslist, int K)
+{
+	u->availBS.clear();
+	//尋找UE可連接的BS
+	for (int i = 0; i < bslist->size(); i++)
+	{
+		if (&bslist->at(i) == u->connecting_BS)		//可連接的BS要扣掉正在連接的BS
+			continue;
+		int CQI = getCQI(u, &bslist->at(i));
+		switch (CQI)
+		{
+		case 16:
+			cout << "CQI error, BS type is neither macro nor ap." << endl;
+			break;
+		case -1:
+			break;
+		case 0:
+			cout << "UE" << u->num << " to BS" << bslist->at(i).num << " CQI is 0" << endl;
+			break;
+		default:
+			u->availBS.push_back(&bslist->at(i));
+			break;
+		}
+	}
+
+
+	//將availBS分兩類 
+	vector <BS> no_influence_bs;
+	vector <BS> influence_bs;
+	for (int i = 0; i < u->availBS.size(); i++)
+	{
+		double T_after = predictT(u, u->availBS[i]);	//試算UE加入BS後的T
+		
+		//計算各availBS中受影響的UE數量
+		int influence_ue_number = 0;
+		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
+		{
+			if (T_after > u->availBS[i]->connectingUE[j]->delay_budget)
+				influence_ue_number++;
+		}
+
+		//若影響的UE數量大於0，則把BS歸類為受影響BS
+		if (influence_ue_number != 0)
+			influence_bs.push_back(*u->availBS[i]);
+		//若影響的UE數量為0，則把BS歸類為不受影響BS
+		else
+			no_influence_bs.push_back(*u->availBS[i]);
+	}
+
+	//若有不受影響的BS，則優先加入不受影響BS
+	if (no_influence_bs.size() > 0)
+		return findbs_minT(u, &no_influence_bs);	//從不受影響BS清單中選一個T最小的加入
+
+	//如果沒有不受影響BS，則只好從受影響BS中挑一個影響最少的加入
+	else
+	{						
+		//如果演算法深度已達最高深度，就從可選的BS中選一個最小的
+		if (K >= MAX_DEPTH)
+			return findbs_minT(u, &influence_bs);
+
+		//看還有沒有UE可以移出去
+		else
+		{
+			//計算加入各個受影響BS後，移動的UE數量
+			for (int i = 0; i < influence_bs.size(); i++)
+			{
+				vector <UE*> no_influence_ue;
+				vector <UE*> influence_ue;
+				//選出在受影響BS中的受影響UE 
+				for (int j = 0; j < influence_bs[i].connectingUE.size(); j++)
+				{
+					if (influence_bs[i].connectingUE[j]->availBS.size() > 1)
+					{
+						if (calc_influence(influence_bs[i].connectingUE[j], bslist) == 0)
+							no_influence_ue.push_back(influence_bs[i].connectingUE[j]);
+						else
+							influence_ue.push_back(influence_bs[i].connectingUE[j]);
+					}
+					//將UE排序
+					if (no_influence_ue.size() != 0)
+					{
+						sort(no_influence_ue.begin(), no_influence_ue.end(), uecompare);
+						for (int k = 0; k < no_influence_ue.size(); k++)
+						{
+							findbs_minT(no_influence_ue[i], bslist);
+						}
+						
+					}
+				}
+			}
+		}
+	}
+}*/
+
+connection_status findbs_dso(UE u, vector <BS> bslist, int k, connection_status cs)
+{
+	u.availBS.clear();
+	for (int i = 0; i < bslist.size(); i++)
+	{
+		if (&bslist.at(i) == u.connecting_BS)		//可連接的BS要扣掉正在連接的BS
+			continue;
+		int CQI = getCQI(&u, &bslist.at(i));
+		switch (CQI)
+		{
+		case 16:
+			cout << "CQI error, BS type is neither macro nor ap." << endl;
+			break;
+		case -1:
+			break;
+		case 0:
+			cout << "UE" << u.num << " to BS" << bslist.at(i).num << " CQI is 0" << endl;
+			break;
+		default:
+			u.availBS.push_back(&bslist.at(i));
+			break;
+		}
+	}
+	vector <BS> no_influence_bs;
+	vector <BS> influence_bs;
+	for (int i = 0; i < u.availBS.size(); i++)
+	{
+		double T_after = predictT(&u, u.availBS[i]);
+		int influence_ue_number = 0;
+		for (int j = 0; j < u.availBS[i]->connectingUE.size(); j++)
+			if (T_after > u.availBS[i]->connectingUE[j]->delay_budget)
+				influence_ue_number++;
+		if (influence_ue_number != 0)
+			influence_bs.push_back(*u.availBS[i]);
+		else
+			no_influence_bs.push_back(*u.availBS[i]);			
+	}
+	if (no_influence_bs.size() > 0)
+	{
+		BS *targetbs = findbs_minT(&u, &bslist);	///可再簡化計算次數
+		add_UE_to_BS(&u, targetbs);
+		cs.u.connecting_BS = targetbs;
+		targetbs->
+		cs.bslist = bslist;
+		cs.u = u;
+		return cs;
+	}
+	
 }
 
 void add_UE_to_BS(UE* u, BS* b)

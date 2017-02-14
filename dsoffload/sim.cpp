@@ -128,7 +128,7 @@ int main()
 	*/
 
 	minT_algorithm(vuelist, vbslist);
-
+	proposed_algorithm(vuelist, vbslist);
 	return 0;
 }
 
@@ -158,4 +158,32 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	cout << "=========================End=========================" << endl;
 
 	return result_minT;
+}
+
+result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
+{
+	int outage_proposed = 0;
+	for (int i = 0; i < uelist.size(); i++)
+	{
+		//BS *targetbs = findbs_proposed(&uelist[i], );
+		connection_status cs;
+		cs = findbs_dso(uelist[i], bslist, 0, cs);
+		uelist.at(i).connecting_BS = cs.u.connecting_BS;
+		bslist = cs.bslist;
+	}
+
+	result result_proposed;
+	result_proposed.outage_number = outage_proposed;
+
+	//For debug
+	cout << "============Result for proposed algorithm============" << endl;
+	for (int i = 0; i < bslist.size(); i++)
+	{
+		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
+		cout << bslist[i].systemT << "\n";
+	}
+	cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
+	cout << "=========================End=========================" << endl;
+
+	return result_proposed;
 }

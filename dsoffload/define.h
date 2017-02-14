@@ -16,6 +16,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
+#define MAX_DEPTH 0
 
 #include<vector>
 
@@ -58,6 +59,12 @@ struct result
 	int outage_number;
 };
 
+struct connection_status
+{
+	std::vector <BS> bslist;
+	UE u;
+};
+
 //function declare
 //in distribute.cpp
 extern void distribution(type_bs dtype);
@@ -72,6 +79,8 @@ extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
 extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
+extern BS* findbs_proposed(UE u, std::vector <BS> bslist, int K);
+extern connection_status findbs_dso(UE u, std::vector <BS> bslist, int k, connection_status cs);
 extern void add_UE_to_BS(UE* u, BS* b);
 
 #endif // !_DEFIEN_H
