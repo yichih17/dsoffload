@@ -46,7 +46,7 @@ void readUE()
 	}
 	else
 	{
-		int num = 1;						//num = UE½s¸¹
+		int num = 0;						//num = UE½s¸¹
 		while (!freadUE.eof())
 		{
 			char bufferx[10], buffery[10];
@@ -167,9 +167,14 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	{
 		//BS *targetbs = findbs_proposed(&uelist[i], );
 		connection_status cs;
-		cs = findbs_dso(uelist[i], bslist, 0, cs);
-		uelist.at(i).connecting_BS = cs.u.connecting_BS;
-		bslist = cs.bslist;
+		cs.bslist = bslist;
+		cs.uelist = uelist;
+		cs.influence = 0;
+		cs = findbs_dso(uelist[i], cs, 0);
+		if (cs.influence == 999)
+			break;
+		uelist.assign(cs.uelist.begin(), cs.uelist.end());
+		bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	}
 
 	result result_proposed;

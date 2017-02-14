@@ -336,14 +336,15 @@ BS *findbs_proposed(UE *u, vector <BS> *bslist, int K)
 	}
 }*/
 
-connection_status findbs_dso(UE u, vector <BS> bslist, int k, connection_status cs)
+connection_status findbs_dso(UE u, connection_status cs, int k)
 {
 	u.availBS.clear();
-	for (int i = 0; i < bslist.size(); i++)
+	//計算UE的availBS
+	for (int i = 0; i < cs.bslist.size(); i++)
 	{
-		if (&bslist.at(i) == u.connecting_BS)		//可連接的BS要扣掉正在連接的BS
+		if (&cs.bslist.at(i) == u.connecting_BS)		//可連接的BS要扣掉正在連接的BS
 			continue;
-		int CQI = getCQI(&u, &bslist.at(i));
+		int CQI = getCQI(&u, &cs.bslist.at(i));
 		switch (CQI)
 		{
 		case 16:
@@ -352,15 +353,17 @@ connection_status findbs_dso(UE u, vector <BS> bslist, int k, connection_status 
 		case -1:
 			break;
 		case 0:
-			cout << "UE" << u.num << " to BS" << bslist.at(i).num << " CQI is 0" << endl;
+			cout << "UE" << u.num << " to BS" << cs.bslist.at(i).num << " CQI is 0" << endl;
 			break;
 		default:
-			u.availBS.push_back(&bslist.at(i));
+			u.availBS.push_back(&cs.bslist.at(i));
 			break;
 		}
 	}
+
 	vector <BS> no_influence_bs;
 	vector <BS> influence_bs;
+	//availBS分類，分為
 	for (int i = 0; i < u.availBS.size(); i++)
 	{
 		double T_after = predictT(&u, u.availBS[i]);
@@ -375,15 +378,56 @@ connection_status findbs_dso(UE u, vector <BS> bslist, int k, connection_status 
 	}
 	if (no_influence_bs.size() > 0)
 	{
-		BS *targetbs = findbs_minT(&u, &bslist);	///可再簡化計算次數
-		add_UE_to_BS(&u, targetbs);
-		cs.u.connecting_BS = targetbs;
-		targetbs->
-		cs.bslist = bslist;
-		cs.u = u;
+		BS *targetBS = findbs_minT(&u, &no_influence_bs);
+		cs.uelist[u.num].connecting_BS = targetBS;
+		cs.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[u.num]);
+		cs.bslist[targetBS->num].lambda += cs.uelist[u.num].lambdai;
+		cs.bslist[targetBS->num].systemT = getT(&cs.bslist[targetBS->num]);
+		cs.influence++;
 		return cs;
 	}
-	
+	else
+	{
+		if (k == MAX_DEPTH)
+		{
+			BS *targetBS = findbs_minT(&u, &influence_bs);
+			cs.uelist[u.num].connecting_BS = targetBS;
+			cs.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[u.num]);
+			cs.bslist[targetBS->num].lambda += cs.uelist[u.num].lambdai;
+			cs.bslist[targetBS->num].systemT = getT(&cs.bslist[targetBS->num]);
+			cs.influence++;
+			return cs;
+		}
+		else
+		{
+			int min_influence;
+			connection_status min_influence_cs;
+			for (int j = 0; j < influence_bs.size(); j++)
+			{
+				vector <UE> influence_ue;
+				vector <UE> no_influence_ue;
+				for (int k = 0; k < influence_bs[j].connectingUE.size(); k++)
+				{
+					if (calc_influence(influence_bs[j].connectingUE[k], &cs.bslist) != 0)
+						influence_ue.push_back(*influence_bs[j].connectingUE[k]);
+					else
+						no_influence_ue.push_back(*influence_bs[j].connectingUE[k]);
+				}
+				if (no_influence_ue.size() != 0)
+				{
+					sort(no_influence_ue.begin(), no_influence_ue.end(), uecompare);
+					for (int k = 0; k < no_influence_ue.size(); k++)
+					{
+						
+					}
+				}
+					
+
+
+			}
+		}
+	}		
+
 }
 
 void add_UE_to_BS(UE* u, BS* b)
