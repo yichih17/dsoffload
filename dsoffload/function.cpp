@@ -408,6 +408,8 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 				vector <UE> no_influence_ue;
 				for (int k = 0; k < influence_bs[j].connectingUE.size(); k++)
 				{
+					if (influence_bs[j].connectingUE[k]->availBS.size() <= 1)
+						continue;
 					if (calc_influence(influence_bs[j].connectingUE[k], &cs.bslist) != 0)
 						influence_ue.push_back(*influence_bs[j].connectingUE[k]);
 					else
@@ -418,12 +420,25 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 					sort(no_influence_ue.begin(), no_influence_ue.end(), uecompare);
 					for (int k = 0; k < no_influence_ue.size(); k++)
 					{
-						
+						BS *targetBS = findbs_minT(&no_influence_ue[k], &cs.bslist);
+						//更新原BS的參數
+						cs.bslist[no_influence_ue[k].connecting_BS->num].lambda -= no_influence_ue[k].lambdai;								//扣lambda
+						vector <UE*>::iterator delete_ue_num = cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.begin();		//計算UE在原BS.connectingUE的位置
+						for (int l = 0; l < cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.size(); l++, delete_ue_num++)
+						{
+							if (cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE[l]->num == no_influence_ue[k].num)
+								break;
+						}
+						cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.erase(delete_ue_num);									//把UE從原BS.connectingUE去除
+						cs.bslist[no_influence_ue[k].connecting_BS->num].systemT = getT(&cs.bslist[no_influence_ue[k].connecting_BS->num]);	//更新原BS的system time
+						//更新新BS的參數
+						cs.uelist[no_influence_ue[k].num].connecting_BS = targetBS;								//更改UE的連接BS
+						cs.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[no_influence_ue[k].num]);	//新BS的連接UE清單新增
+						cs.bslist[targetBS->num].lambda += cs.uelist[no_influence_ue[k].num].lambdai;			//更新lambda
+						cs.bslist[targetBS->num].systemT = getT(&cs.bslist[targetBS->num]);						//更新system time
+						cs.influence++;
 					}
 				}
-					
-
-
 			}
 		}
 	}		
