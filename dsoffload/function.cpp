@@ -336,6 +336,15 @@ BS *findbs_proposed(UE *u, vector <BS> *bslist, int K)
 	}
 }*/
 
+bool is_all_ue_be_satisify(BS* b)
+{
+	int unsatisfy = 0;
+	for (int i = 0; i < b->connectingUE.size(); i++)
+		if (b->systemT > b->connectingUE[i]->delay_budget)
+			unsatisfy++;
+	return unsatisfy > 0 ? true : false;
+}
+
 connection_status findbs_dso(UE u, connection_status cs, int k)
 {
 	u.availBS.clear();
@@ -360,10 +369,9 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 			break;
 		}
 	}
-
 	vector <BS> no_influence_bs;
 	vector <BS> influence_bs;
-	//availBS分類，分為
+	//availBS分類
 	for (int i = 0; i < u.availBS.size(); i++)
 	{
 		double T_after = predictT(&u, u.availBS[i]);
@@ -376,6 +384,7 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 		else
 			no_influence_bs.push_back(*u.availBS[i]);			
 	}
+	//有不受影響BS就選T最小的加入
 	if (no_influence_bs.size() > 0)
 	{
 		BS *targetBS = findbs_minT(&u, &no_influence_bs);
@@ -386,8 +395,10 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 		cs.influence++;
 		return cs;
 	}
+	//沒有不受影響BS的話
 	else
 	{
+		//如果已到演算法最大深度，選T最小的加
 		if (k == MAX_DEPTH)
 		{
 			BS *targetBS = findbs_minT(&u, &influence_bs);
@@ -398,15 +409,18 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 			cs.influence++;
 			return cs;
 		}
+		//如果還沒到演算法最大深度 -> offload
 		else
 		{
 			int min_influence;
 			connection_status min_influence_cs;
-			for (int j = 0; j < influence_bs.size(); j++)
+
+			for (int j = 0; j < influence_bs.size(); j++)		//for all influence bs
 			{
+				connection_status cs_temp = cs;
 				vector <UE> influence_ue;
 				vector <UE> no_influence_ue;
-				for (int k = 0; k < influence_bs[j].connectingUE.size(); k++)
+				for (int k = 0; k < influence_bs[j].connectingUE.size(); k++)				//UE分類
 				{
 					if (influence_bs[j].connectingUE[k]->availBS.size() <= 1)
 						continue;
@@ -415,29 +429,33 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 					else
 						no_influence_ue.push_back(*influence_bs[j].connectingUE[k]);
 				}
-				if (no_influence_ue.size() != 0)
+				if (no_influence_ue.size() != 0)											//如果有不會影響到其他BS的UE
 				{
 					sort(no_influence_ue.begin(), no_influence_ue.end(), uecompare);
-					for (int k = 0; k < no_influence_ue.size(); k++)
+					for (int k = 0; k < no_influence_ue.size(); k++)						//排序後，一個一個offload出去，直到offload完或DB已滿足
 					{
 						BS *targetBS = findbs_minT(&no_influence_ue[k], &cs.bslist);
 						//更新原BS的參數
-						cs.bslist[no_influence_ue[k].connecting_BS->num].lambda -= no_influence_ue[k].lambdai;								//扣lambda
-						vector <UE*>::iterator delete_ue_num = cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.begin();		//計算UE在原BS.connectingUE的位置
-						for (int l = 0; l < cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.size(); l++, delete_ue_num++)
+						cs_temp.bslist[influence_bs[j].num].lambda -= no_influence_ue[k].lambdai;
+						vector <UE*>::iterator delete_ue_num = cs_temp.bslist[influence_bs[j].num].connectingUE.begin();	//計算UE在原BS.connectingUE的位置
+						for (int l = 0; l < cs_temp.bslist[influence_bs[j].num].connectingUE.size(); l++, delete_ue_num++)
 						{
-							if (cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE[l]->num == no_influence_ue[k].num)
+							if (cs_temp.bslist[influence_bs[j].num].connectingUE[l]->num == no_influence_ue[k].num)
 								break;
 						}
-						cs.bslist[no_influence_ue[k].connecting_BS->num].connectingUE.erase(delete_ue_num);									//把UE從原BS.connectingUE去除
-						cs.bslist[no_influence_ue[k].connecting_BS->num].systemT = getT(&cs.bslist[no_influence_ue[k].connecting_BS->num]);	//更新原BS的system time
+						cs_temp.bslist[influence_bs[j].num].connectingUE.erase(delete_ue_num);								//把UE從原BS.connectingUE去除
+						cs_temp.bslist[influence_bs[j].num].systemT = getT(&cs_temp.bslist[influence_bs[j].num]);			//更新原BS的system time
 						//更新新BS的參數
-						cs.uelist[no_influence_ue[k].num].connecting_BS = targetBS;								//更改UE的連接BS
-						cs.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[no_influence_ue[k].num]);	//新BS的連接UE清單新增
-						cs.bslist[targetBS->num].lambda += cs.uelist[no_influence_ue[k].num].lambdai;			//更新lambda
-						cs.bslist[targetBS->num].systemT = getT(&cs.bslist[targetBS->num]);						//更新system time
-						cs.influence++;
+						cs_temp.uelist[no_influence_ue[k].num].connecting_BS = targetBS;									//更改UE的連接BS
+						cs_temp.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[no_influence_ue[k].num]);			//新BS的連接UE清單新增
+						cs_temp.bslist[targetBS->num].lambda += cs.uelist[no_influence_ue[k].num].lambdai;					//更新lambda
+						cs_temp.bslist[targetBS->num].systemT = getT(&cs.bslist[targetBS->num]);							//更新system time
+						cs_temp.influence++;
+						if (is_all_ue_be_satisify(&cs_temp.bslist[targetBS->num]))
+							break;
 					}
+					if (cs_temp.influence < min_influence_cs.influence)
+						min_influence_cs = cs_temp;
 				}
 			}
 		}
