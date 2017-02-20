@@ -64,6 +64,7 @@ struct connection_status
 	std::vector <BS> bslist;
 	std::vector <UE> uelist;
 	int influence;
+	int outage_dso;
 };
 
 //function declare
