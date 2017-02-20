@@ -205,6 +205,40 @@ BS* findbs_minT(UE *u, vector <BS> *bslist)
 	return minTbs;
 }
 
+BS* findbs_minT(UE* u, vector<BS*> *bslist)
+{
+	BS* minbs = NULL;
+	double minbs_T = 0;
+	for (int i = 0; i < bslist->size(); i++)
+	{
+		double T = predictT(u, bslist->at(i));
+		if (T == -1)
+			return NULL;
+		if (minbs == NULL)
+		{
+			minbs = bslist->at(i);
+			minbs_T = T;
+			break;
+		}
+		if (minbs_T > T)
+		{
+			minbs = bslist->at(i);
+			minbs_T = T;
+		}
+		if (minbs_T == T)
+		{
+			double minbs_capacity = predict_Capacity(u, minbs);
+			double capacity = predict_Capacity(u, bslist->at(i));
+			if (minbs_capacity < capacity)
+			{
+				minbs = bslist->at(i);
+				minbs_T = T;
+			}
+		}
+	}
+	return minbs;
+}
+
 int calc_influence(UE *u, vector <BS> *bslist)
 {
 	u->availBS.clear();
@@ -256,13 +290,11 @@ bool is_all_ue_be_satisify(BS* b)
 
 connection_status findbs_dso(UE u, connection_status cs, int k)
 {
-	if (u.availBS.size() == 0)
+	//尋找可連接BS
+	if (u.connecting_BS == NULL)
 	{
-		//計算UE的availBS
 		for (int i = 0; i < cs.bslist.size(); i++)
 		{
-			if (&cs.bslist.at(i) == u.connecting_BS)		//可連接的BS要扣掉正在連接的BS
-				continue;
 			int CQI = getCQI(&u, &cs.bslist.at(i));
 			switch (CQI)
 			{
@@ -281,29 +313,40 @@ connection_status findbs_dso(UE u, connection_status cs, int k)
 		}
 	}
 	
-	vector <BS> no_influence_bs;
-	vector <BS> influence_bs;
-	//availBS分類
+	//可連接BS分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs)
+	vector <BS*> no_influence_bs;		//不受影響BS
+	vector <BS*> influence_bs;			//受影響BS
 	for (int i = 0; i < u.availBS.size(); i++)
 	{
-		double T_after = predictT(&u, u.availBS[i]);
-		int influence_ue_number = 0;
+		double T = predictT(&u, u.availBS[i]);	//試算加入BS後的T
+		int influence_ue_number = 0;			//試算加入BS後影響的UE數量
 		for (int j = 0; j < u.availBS[i]->connectingUE.size(); j++)
-			if (T_after > u.availBS[i]->connectingUE[j]->delay_budget)
+			if (T > u.availBS[i]->connectingUE[j]->delay_budget)
+			{
 				influence_ue_number++;
-		if (influence_ue_number != 0)
-			influence_bs.push_back(*u.availBS[i]);
-		else
-			no_influence_bs.push_back(*u.availBS[i]);
+				influence_bs.push_back(u.availBS[i]);
+				break;
+			}
+		if (influence_ue_number == 0)
+			no_influence_bs.push_back(u.availBS[i]);
 	}
-	//有不受影響BS就選T最小的加入
+
+	//如果有不受影響BS就選T最小的
 	if (no_influence_bs.size() > 0)
 	{
-		BS *targetBS = findbs_minT(&u, &no_influence_bs);
-		if (targetBS == NULL)
+		BS *targetBS = findbs_minT(&u, &no_influence_bs);	//可加入的BS中T最小的
+		if (targetBS != NULL)								//沒有可加入的BS
 		{
-			cs.outage_dso++;
-			return cs;
+			if (u.connecting_BS != NULL)
+			{
+				cs.bslist[targetBS->num].lambda -= u.lambdai;
+				int delete_ue;								//UE在原BS的清單位置
+				for (delete_ue = 0; delete_ue < cs.bslist[u.connecting_BS->num].connectingUE.size(); delete_ue++)
+					if (cs.bslist[u.connecting_BS->num].connectingUE[delete_ue]->num == u.num)
+						break;
+				cs.bslist[u.connecting_BS->num].connectingUE.erase(cs.bslist[u.connecting_BS->num].connectingUE.begin + delete_ue);
+				//////////////寫到這裡//////////////
+			}
 		}
 		cs.uelist[u.num].connecting_BS = targetBS;
 		cs.bslist[targetBS->num].connectingUE.push_back(&cs.uelist[u.num]);
