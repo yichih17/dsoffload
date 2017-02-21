@@ -127,7 +127,7 @@ int main()
 			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
 	*/
 
-	minT_algorithm(vuelist, vbslist);
+	//minT_algorithm(vuelist, vbslist);
 	proposed_algorithm(vuelist, vbslist);
 	return 0;
 }
@@ -163,19 +163,18 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 {
 	int outage_proposed = 0;
-	for (int i = 0; i < uelist.size(); i++)
+	connection_status cs;
+	cs.bslist = bslist;
+	cs.uelist = uelist;
+	cs.outage_dso = 0;
+	for (int i = 0; i < cs.uelist.size(); i++)
 	{
-		//BS *targetbs = findbs_proposed(&uelist[i], );
-		connection_status cs;
-		cs.bslist = bslist;
-		cs.uelist = uelist;
 		cs.influence = 0;
-		cs = findbs_dso(uelist[i], cs, 0);
-		if (cs.influence == 999)
-			break;
-		uelist.assign(cs.uelist.begin(), cs.uelist.end());
-		bslist.assign(cs.bslist.begin(), cs.bslist.end());
+		cs = findbs_dso(&cs.uelist[i], &cs, 0);
 	}
+		
+	uelist.assign(cs.uelist.begin(), cs.uelist.end());
+	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 
 	result result_proposed;
 	result_proposed.outage_number = outage_proposed;

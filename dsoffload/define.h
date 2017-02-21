@@ -81,7 +81,7 @@ extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
 extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
-extern BS* findbs_proposed(UE u, std::vector <BS> bslist, int K);
+extern BS* findbs_proposed(UE* u, std::vector <BS>* bslist, int K);
 extern connection_status findbs_dso(UE u, connection_status cs, int k);
 extern void add_UE_to_BS(UE* u, BS* b);
 
