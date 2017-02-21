@@ -369,6 +369,11 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 			ue_join_bs(u, targetBS, cs);
 			return cs;
 		}
+		else
+		{
+			cs->outage_dso++;
+			return cs;
+		}
 	}
 	//沒有不受影響BS的話
 	else
@@ -435,11 +440,15 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 					}
 				}
 
-				connection_status cs_temp = cs;
+				connection_status cs_temp;
+				cs_temp.bslist.assign(cs->bslist.begin(), cs->bslist.end());
+				cs_temp.uelist.assign(cs->uelist.begin(), cs->uelist.end());
+				cs_temp.influence = cs->influence;
+				cs_temp.outage_dso = cs->outage_dso;
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
 				for (int k = 0; k < ue_sorted.size(); k++)
 				{
-					cs_temp = findbs_dso(*ue_sorted.at(k), cs_temp, k + 1);
+					cs_temp = *findbs_dso(ue_sorted.at(k), &cs_temp, k + 1);
 					if (check_satisfy(influence_bs[j]))
 						break;
 				}
@@ -451,7 +460,7 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 					if (cs_temp.influence < min_influence_cs.influence)
 						min_influence_cs = cs_temp;
 			}
-			return min_influence_cs;
+			return &min_influence_cs;
 		}
 	}		
 }

@@ -170,7 +170,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		cs = findbs_dso(&cs.uelist[i], &cs, 0);
+		cs = *findbs_dso(&cs.uelist[i], &cs, 0);
 	}
 		
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
