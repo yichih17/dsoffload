@@ -127,7 +127,7 @@ int main()
 			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
 	*/
 
-	//minT_algorithm(vuelist, vbslist);
+	minT_algorithm(vuelist, vbslist);
 	proposed_algorithm(vuelist, vbslist);
 	return 0;
 }
@@ -177,7 +177,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 
 	result result_proposed;
-	result_proposed.outage_number = outage_proposed;
+	result_proposed.outage_number = cs.outage_dso;
 
 	//For debug
 	cout << "============Result for proposed algorithm============" << endl;

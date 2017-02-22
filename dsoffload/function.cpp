@@ -109,6 +109,17 @@ void availbs(UE* u, vector<BS> *bslist)
 	}
 }
 
+void availbs_update(UE* u, BS* newb)
+{
+	if (u->connecting_BS != NULL)
+		u->availBS.push_back(u->connecting_BS);
+	int delete_bs;
+	for (delete_bs = 0; delete_bs < u->availBS.size(); delete_bs++)
+		if (u->availBS[delete_bs]->num == newb->num)
+			break;
+	u->availBS.erase(u->availBS.begin() + delete_bs);
+}
+
 //試算UE加入BS後的Capacity
 double predict_Capacity(UE* u, BS* b)
 {
@@ -306,6 +317,26 @@ bool is_all_ue_be_satisify(BS* b)
 }
 
 //把UE加入BS
+void ue_join_bs(UE* u, BS* b)
+{
+	if (u->connecting_BS != NULL)
+	{
+		u->connecting_BS->lambda -= u->lambdai;
+		int delete_ue;
+		for (delete_ue = 0; delete_ue < u->connecting_BS->connectingUE.size(); delete_ue++)
+			if (u->connecting_BS->connectingUE[delete_ue]->num == u->num)
+				break;
+		u->connecting_BS->connectingUE.erase(u->connecting_BS->connectingUE.begin() + delete_ue);
+		u->connecting_BS->systemT = getT(u->connecting_BS);
+	}
+	availbs_update(u, b);
+	u->connecting_BS = b;
+	b->lambda += u->lambdai;
+	b->connectingUE.push_back(u);
+	b->systemT = getT(b);
+}
+
+//把UE加入BS
 void ue_join_bs(UE* u, BS* b, connection_status* cs)
 {
 	//移出原BS
@@ -321,10 +352,10 @@ void ue_join_bs(UE* u, BS* b, connection_status* cs)
 	}
 
 	//加入新BS
-	cs->uelist.at(u->num).connecting_BS = &cs->bslist.at(b->num);			//更新UE連接的BS
-	availbs(&cs->uelist.at(u->num), &cs->bslist);							//更新UE的availbs
-	cs->bslist.at(b->num).lambda += cs->uelist.at(u->num).lambdai;			//更新lambda
-	cs->bslist.at(b->num).connectingUE.push_back(&cs->uelist.at(u->num));	//把UE新增到清單
+	u->connecting_BS = &cs->bslist.at(b->num);			//更新UE連接的BS
+	availbs(u, &cs->bslist);							//更新UE的availbs
+	cs->bslist.at(b->num).lambda += u->lambdai;			//更新lambda
+	cs->bslist.at(b->num).connectingUE.push_back(u);	//把UE新增到清單
 	cs->bslist.at(b->num).systemT = getT(&cs->bslist.at(b->num));			//更新T
 	cs->influence++;
 }
@@ -340,33 +371,35 @@ bool check_satisfy(BS* b)
 connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 {
 	//尋找or更新availbs
-	availbs(u, &cs->bslist);
+	availbs(&cs->uelist[u->num], &cs->bslist);
 	
 	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs)
 	vector <BS*> no_influence_bs;		//不受影響BS
 	vector <BS*> influence_bs;			//受影響BS
-	for (int i = 0; i < u->availBS.size(); i++)
+	for (int i = 0; i < cs->uelist[u->num].availBS.size(); i++)
 	{
 		int influence_ue_number = 0;			//試算加入BS後影響的UE數量
-		double T = predictT(u, u->availBS.at(i));	//試算加入BS後的T
-		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
-			if (T > u->availBS[i]->connectingUE[j]->delay_budget)
+		double T = predictT(&cs->uelist[u->num], cs->uelist[u->num].availBS.at(i));	//試算加入BS後的T
+		if (T == -1)
+			continue;
+		for (int j = 0; j < cs->uelist[u->num].availBS[i]->connectingUE.size(); j++)
+			if (T > cs->uelist[u->num].availBS[i]->connectingUE[j]->delay_budget)
 			{
 				influence_ue_number++;
-				influence_bs.push_back(u->availBS[i]);
+				influence_bs.push_back(cs->uelist[u->num].availBS[i]);
 				break;
 			}
 		if (influence_ue_number == 0)
-			no_influence_bs.push_back(u->availBS[i]);
+			no_influence_bs.push_back(cs->uelist[u->num].availBS[i]);
 	}
 
 	//如果有不受影響BS就選T最小的
 	if (no_influence_bs.size() > 0)
 	{
-		BS *targetBS = findbs_minT(u, &no_influence_bs);	//可加入的BS中T最小的
+		BS *targetBS = findbs_minT(&cs->uelist[u->num], &no_influence_bs);	//可加入的BS中T最小的
 		if (targetBS != NULL)								//沒有可加入的BS
 		{
-			ue_join_bs(u, targetBS, cs);
+			ue_join_bs(&cs->uelist[u->num], targetBS);
 			return cs;
 		}
 		else
@@ -381,10 +414,10 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 		//如果已到演算法最大深度，選T最小的加
 		if (k == MAX_DEPTH)
 		{
-			BS *targetBS = findbs_minT(u, &influence_bs);
+			BS *targetBS = findbs_minT(&cs->uelist[u->num], &influence_bs);
 			if (targetBS != NULL)
 			{
-				ue_join_bs(u, targetBS, cs);
+				ue_join_bs(&cs->uelist[u->num], targetBS, cs);
 				return cs;
 			}
 			else
@@ -401,8 +434,7 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 
 			for (int j = 0; j < influence_bs.size(); j++)	//for all influence bs
 			{
-				double T = predictT(u, influence_bs[j]);	//UE u如果加入受影響BS j後的T
-
+				double T = predictT(&cs->uelist[u->num], influence_bs[j]);	//UE u如果加入受影響BS j後的T
 				//UE分類:選出DB不被滿足的UE，然後分為:會影響UE(influence_ue)與不會影響UE(no_influence_ue)
 				vector <UE*> influence_ue;		//會影響其他BS的UE
 				vector <UE*> no_influence_ue;	//不會影響其他BS的UE
@@ -439,12 +471,11 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 						ue_sorted = influence_ue;
 					}
 				}
-
-				connection_status cs_temp;
-				cs_temp.bslist.assign(cs->bslist.begin(), cs->bslist.end());
-				cs_temp.uelist.assign(cs->uelist.begin(), cs->uelist.end());
-				cs_temp.influence = cs->influence;
-				cs_temp.outage_dso = cs->outage_dso;
+				connection_status cs_temp = *cs;
+				//				cs_temp.bslist.assign(cs->bslist.begin(), cs->bslist.end());
+				//				cs_temp.uelist.assign(cs->uelist.begin(), cs->uelist.end());
+				//				cs_temp.influence = cs->influence;
+				//				cs_temp.outage_dso = cs->outage_dso;
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
 				for (int k = 0; k < ue_sorted.size(); k++)
 				{
@@ -452,7 +483,6 @@ connection_status* findbs_dso(UE* u, connection_status* cs, int k)
 					if (check_satisfy(influence_bs[j]))
 						break;
 				}
-				
 				//比較影響
 				if (min_influence_cs.influence == -1)
 					min_influence_cs = cs_temp;
