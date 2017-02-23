@@ -60,7 +60,7 @@ void readUE()
 				temp.coor_Y = stof(buffery);//§â®y¼Ðµ¹UE
 				//initialize
 				temp.connecting_BS = NULL;
-				temp.bit_rate = 10;
+				temp.bit_rate = 5;
 				temp.packet_size = 800;
 				temp.delay_budget = 100;
 				temp.lambdai = temp.bit_rate / temp.packet_size;
@@ -164,13 +164,14 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 {
 	int outage_proposed = 0;
 	connection_status cs;
-	cs.bslist = bslist;
-	cs.uelist = uelist;
+	connection_status css;
+	cs.bslist.assign(bslist.begin(), bslist.end());
+	cs.uelist.assign(uelist.begin(), uelist.end());
 	cs.outage_dso = 0;
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		cs = *findbs_dso(&cs.uelist[i], &cs, 0);
+		findbs_dso(&cs.uelist[i], &cs, 0);
 	}
 		
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());

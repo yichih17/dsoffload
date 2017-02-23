@@ -16,7 +16,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define MAX_DEPTH 0
+#define MAX_DEPTH 1
 
 #include<vector>
 
@@ -81,7 +81,7 @@ extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
 extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
-extern connection_status* findbs_dso(UE* u, connection_status* cs, int k);
+extern void findbs_dso(UE* u, connection_status* cs, int k);
 extern void add_UE_to_BS(UE* u, BS* b);
 
 #endif // !_DEFIEN_H
