@@ -2,7 +2,7 @@
 #define _DEFIEN_H
 
 #define number_ue 5000	//UE個數
-#define number_ap 100	//AP個數
+#define number_ap 200	//AP個數
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB半徑
@@ -16,7 +16,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define MAX_DEPTH 1
+#define MAX_DEPTH 3
 
 #include<vector>
 
@@ -73,7 +73,7 @@ extern void distribution(type_bs dtype);
 //in packet_arrival.cpp
 extern void packet_arrival();
 //in function.cpp
-extern void countAPrange();
+//extern void countAPrange();
 extern double getDistance(UE* u, BS* b);
 extern int getCQI(UE* u, BS* b);
 extern double predict_Capacity(UE* u, BS* b);

@@ -6,21 +6,22 @@
 using namespace std;
 
 int range_macro[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
-int range_ap[8];
+int range_ap[] = { 185, 152, 133, 109, 84, 64, 60, 56 };
 double macro_eff[15] = { 0.1523, 0.2344, 0.377, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234, 5.1152, 5.5546 };
 double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 };	//65Mbps = 65000000bps = 65000 bits/ms
 
 //計算AP的訊號範圍
-void countAPrange()
-{
-	int SINR_AP[8] = { 4, 7, 9, 12, 16, 20, 21, 22 };
-	for (int i = 0; i < 8; i++)
-	{
-		//Path loss: 140.7 + 36.7 log(D), D in km.
-		double distance = pow(10, (-(SINR_AP[i] - 78 - power_ap) - 122.7) / 35.1) * 1000;
-		range_ap[i] = (int)distance;
-	}
-}
+//void countAPrange()
+//{
+//	int SINR_AP[8] = { 4, 7, 9, 12, 16, 20, 21, 22 };
+//	for (int i = 0; i < 8; i++)
+//	{
+//		//Path loss: 140.7 + 36.7 log(D), D in km.
+//		double distance = pow(10, (-(SINR_AP[i] - 78 - power_ap) - 122.7) / 35.1) * 1000;
+//		range_ap[i] = (int)distance;
+//	}
+//	//Result:185, 152, 133, 109, 84, 64, 60, 56
+//}
 
 //計算UE與BS間的距離
 double getDistance(UE* u, BS* b)
@@ -61,8 +62,10 @@ int getCQI(UE* u, BS* b)
 //更新UE可連接的BS清單
 void availbs(UE* u, vector<BS> *bslist)
 {
+	//如果UE的availbs已經有資料，清除並更新
 	if (u->availBS.size() != 0)
 		u->availBS.clear();
+	//如果UE已連接BS，availbs就不該出現已連接的BS
 	if (u->connecting_BS != NULL)
 	{
 		for (int i = 0; i < bslist->size(); i++)
@@ -76,9 +79,6 @@ void availbs(UE* u, vector<BS> *bslist)
 				cout << "CQI error, BS type is neither macro nor ap." << endl;
 				break;
 			case -1:
-				break;
-			case 0:
-				cout << "UE" << u->num << " to BS" << bslist->at(i).num << " CQI is 0" << endl;
 				break;
 			default:
 				u->availBS.push_back(&bslist->at(i));
@@ -98,9 +98,6 @@ void availbs(UE* u, vector<BS> *bslist)
 				break;
 			case -1:
 				break;
-			case 0:
-				cout << "UE" << u->num << " to BS" << bslist->at(i).num << " CQI is 0" << endl;
-				break;
 			default:
 				u->availBS.push_back(&bslist->at(i));
 				break;
@@ -109,11 +106,13 @@ void availbs(UE* u, vector<BS> *bslist)
 	}
 }
 
+//UE加入BS前，先更新availbs	*newbs為即將要加入的BS
 void availbs_update(UE* u, BS* newb)
 {
+	//要離目前的BS了，所以目前的BS會變成availbs
 	if (u->connecting_BS != NULL)
 		u->availBS.push_back(u->connecting_BS);
-	int delete_bs;
+	int delete_bs;		//newbs在availbs中的位置
 	for (delete_bs = 0; delete_bs < u->availBS.size(); delete_bs++)
 		if (u->availBS[delete_bs]->num == newb->num)
 			break;
@@ -353,31 +352,31 @@ void ue_join_bs(UE* u, BS* b)
 	b->systemT = getT(b);
 }
 
-//把UE加入BS
-void ue_join_bs(UE* u, BS* b, connection_status* cs)
-{
-	if (b == NULL)
-		return;
-	//移出原BS
-	if (u->connecting_BS != NULL)
-	{
-		cs->bslist.at(u->connecting_BS->num).lambda -= u->lambdai;																			//更新lambda
-		int delete_ue;
-		for (delete_ue = 0; delete_ue < cs->bslist.at(u->connecting_BS->num).connectingUE.size(); delete_ue++)
-			if (cs->bslist.at(u->connecting_BS->num).connectingUE.at(delete_ue)->num == u->num)
-				break;
-		cs->bslist.at(u->connecting_BS->num).connectingUE.erase(cs->bslist.at(u->connecting_BS->num).connectingUE.begin() + delete_ue);		//把UE從清單中刪除
-		cs->bslist.at(u->connecting_BS->num).systemT = getT(&cs->bslist.at(u->connecting_BS->num));											//更新T
-	}
-
-	//加入新BS
-	u->connecting_BS = &cs->bslist.at(b->num);			//更新UE連接的BS
-	availbs(u, &cs->bslist);							//更新UE的availbs
-	cs->bslist.at(b->num).lambda += u->lambdai;			//更新lambda
-	cs->bslist.at(b->num).connectingUE.push_back(u);	//把UE新增到清單
-	cs->bslist.at(b->num).systemT = getT(&cs->bslist.at(b->num));			//更新T
-	cs->influence++;
-}
+////把UE加入BS
+//void ue_join_bs(UE* u, BS* b, connection_status* cs)
+//{
+//	if (b == NULL)
+//		return;
+//	//移出原BS
+//	if (u->connecting_BS != NULL)
+//	{
+//		cs->bslist.at(u->connecting_BS->num).lambda -= u->lambdai;																			//更新lambda
+//		int delete_ue;
+//		for (delete_ue = 0; delete_ue < cs->bslist.at(u->connecting_BS->num).connectingUE.size(); delete_ue++)
+//			if (cs->bslist.at(u->connecting_BS->num).connectingUE.at(delete_ue)->num == u->num)
+//				break;
+//		cs->bslist.at(u->connecting_BS->num).connectingUE.erase(cs->bslist.at(u->connecting_BS->num).connectingUE.begin() + delete_ue);		//把UE從清單中刪除
+//		cs->bslist.at(u->connecting_BS->num).systemT = getT(&cs->bslist.at(u->connecting_BS->num));											//更新T
+//	}
+//
+//	//加入新BS
+//	u->connecting_BS = &cs->bslist.at(b->num);			//更新UE連接的BS
+//	availbs(u, &cs->bslist);							//更新UE的availbs
+//	cs->bslist.at(b->num).lambda += u->lambdai;			//更新lambda
+//	cs->bslist.at(b->num).connectingUE.push_back(u);	//把UE新增到清單
+//	cs->bslist.at(b->num).systemT = getT(&cs->bslist.at(b->num));			//更新T
+//	cs->influence++;
+//}
 
 bool check_satisfy(BS* b, double T)
 {
@@ -432,7 +431,7 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 			BS *targetBS = findbs_minT(u, &influence_bs);	//可加入的BS中T最小的
 			if (targetBS != NULL)
 			{
-				ue_join_bs(u, targetBS, cs);
+				ue_join_bs(u, targetBS);
 				return;
 			}
 			else
@@ -518,19 +517,19 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 				for (int k = 0; k < ue_sorted.size(); k++)
 				{
 					findbs_dso(ue_sorted.at(k), &cs_temp, k + 1);
-					T = predictT(&cs->uelist[u->num], influence_bs[j]);
-					if (check_satisfy(influence_bs[j], T))	//offload掉一些UE後，能夠滿足所有DB了
+					T = predictT(&cs_temp.uelist[u->num], &cs_temp.bslist[influence_bs[j]->num]);
+					if (&cs_temp.bslist[influence_bs[j]->num], T)	//offload掉一些UE後，能夠滿足所有DB了
 					{
 						join = true;
 						break;
-					}						
+					}
 				///如果所有可offload的UE都offload了，BS還是飽和，join就改為false，就不比較影響大小，加不進去比洨?
 				}
 				if (T != -1)		//offload所有UE後沒辦法滿足所有DB，但可加入
 					join = true;
 				if (join == false)			//跳過這個influence_bs
 					break;
-				ue_join_bs(&cs_temp.uelist[u->num], influence_bs[j], &cs_temp);		//已經為UE挪出空位了，然後就把UE加進來
+				ue_join_bs(&cs_temp.uelist[u->num], &cs_temp.bslist[influence_bs[j]->num]);		//已經為UE挪出空位了，然後就把UE加進來
 
 				//比較影響(為了那個UE移動了多少UE)
 				if (min_influence_cs.influence == -1)
@@ -550,7 +549,7 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 				cs->outage_dso++;
 				return;
 			}				
-			ue_join_bs(u, min_influence_bs, cs);
+			ue_join_bs(u, min_influence_bs);
 			return;
 		}
 	}		

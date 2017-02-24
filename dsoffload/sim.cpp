@@ -112,7 +112,7 @@ int main()
 {
 
 	initialconfig();
-	countAPrange();
+	//countAPrange();
 	//UE and AP location initial
 	readAP();		//Åª¤JBS
 	cout << "Number of BS :" << vbslist.size() << "\n";
@@ -182,6 +182,14 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 
 	//For debug
 	cout << "============Result for proposed algorithm============" << endl;
+	for (int i = 0; i < number_ue; i++)
+	{
+		int count = 0;
+		if (cs.uelist[i].connecting_BS != NULL)
+			count++;
+		count += cs.uelist[i].availBS.size();
+		cout << count << ", ";
+	}
 	for (int i = 0; i < bslist.size(); i++)
 	{
 		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
