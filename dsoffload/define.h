@@ -1,8 +1,8 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define number_ue 5000	//UE计
-#define number_ap 200	//AP计
+#define number_ue 12000	//UE计
+#define number_ap 300	//AP计
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB畖

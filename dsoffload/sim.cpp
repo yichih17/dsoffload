@@ -19,7 +19,7 @@ int outage_sinr = 0;			//sinr algorithm的outage UE數量	**未完成
 int outage_proposed = 0;		//proposed algorithm的outage UE數量	**未完成
 
 /*環境初始設定*/
-void initialconfig()
+void initialconfig(vector <BS> &bslist)
 {
 	//Define Macro eNB
 	BS macro;
@@ -47,9 +47,11 @@ void readUE()
 	else
 	{
 		int num = 0;						//num = UE編號
+		char bufferx[11], buffery[11];
 		while (!freadUE.eof())
 		{
-			char bufferx[10], buffery[10];
+			memset(&bufferx, 0, sizeof(bufferx));
+			memset(&buffery, 0, sizeof(buffery));
 			freadUE >> bufferx;				//讀取x座標
 			freadUE >> buffery;				//讀取y座標
 			if (bufferx[0] != '\0')			//txt檔最後一行是換行符號，遇到就結束讀取
@@ -60,7 +62,7 @@ void readUE()
 				temp.coor_Y = stof(buffery);//把座標給UE
 				//initialize
 				temp.connecting_BS = NULL;
-				temp.bit_rate = 5;
+				temp.bit_rate = 10;
 				temp.packet_size = 800;
 				temp.delay_budget = 100;
 				temp.lambdai = temp.bit_rate / temp.packet_size;
@@ -72,7 +74,7 @@ void readUE()
 }
 
 /*讀取AP分布(座標)*/
-void readAP()
+void readAP(vector <BS> &bslist)
 {
 	ifstream freadAP;
 	freadAP.open("AP_dis.txt", ios::in);
@@ -80,16 +82,18 @@ void readAP()
 	{
 		cout << "AP分布不存在\n產生新分布" << endl;
 		distribution(ap);
-		readAP();
+		readAP(bslist);
 	}
 	else
 	{
 		int i = 1;
+		char bufferx[11], buffery[11];
 		while (!freadAP.eof())
 		{
-			char bufferx[10], buffery[10];
+			memset(&bufferx, 0, sizeof(bufferx));
+			memset(&buffery, 0, sizeof(buffery));
 			freadAP >> bufferx;				//讀取x座標
-			freadAP >> buffery;				//讀取y座標
+			freadAP >> buffery;				//讀取y座標			
 			if (bufferx[0] != '\0')
 			{
 				BS temp;
@@ -111,10 +115,11 @@ void readAP()
 int main()
 {
 
-	initialconfig();
+	initialconfig(vbslist);
+
 	//countAPrange();
 	//UE and AP location initial
-	readAP();		//讀入BS
+	readAP(vbslist);		//讀入BS
 	cout << "Number of BS :" << vbslist.size() << "\n";
 	readUE();		//讀入UE
 	cout << "Number of UE :" << vuelist.size() << "\n";
@@ -182,20 +187,27 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 
 	//For debug
 	cout << "============Result for proposed algorithm============" << endl;
-	for (int i = 0; i < number_ue; i++)
-	{
-		int count = 0;
-		if (cs.uelist[i].connecting_BS != NULL)
-			count++;
-		count += cs.uelist[i].availBS.size();
-		cout << count << ", ";
-	}
+	//for (int i = 0; i < number_ue; i++)
+	//{
+	//	int count = 0;
+	//	if (cs.uelist[i].connecting_BS != NULL)
+	//		count++;
+	//	count += cs.uelist[i].availBS.size();
+	//	cout << count << ", ";
+	//}
 	for (int i = 0; i < bslist.size(); i++)
 	{
 		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
 		cout << bslist[i].systemT << "\n";
 	}
-	cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
+	int outage = 0;
+	for (int i = 0; i < uelist.size(); i++)
+	{
+		if (uelist[i].connecting_BS == NULL)
+			outage++;
+	}
+	cout << "Number of outage UE is:" << outage << endl;
+	//cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
 	cout << "=========================End=========================" << endl;
 
 	return result_proposed;

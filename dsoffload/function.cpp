@@ -142,7 +142,7 @@ double getCapacity(UE* u, BS* b)
 //計算UE與目前連接BS的Capacity
 double getCapacity(UE* u)
 {
-	if (u->connecting_BS = NULL)
+	if (u->connecting_BS == NULL)
 		cout << "Error, UE" << u->num << " no connecting BS.\n";
 	else
 	{
@@ -492,7 +492,7 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 
 				//UE排序:決定UE被offload出去的順序
 				vector <UE*> ue_sorted;		//排序過後的UE清單
-				if (no_influence_bs.size() > 0)
+				if (no_influence_ue.size() > 0)
 				{
 					sort(no_influence_ue.begin(), no_influence_ue.end(), ue_sort_cp);		//大到小排序
 					ue_sorted = no_influence_ue;
@@ -510,23 +510,24 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 						ue_sorted = influence_ue;
 					}
 				}
-
+				if (ue_sorted.size() == 0)
+					break;
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
 				connection_status cs_temp = *cs;
 				bool join = false;		//判斷要不要offload UE的index
 				for (int k = 0; k < ue_sorted.size(); k++)
 				{
-					findbs_dso(ue_sorted.at(k), &cs_temp, k + 1);
+					findbs_dso(&cs_temp.uelist[ue_sorted.at(k)->num], &cs_temp, k + 1);
 					T = predictT(&cs_temp.uelist[u->num], &cs_temp.bslist[influence_bs[j]->num]);
-					if (&cs_temp.bslist[influence_bs[j]->num], T)	//offload掉一些UE後，能夠滿足所有DB了
+					if (check_satisfy(&cs_temp.bslist[influence_bs[j]->num], T))	//offload掉一些UE後，能夠滿足所有DB了
 					{
 						join = true;
 						break;
 					}
-				///如果所有可offload的UE都offload了，BS還是飽和，join就改為false，就不比較影響大小，加不進去比洨?
 				}
 				if (T != -1)		//offload所有UE後沒辦法滿足所有DB，但可加入
 					join = true;
+				//如果所有可offload的UE都offload了，BS還是飽和，join就改為false，就不比較影響大小，加不進去比洨?
 				if (join == false)			//跳過這個influence_bs
 					break;
 				ue_join_bs(&cs_temp.uelist[u->num], &cs_temp.bslist[influence_bs[j]->num]);		//已經為UE挪出空位了，然後就把UE加進來
@@ -546,10 +547,10 @@ void findbs_dso(UE* u, connection_status* cs, int k)
 			}
 			if (min_influence_bs == NULL)
 			{
-				cs->outage_dso++;
+				findbs_minT(u, &influence_bs);
 				return;
 			}				
-			ue_join_bs(u, min_influence_bs);
+			*cs = min_influence_cs;
 			return;
 		}
 	}		
