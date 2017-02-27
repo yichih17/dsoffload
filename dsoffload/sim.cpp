@@ -152,14 +152,23 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	result result_minT;
 	result_minT.outage_number = outage_minT;
 
-	//For debug
 	cout << "==============Result for minT algorithm==============" << endl;
+	//–BS硈钡UE计秖籔T
 	for (int i = 0; i < bslist.size(); i++)
 	{
 		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
 		cout << bslist[i].systemT << "\n";
 	}
-	cout << "Number of outage UE is:" << result_minT.outage_number << endl;
+
+	//程礚猭硈钡BSUE计秖
+	int outage = 0;
+	for (int i = 0; i < uelist.size(); i++)
+	{
+		if (uelist[i].connecting_BS == NULL)
+			outage++;
+	}
+	cout << "Number of outage UE is:" << outage << endl;
+//	cout << "Number of outage UE is:" << result_minT.outage_number << endl;
 	cout << "=========================End=========================" << endl;
 
 	return result_minT;
@@ -169,7 +178,6 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 {
 	int outage_proposed = 0;
 	connection_status cs;
-	connection_status css;
 	cs.bslist.assign(bslist.begin(), bslist.end());
 	cs.uelist.assign(uelist.begin(), uelist.end());
 	cs.outage_dso = 0;
@@ -185,8 +193,8 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	result result_proposed;
 	result_proposed.outage_number = cs.outage_dso;
 
-	//For debug
 	cout << "============Result for proposed algorithm============" << endl;
+	//–UE硈钡BS计秖
 	//for (int i = 0; i < number_ue; i++)
 	//{
 	//	int count = 0;
@@ -195,11 +203,15 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	//	count += cs.uelist[i].availBS.size();
 	//	cout << count << ", ";
 	//}
+
+	//–BS硈钡UE计秖籔T
 	for (int i = 0; i < bslist.size(); i++)
 	{
 		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
 		cout << bslist[i].systemT << "\n";
 	}
+
+	//程礚猭硈钡BSUE计秖
 	int outage = 0;
 	for (int i = 0; i < uelist.size(); i++)
 	{
@@ -207,7 +219,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 			outage++;
 	}
 	cout << "Number of outage UE is:" << outage << endl;
-	//cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
+	cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
 	cout << "=========================End=========================" << endl;
 
 	return result_proposed;
