@@ -1,8 +1,8 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define number_ue 12000	//UE计
-#define number_ap 300	//AP计
+#define number_ue 7000	//UE计
+#define number_ap 200	//AP计
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB畖
@@ -16,7 +16,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define MAX_DEPTH 2
+#define MAX_DEPTH 0
 
 #include<vector>
 
@@ -52,6 +52,7 @@ struct UE
 	double bit_rate;
 	BS* connecting_BS;
 	std::vector <BS*> availBS;
+	std::vector <double> availBS_T;
 };
 
 struct result

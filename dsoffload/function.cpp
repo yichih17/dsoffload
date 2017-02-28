@@ -11,16 +11,16 @@ double macro_eff[15] = { 0.1523, 0.2344, 0.377, 0.6016, 0.8770, 1.1758, 1.4766, 
 double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 };	//65Mbps = 65000000bps = 65000 bits/ms
 
 //計算AP的訊號範圍
-//void countAPrange()
+//void countaprange()
 //{
-//	int SINR_AP[8] = { 4, 7, 9, 12, 16, 20, 21, 22 };
+//	int sinr_ap[8] = { 4, 7, 9, 12, 16, 20, 21, 22 };
 //	for (int i = 0; i < 8; i++)
 //	{
-//		//Path loss: 140.7 + 36.7 log(D), D in km.
-//		double distance = pow(10, (-(SINR_AP[i] - 78 - power_ap) - 122.7) / 35.1) * 1000;
+//		//path loss: 140.7 + 36.7 log(d), d in km.
+//		double distance = pow(10, (-(sinr_ap[i] - 78 - power_ap) - 122.7) / 35.1) * 1000;
 //		range_ap[i] = (int)distance;
 //	}
-//	//Result:185, 152, 133, 109, 84, 64, 60, 56
+//	//result:185, 152, 133, 109, 84, 64, 60, 56
 //}
 
 //計算UE與BS間的距離
@@ -264,6 +264,7 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist)
 			{
 				minbs = bslist->at(i);
 				minbs_T = T;
+				continue;
 			}
 			//如果現在這個的Capacity比minbs的Capacity一樣，就比距離
 			if (minbs_capacity == capacity)
@@ -278,11 +279,16 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist)
 			}
 		}
 	}
-	//如果可選擇的BS中T最小的比原本的BS還大，那就沒必要offload了
-	if (u->connecting_BS != NULL)
-		if (minbs_T > u->connecting_BS->systemT)
-			return NULL;
-	return minbs;
+	if (minbs == NULL)
+		return NULL;
+	else
+	{
+		//如果可選擇的BS中T最小的比原本的BS還大，那就沒必要offload了
+		if (u->connecting_BS != NULL)
+			if (minbs_T > u->connecting_BS->systemT)
+				return NULL;
+		return minbs;
+	}
 }
 
 int calc_influence(UE *u)
@@ -370,13 +376,14 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs)
 	vector <BS*> no_influence_bs;		//不受影響BS
 	vector <BS*> influence_bs;			//受影響BS
+	vector <BS*> saturated_bs;			//已飽和BS
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
 		bool influence = false;				//試算加入BS後影響的UE數量
 		double T = predictT(u, u->availBS.at(i));	//試算加入BS後的T
 		//現在無法加入的BS也當作influence，offload UE出去之後也許就能加入
 		if (T == -1)
-			influence_bs.push_back(u->availBS[i]);
+			saturated_bs.push_back(u->availBS[i]);
 		else
 		{
 			//計算availbs[i]下UE的DB有無被滿足
@@ -433,9 +440,12 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 		//如果還沒到演算法最大深度 -> offload
 		else
 		{
+			//influence_bs和saturated_bs都該offload看看比影響大小
+			influence_bs.insert(influence_bs.end(), saturated_bs.begin(), saturated_bs.end());
+
 			connection_status min_influence_cs;		//最小的影響的cs
 			min_influence_cs.influence = -1;		//預設值，用以標示還在初始化狀態
-			connection_status cs_origin = *cs;
+			connection_status cs_origin = *cs;		//cs的初始狀態
 
 			for (int j = 0; j < influence_bs.size(); j++)	//for all influence bs
 			{
