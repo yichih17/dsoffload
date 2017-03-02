@@ -8,8 +8,9 @@
 ####3. 結果輸出    
 - 無法連接BS的UE數量  
 - 所有BS的平均delay、load、連接UE數、底下UE的平均capacity  
-- 所有UE的平均capacity、delay        
-
+- 所有UE的平均capacity、delay   
+ 
+   
 ###待完成功能   
 ####1. UE連接BS的機制         
 - UE隨機選擇BS  
