@@ -2,7 +2,6 @@
 ###目前完成功能    
 
 ####1. 以Uniform distribution生成UE和AP    
-
 ####2. UE連接BS的機制  
 - minT  
 - delay-sensitive offloading(debug中)    
@@ -12,10 +11,16 @@
 - 所有BS的平均delay、load、連接UE數、底下UE的平均capacity  
 - 所有UE的平均capacity、delay  
   
+   
+   
 ###待完成功能  
 ####1. UE連接BS的機制  
 - UE隨機選擇BS  
-- UE根據SINR大小選擇BS   
+- UE根據SINR大小選擇BS  
+  
+      
+     
+     
 ####2. Packet level simulation(為了算throughput)   
 ###只知問題   
 ####1. M/G/1公式在當Rho>=1時，得到的T值會是負值         
