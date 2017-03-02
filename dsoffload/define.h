@@ -1,7 +1,7 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define number_ue 7000	//UE個數
+#define number_ue 10000	//UE個數
 #define number_ap 200	//AP個數
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
@@ -81,8 +81,10 @@ extern double predict_Capacity(UE* u, BS* b);
 extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
+extern double getT(BS* b);
+extern double getrho(BS* b);
 extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
-extern void findbs_dso(UE* u, connection_status* cs, int k);
+extern bool findbs_dso(UE* u, connection_status* cs, int k);
 extern void add_UE_to_BS(UE* u, BS* b);
 
 #endif // !_DEFIEN_H

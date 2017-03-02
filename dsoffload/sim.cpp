@@ -47,30 +47,23 @@ void readUE()
 	else
 	{
 		int num = 0;						//num = UE編號
-		char bufferx[11], buffery[11];
-		while (!freadUE.eof())
+		string bufferx, buffery;
+		while (freadUE >> bufferx)
 		{
-			memset(&bufferx, 0, sizeof(bufferx));
-			memset(&buffery, 0, sizeof(buffery));
-			freadUE >> bufferx;				//讀取x座標
 			freadUE >> buffery;				//讀取y座標
-			if (bufferx[0] != '\0')			//txt檔最後一行是換行符號，遇到就結束讀取
-			{
-				UE temp;
-				temp.num = num++;			//assign編號，然後index++
-				temp.coor_X = stof(bufferx);//String to double
-				temp.coor_Y = stof(buffery);//把座標給UE
-				//initialize
-				temp.connecting_BS = NULL;
-				temp.bit_rate = 10;
-				temp.packet_size = 800;
-				temp.delay_budget = 100;
-				temp.lambdai = temp.bit_rate / temp.packet_size;
-				vuelist.push_back(temp);
-			}
+			UE temp;
+			temp.num = num++;			//assign編號，然後index++
+			temp.coor_X = stof(bufferx);//String to double
+			temp.coor_Y = stof(buffery);//把座標給UE
+			//initialize
+			temp.connecting_BS = NULL;
+			temp.bit_rate = 10;
+			temp.packet_size = 800;
+			temp.delay_budget = 100;
+			temp.lambdai = temp.bit_rate / temp.packet_size;
+			vuelist.push_back(temp);
 		}
 	}
-	freadUE.close();
 }
 
 /*讀取AP分布(座標)*/
@@ -87,53 +80,53 @@ void readAP(vector <BS> &bslist)
 	else
 	{
 		int i = 1;
-		char bufferx[11], buffery[11];
-		while (!freadAP.eof())
+		string bufferx, buffery;
+		while (freadAP >> bufferx)
 		{
-			memset(&bufferx, 0, sizeof(bufferx));
-			memset(&buffery, 0, sizeof(buffery));
-			freadAP >> bufferx;				//讀取x座標
-			freadAP >> buffery;				//讀取y座標			
-			if (bufferx[0] != '\0')
-			{
-				BS temp;
-				temp.num = i++;
-				temp.type = ap;				//設定基地台類型(AP)
-				temp.coor_X = stof(bufferx);//String to double
-				temp.coor_Y = stof(buffery);//把座標給AP
-				//initialize
-				temp.connectingUE.clear();
-				temp.lambda = 0;
-				temp.systemT = 0;			
-				vbslist.push_back(temp);
-			}
+			freadAP >> buffery;				//讀取y座標	
+			BS temp;
+			temp.num = i++;
+			temp.type = ap;				//設定基地台類型(AP)
+			temp.coor_X = stof(bufferx);//String to double
+			temp.coor_Y = stof(buffery);//把座標給AP
+			//initialize
+			temp.connectingUE.clear();
+			temp.lambda = 0;
+			temp.systemT = 0;			
+			vbslist.push_back(temp);
 		}
 	}
-	freadAP.close();
 }
 
 int main()
 {
+	for (double i = 1; i < 1000; i++)
+	{
+		cout << i << endl;
+		initialconfig(vbslist);
+		vbslist.clear();
+		vuelist.clear();
+		distribution(ue);
+		//countAPrange();
+		//UE and AP location initial
+		readAP(vbslist);		//讀入BS
+//		cout << "Number of BS :" << vbslist.size() << "\n";
+		readUE();		//讀入UE
+//		cout << "Number of UE :" << vuelist.size() << "\n";
 
-	initialconfig(vbslist);
+		//packet_arrival();
+		/*	// Show UE coordinates
+			for (int i = 0; i < vuelist.size(); i++)
+				cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
+			for (int i = 0; i < vbslist.size(); i++)
+				cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
+		*/
 
-	//countAPrange();
-	//UE and AP location initial
-	readAP(vbslist);		//讀入BS
-	cout << "Number of BS :" << vbslist.size() << "\n";
-	readUE();		//讀入UE
-	cout << "Number of UE :" << vuelist.size() << "\n";
+		//minT_algorithm(vuelist, vbslist);
 
-	//packet_arrival();
-	/*	// Show UE coordinates
-		for (int i = 0; i < vuelist.size(); i++)
-			cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
-		for (int i = 0; i < vbslist.size(); i++)
-			cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
-	*/
-
-	minT_algorithm(vuelist, vbslist);
-	proposed_algorithm(vuelist, vbslist);
+		proposed_algorithm(vuelist, vbslist);
+	}
+	
 	return 0;
 }
 
@@ -152,12 +145,30 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	result result_minT;
 	result_minT.outage_number = outage_minT;
 
-	cout << "==============Result for minT algorithm==============" << endl;
+	cout << "============Result for minT algorithm============" << endl;
+	//每個UE可連接的BS數量
+	//for (int i = 0; i < number_ue; i++)
+	//{
+	//	int count = 0;
+	//	if (cs.uelist[i].connecting_BS != NULL)
+	//		count++;
+	//	count += cs.uelist[i].availBS.size();
+	//	cout << count << ", ";
+	//}
+
+	double Ti, rhoi, uenumi;
+	double avgt = 0, avgrho = 0, avguenum = 0;
 	//每個BS的連接UE數量與T
 	for (int i = 0; i < bslist.size(); i++)
 	{
-		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
-		cout << bslist[i].systemT << "\n";
+		Ti = bslist[i].systemT;
+		rhoi = getrho(&bslist[i]);
+		uenumi = bslist[i].connectingUE.size();
+		avgt += Ti / bslist.size();
+		avgrho += rhoi / bslist.size();
+		avguenum += uenumi / bslist.size();
+		printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
+		//cout << bslist[i].systemT << ", rho is " << getrho(&bslist[i]) << "\n";
 	}
 
 	//最後無法連接BS的UE數量
@@ -168,7 +179,7 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 			outage++;
 	}
 	cout << "Number of outage UE is:" << outage << endl;
-//	cout << "Number of outage UE is:" << result_minT.outage_number << endl;
+	cout << "avg T: " << avgt << ", avg rho: " << avgrho << ", avg ue num: " << avguenum << endl;
 	cout << "=========================End=========================" << endl;
 
 	return result_minT;
@@ -193,7 +204,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	result result_proposed;
 	result_proposed.outage_number = cs.outage_dso;
 
-	cout << "============Result for proposed algorithm============" << endl;
+//	cout << "============Result for proposed algorithm============" << endl;
 	//每個UE可連接的BS數量
 	//for (int i = 0; i < number_ue; i++)
 	//{
@@ -204,23 +215,44 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	//	cout << count << ", ";
 	//}
 
-	//每個BS的連接UE數量與T
-	for (int i = 0; i < bslist.size(); i++)
+	fstream result;
+	result.open("dso_run_result0302.txt", ios::out | ios::app);
+	fstream result2;
+	result2.open("dso_run_result03022.txt", ios::out | ios::app);
+	if (result.fail())
+		cout << "檔案無法開啟" << endl;
+	else
 	{
-		printf("BS%3d has %4zd UE, T is ", bslist[i].num, bslist[i].connectingUE.size());
-		cout << bslist[i].systemT << "\n";
-	}
+		double Ti, rhoi, uenumi;
+		double avgt = 0, avgrho = 0, avguenum = 0;
+		//每個BS的連接UE數量與T
+		for (int i = 0; i < bslist.size(); i++)
+		{
+			Ti = bslist[i].systemT;
+			rhoi = getrho(&bslist[i]);
+			uenumi = bslist[i].connectingUE.size();
+			avgt += Ti / bslist.size();
+			avgrho += rhoi / bslist.size();
+			avguenum += uenumi / bslist.size();
+			result << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << getrho(&bslist[i]) << endl;
+			//printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
+		}
 
-	//最後無法連接BS的UE數量
-	int outage = 0;
-	for (int i = 0; i < uelist.size(); i++)
-	{
-		if (uelist[i].connecting_BS == NULL)
-			outage++;
+		//最後無法連接BS的UE數量
+		int outage = 0;
+		for (int i = 0; i < uelist.size(); i++)
+		{
+			if (uelist[i].connecting_BS == NULL)
+				outage++;
+		}
+	
+
+		result << outage << " " << avgt << " " << avgrho << " " << avguenum << endl;
+		result2 << outage << " " << avgt << " " << avgrho << " " << avguenum << endl;
 	}
-	cout << "Number of outage UE is:" << outage << endl;
-	cout << "Number of outage UE is:" << result_proposed.outage_number << endl;
-	cout << "=========================End=========================" << endl;
+//	cout << "Number of outage UE is:" << outage << endl;
+//	cout << "avg T: " << avgt << ", avg rho: " << avgrho << ", avg ue num: " << avguenum << endl;
+//	cout << "=========================End=========================" << endl;
 
 	return result_proposed;
 }

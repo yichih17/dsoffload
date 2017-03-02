@@ -152,15 +152,22 @@ double predictT(UE* u, BS* b)
 	double lambda = b->lambda + u->lambdai;
 	//計算u加入b後的Xj
 	double Xj = 0;
+	double Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
-		Xj += b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)) * (b->connectingUE[i]->lambdai / lambda);
+	{
+		double pktsize_i = b->connectingUE[i]->packet_size;
+		double capacity_i = getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1);
+		double weight = b->connectingUE[i]->lambdai / lambda;
+		Xj += pktsize_i / capacity_i * weight;
+		Xj2 += pow(pktsize_i / capacity_i, 2) * weight;
+	}
 	Xj += u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)) * (u->lambdai / lambda);
 	//When Rho > 1, return -1;
-	if (Xj * lambda > 1)
+	double rho = Xj * lambda;
+	//if (rho == 1)
+	//	cout << "stop" << endl;
+	if (rho >= 0.999999)
 		return -1;
-	double Xj2 = 0;
-	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij2加起來
-		Xj2 += pow(b->connectingUE[i]->packet_size / (getCapacity(b->connectingUE[i], b) / (b->connectingUE.size() + 1)), 2) * (b->connectingUE[i]->lambdai / lambda);
 	Xj2 += pow(u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)), 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
 	return Xj + lambda * Xj2 / (1 - lambda * Xj);
@@ -170,12 +177,29 @@ double predictT(UE* u, BS* b)
 double getT(BS* b)
 {
 	double Xj = 0;		//在BS底下的UE的avg service time
-	for (int i = 0; i < b->connectingUE.size(); i++)
-		Xj += b->connectingUE[i]->packet_size / getCapacity(b->connectingUE[i]) * (b->connectingUE[i]->lambdai / b->lambda);
 	double Xj2 = 0;		//在BS底下的UE的avg Xj2
-	for (int i = 0; i < b->connectingUE.size(); i++)	
-		Xj2 += pow(b->connectingUE[i]->packet_size / getCapacity(b->connectingUE[i]), 2) * (b->connectingUE[i]->lambdai / b->lambda);
+	for (int i = 0; i < b->connectingUE.size(); i++)
+	{
+		double capacity_i = getCapacity(b->connectingUE[i]);
+		double weight_i = b->connectingUE[i]->lambdai / b->lambda;
+		double pktsize_i = b->connectingUE[i]->packet_size;
+		Xj += pktsize_i / capacity_i * weight_i;
+		Xj2 += pow(pktsize_i / capacity_i, 2) * weight_i;
+	}
 	return Xj + b->lambda * Xj2 / (1 - b->lambda * Xj);
+}
+
+double getrho(BS* b)
+{
+	double Xj = 0;		//在BS底下的UE的avg service time
+	for (int i = 0; i < b->connectingUE.size(); i++)
+	{
+		double capacity_i = getCapacity(b->connectingUE[i]);
+		double weight_i = b->connectingUE[i]->lambdai / b->lambda;
+		double pktsize_i = b->connectingUE[i]->packet_size;
+		Xj += pktsize_i / capacity_i * weight_i;
+	}
+	return b->lambda * Xj;
 }
 
 //UE尋找合適的BS
@@ -291,31 +315,34 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist)
 	}
 }
 
-int calc_influence(UE *u)
+//檢查offload UE會不會對其他BS造成影響
+int is_influence_ue(UE *u)
 {
-	bool availble = false;
+	bool no_bs_to_offload = true;					//有沒有其他BS可以加
+	bool has_no_influence_bs = false;				//有沒有offload後不會被影響的BS
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
-		int influence = 0;
-		double T = predictT(u, u->availBS[i]);
+		double T = predictT(u, u->availBS[i]);		//加入availbs[i]後的T
 		if (T == -1)
-			continue;
-		availble = true;
+			continue;								//跳過
+		no_bs_to_offload = false;
+		bool influence = false;
 		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
 		{
 			if (T > u->availBS[i]->connectingUE[j]->delay_budget)
 			{
-				influence++;
+				influence = true;
 				break;
 			}
 		}
-		if (influence == 0)
-			return 0;
-		else
-			return 1;
+		if (influence == false)
+			has_no_influence_bs = true;
 	}
-	if (availble == false)
+	if (no_bs_to_offload)
 		return -1;
+	if (has_no_influence_bs)
+		return 0;
+	return 1;
 }
 
 bool ue_sort_cp(UE* a, UE* b) { return a->lambdai/getCapacity(a) > b->lambdai/getCapacity(b); }
@@ -368,10 +395,11 @@ bool check_satisfy(BS* b, double T)
 	return true;
 }
 
-void findbs_dso(UE* u, connection_status* cs, int depth)
+bool findbs_dso(UE* u, connection_status* cs, int depth)
 {
-	//尋找or更新availbs		*會到這裡的UE有兩種:1.New UE 2.被offload的UE 這兩種不會沒有availbs
-	availbs(u, &cs->bslist);
+	//尋找availbs
+	if (u->availBS.size() == 0)
+		availbs(u, &cs->bslist);
 	
 	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs)
 	vector <BS*> no_influence_bs;		//不受影響BS
@@ -411,10 +439,10 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 		{
 			ue_join_bs(u, targetBS);
 			cs->influence++;
-			return;
+			return true;
 		}
 		else
-			return;
+			return false;
 	}
 	//沒有不受影響BS的話
 	else
@@ -427,15 +455,10 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 			{
 				ue_join_bs(u, targetBS);
 				cs->influence++;
-				return;
+				return true;
 			}
 			else
-			{
-				//被offload的UE且沒有更好的選擇才會到這，但它原本有已連接BS，所以不能當作outage UE
-				if (u->connecting_BS == NULL)
-					cs->outage_dso++;
-				return;
-			}
+				return false;
 		}
 		//如果還沒到演算法最大深度 -> offload
 		else
@@ -443,57 +466,38 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 			//influence_bs和saturated_bs都該offload看看比影響大小
 			influence_bs.insert(influence_bs.end(), saturated_bs.begin(), saturated_bs.end());
 
+			connection_status cs_origin = *cs;		//cs的初始狀態
 			connection_status min_influence_cs;		//最小的影響的cs
 			min_influence_cs.influence = -1;		//預設值，用以標示還在初始化狀態
-			connection_status cs_origin = *cs;		//cs的初始狀態
-
-			for (int j = 0; j < influence_bs.size(); j++)	//for all influence bs
+			double cs_min_T = -1;
+			for (int i = 0; i < influence_bs.size(); i++)	//for all influence bs
 			{
 				*cs = cs_origin;
-				double T = predictT(u, influence_bs[j]);	//UE u如果加入受影響BS j後的T
+				double T = predictT(u, influence_bs[i]);	//UE u如果加入受影響BS j後的T
 				
 				//UE分類:選出DB不被滿足的UE，然後分為:會影響UE(influence_ue)與不會影響UE(no_influence_ue)
 				vector <UE*> influence_ue;		//會影響其他BS的UE
 				vector <UE*> no_influence_ue;	//不會影響其他BS的UE
 				//如果BS已飽和，T就會是-1，此時要先offload UE出去再看能不能加入，因此T為BS加入UE前的system time
 				if (T == -1)
-				{				
-					for (int k = 0; k < influence_bs.at(j)->connectingUE.size(); k++)
-					{
-						if (influence_bs.at(j)->connectingUE[k]->delay_budget < influence_bs.at(j)->systemT)	//如果UE的DB小於T(不被滿足)
-						{
-							if (influence_bs.at(j)->connectingUE[k]->availBS.size() == 0)						//如果UE沒其他BS可以選擇就跳過
-								continue;
-							if (calc_influence(influence_bs.at(j)->connectingUE[k]) == 1)						//如果offload UE會再影響其他BS就是influence_ue
-								influence_ue.push_back(influence_bs.at(j)->connectingUE[k]);
-							else
-								no_influence_ue.push_back(influence_bs.at(j)->connectingUE[k]);
-						}
-					}
-				}
-				//如果BS未飽和，T就會是正值，假設UE加入後要把那些UE offload出去
-				else
+					T = influence_bs.at(i)->systemT;
+				for (int j = 0; j < influence_bs.at(i)->connectingUE.size(); j++)
 				{
-					//UE分類:選出DB不被滿足的UE，然後分為:會影響UE(influence_ue)與不會影響UE(no_influence_ue)
-					for (int k = 0; k < influence_bs.at(j)->connectingUE.size(); k++)
+					if (influence_bs.at(i)->connectingUE[j]->delay_budget < T)			//如果UE的DB小於T(不被滿足)
 					{
-						if (influence_bs.at(j)->connectingUE[k]->delay_budget < T)			//如果UE的DB小於T(不被滿足)
+						if (influence_bs.at(i)->connectingUE[j]->availBS.size() != 0)	//如果UE有BS可以offload (availbs.size()>0)
 						{
-							if (influence_bs.at(j)->connectingUE[k]->availBS.size() == 0)	//如果UE沒其他BS可以選擇就跳過
-								continue;
-							int influence = calc_influence(influence_bs.at(j)->connectingUE[k]);
-							if (influence == 1)		//如果offload UE會再影響其他BS就是influence_ue
+							switch (is_influence_ue(influence_bs.at(i)->connectingUE[j]))
 							{
-								influence_ue.push_back(influence_bs.at(j)->connectingUE[k]);
-								continue;
-							}								
-							if (influence == 0)		//如果offload UE不會再影響其他BS就是no_influence_ue
-							{
-								no_influence_ue.push_back(influence_bs.at(j)->connectingUE[k]);
-								continue;
-							}								
-							if (influence == -1)	//offload UE的其他BS加不進去
-								continue;
+							case 0:
+								no_influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+								break;
+							case 1:
+								influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+								break;
+							default:
+								break;
+							}
 						}
 					}
 				}
@@ -517,50 +521,60 @@ void findbs_dso(UE* u, connection_status* cs, int depth)
 						sort(influence_ue.begin(), influence_ue.end(), ue_sort_cp);
 						ue_sorted = influence_ue;
 					}
+					else
+						continue;	//沒有UE可以offload，跳過這個influence_bs
 				}
-				//沒有UE可以offload，跳過這個influence_bs
-				if (ue_sorted.size() == 0)
-					continue;
+
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
-				bool join = false;		//判斷要不要offload UE的index
-				for (int k = 0; k < ue_sorted.size(); k++)
+				for (int j = 0; j < ue_sorted.size(); j++)
 				{
-					findbs_dso(ue_sorted.at(k), cs, depth + 1);
-					T = predictT(u, influence_bs[j]);
-					if (check_satisfy(influence_bs[j], T) && T != -1)	//offload掉一些UE後，能夠滿足所有DB了
-					{
-						join = true;
+					findbs_dso(ue_sorted.at(j), cs, depth + 1);
+					T = predictT(u, influence_bs[i]);
+					if (T == -1)
+						continue;
+					if (check_satisfy(influence_bs[i], T))	//offload掉一些UE後，能夠滿足所有DB了
 						break;
-					}			
 				}
-				if (T != -1)		//offload所有UE後沒辦法滿足所有DB，但可加入
-					join = true;
-				//如果所有可offload的UE都offload了，BS還是飽和，join就改為false，就不比較影響大小，加不進去比洨?
-				if (join == false)			//跳過這個influence_bs
+				if (T == -1)		//offload所有UE後還是無法加入UE
 					continue;
-				ue_join_bs(u, influence_bs[j]);		//已經為UE挪出空位了，然後就把UE加進來	
-				cs->influence++;
-				//比較影響(為了那個UE移動了多少UE)
-				if (min_influence_cs.influence == -1)
+				//比較
+				if (cs_min_T == -1)
+				{
+					cs_min_T = T;
+					ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
 					min_influence_cs = *cs;
+					continue;
+				}
 				else
-					if (cs->influence < min_influence_cs.influence)
+				{
+					if (T < cs_min_T)		//如果T比較小
+					{
+						cs_min_T = T;
+						ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
 						min_influence_cs = *cs;
+						continue;
+					}
+					if (T == cs_min_T)		//如果T一樣大，比影響大小
+					{
+						if (min_influence_cs.influence < cs->influence)
+						{
+							cs_min_T = T;
+							ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
+							min_influence_cs = *cs;
+							continue;
+						}
+					}
+				}
 			}
-			if (min_influence_cs.influence == -1)
+			if (cs_min_T == -1)		///沒有辦法為UE offload UE 出去
 			{
 				*cs = cs_origin;
-				BS* targetBS = findbs_minT(u, &influence_bs);
-				if (targetBS != NULL)
-				{
-					ue_join_bs(u, targetBS);
-					return;
-				}
+				return false;
 			}
 			else
 			{
 				*cs = min_influence_cs;
-				return;
+				return true;
 			}
 		}
 	}
