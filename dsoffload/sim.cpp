@@ -100,12 +100,12 @@ void readAP(vector <BS> &bslist)
 
 int main()
 {
-	for (double i = 1; i < 1000; i++)
+	for (double i = 0; i < 1; i++)
 	{
 		cout << i << endl;
-		initialconfig(vbslist);
 		vbslist.clear();
 		vuelist.clear();
+		initialconfig(vbslist);
 		distribution(ue);
 		//countAPrange();
 		//UE and AP location initial
@@ -216,39 +216,42 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	//}
 
 	fstream result;
-	result.open("dso_run_result0302.txt", ios::out | ios::app);
+	result.open("dso_depth0_result.txt", ios::out | ios::app);
 	fstream result2;
-	result2.open("dso_run_result03022.txt", ios::out | ios::app);
+	result2.open("dso_depth0_result_detail.txt", ios::out | ios::app);
 	if (result.fail())
 		cout << "檔案無法開啟" << endl;
 	else
 	{
-		double Ti, rhoi, uenumi;
-		double avgt = 0, avgrho = 0, avguenum = 0;
-		//每個BS的連接UE數量與T
+		double t_bs = 0, rho_bs = 0, uenum_bs = 0, avg_capacity_of_ue_under_bs = 0;
+		double avg_t = 0, avg_rho = 0, avg_uenum = 0, avg_capacity_under_bs = 0;
+		double avg_capacity_ue = 0, avg_delay_ue = 0;
+		vector <double> ue_capacity, ue_delay;
+		int non_outage_ue_num = 0;
 		for (int i = 0; i < bslist.size(); i++)
 		{
-			Ti = bslist[i].systemT;
-			rhoi = getrho(&bslist[i]);
-			uenumi = bslist[i].connectingUE.size();
-			avgt += Ti / bslist.size();
-			avgrho += rhoi / bslist.size();
-			avguenum += uenumi / bslist.size();
-			result << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << getrho(&bslist[i]) << endl;
+			t_bs = bslist[i].systemT;
+			rho_bs = getrho(&bslist[i]);
+			uenum_bs = bslist[i].connectingUE.size();
+			for (int j = 0; j < bslist[i].connectingUE.size(); j++)
+			{
+				double capacityj = getCapacity(bslist[i].connectingUE[j]);
+				avg_capacity_of_ue_under_bs += capacityj / bslist[i].connectingUE.size();
+				avg_capacity_ue += capacityj / number_ue;
+				avg_delay_ue += bslist[i].systemT / number_ue;
+				non_outage_ue_num++;
+			}
+			avg_t += t_bs / bslist.size();
+			avg_rho += rho_bs / bslist.size();
+			avg_uenum += uenum_bs / bslist.size();
+			avg_capacity_under_bs += avg_capacity_of_ue_under_bs / bslist.size();
+
+			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << getrho(&bslist[i]) << endl;
 			//printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
 		}
 
-		//最後無法連接BS的UE數量
-		int outage = 0;
-		for (int i = 0; i < uelist.size(); i++)
-		{
-			if (uelist[i].connecting_BS == NULL)
-				outage++;
-		}
-	
-
-		result << outage << " " << avgt << " " << avgrho << " " << avguenum << endl;
-		result2 << outage << " " << avgt << " " << avgrho << " " << avguenum << endl;
+		result << number_ue - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
+		result2 << number_ue - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
 	}
 //	cout << "Number of outage UE is:" << outage << endl;
 //	cout << "avg T: " << avgt << ", avg rho: " << avgrho << ", avg ue num: " << avguenum << endl;
