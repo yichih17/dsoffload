@@ -75,8 +75,8 @@ extern void distribution(type_bs dtype);
 extern void packet_arrival();
 //in function.cpp
 //extern void countAPrange();
-extern double getDistance(UE* u, BS* b);
-extern int getCQI(UE* u, BS* b);
+extern double calc_distance(UE* u, BS* b);
+extern int calc_CQI(UE* u, BS* b);
 extern double predict_Capacity(UE* u, BS* b);
 extern double getCapacity(UE* u, BS* b);
 extern double getCapacity(UE* u);

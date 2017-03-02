@@ -106,7 +106,7 @@ int main()
 		vbslist.clear();
 		vuelist.clear();
 		initialconfig(vbslist);
-		distribution(ue);
+		//distribution(ue);
 		//countAPrange();
 		//UE and AP location initial
 		readAP(vbslist);		//Åª¤JBS
@@ -231,25 +231,27 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 		for (int i = 0; i < bslist.size(); i++)
 		{
 			t_bs = bslist[i].systemT;
-			rho_bs = getrho(&bslist[i]);
 			uenum_bs = bslist[i].connectingUE.size();
+			double Xj = 0;
 			for (int j = 0; j < bslist[i].connectingUE.size(); j++)
 			{
 				double capacityj = getCapacity(bslist[i].connectingUE[j]);
+				Xj += bslist[i].connectingUE[j]->packet_size / capacityj * (bslist[i].connectingUE[j]->lambdai / bslist[i].lambda);
 				avg_capacity_of_ue_under_bs += capacityj / bslist[i].connectingUE.size();
 				avg_capacity_ue += capacityj / number_ue;
 				avg_delay_ue += bslist[i].systemT / number_ue;
 				non_outage_ue_num++;
 			}
+			rho_bs = Xj * bslist[i].lambda;;
 			avg_t += t_bs / bslist.size();
 			avg_rho += rho_bs / bslist.size();
 			avg_uenum += uenum_bs / bslist.size();
 			avg_capacity_under_bs += avg_capacity_of_ue_under_bs / bslist.size();
 
-			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << getrho(&bslist[i]) << endl;
+			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << rho_bs << endl;
 			//printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
 		}
-
+		cout << number_ue - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
 		result << number_ue - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
 		result2 << number_ue - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
 	}

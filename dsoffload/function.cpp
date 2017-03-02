@@ -24,38 +24,37 @@ double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 
 //}
 
 //計算UE與BS間的距離
-double getDistance(UE* u, BS* b)
+double calc_distance(UE* u, BS* b)
 {
 	return sqrt(pow((u->coor_X - b->coor_X), 2) + pow((u->coor_Y - b->coor_Y), 2));
 }
 
 //計算UE與BS的CQI
-int getCQI(UE* u, BS* b)
+int calc_CQI(UE* u, BS* b)
 {
-	double distance = getDistance(u, b);
-	int CQI = -1;
+	double distance = calc_distance(u, b);
+	int CQI = 0;
 	if (b->type == macro)	//計算LTE的CQI
 	{
 		for (int i = 0; i < 15; i++)
 		{
 			if (distance <= range_macro[i])
-				CQI = i + 1;
+				CQI++;
 			else
-				return CQI;
+				break;
 		}
-		return CQI;
 	}
 	if (b->type == ap)		//計算Wifi的CQI
 	{
 		for (int i = 0; i < 8; i++)
 		{
 			if (distance <= range_ap[i])
-				CQI = i + 1;
+				CQI++;
 			else
-				return CQI;
+				break;
 		}
-		return CQI;
 	}
+	return CQI;
 }
 
 //更新UE可連接的BS清單
@@ -64,43 +63,27 @@ void availbs(UE* u, vector<BS> *bslist)
 	//如果UE的availbs已經有資料，清除並更新
 	if (u->availBS.size() != 0)
 		u->availBS.clear();
-	//如果UE已連接BS，availbs就不該出現已連接的BS
 	if (u->connecting_BS != NULL)
 	{
 		for (int i = 0; i < bslist->size(); i++)
 		{
+			//如果UE已連接BS，availbs就不該出現已連接的BS
 			if (u->connecting_BS->num == bslist->at(i).num)
 				continue;
-			int CQI = getCQI(u, &bslist->at(i));
-			switch (CQI)
-			{
-			case 16:
-				cout << "CQI error, BS type is neither macro nor ap." << endl;
-				break;
-			case -1:
-				break;
-			default:
+			if (calc_CQI(u, &bslist->at(i)) == 0)
+				continue;
+			else
 				u->availBS.push_back(&bslist->at(i));
-				break;
-			}
 		}
 	}
 	else
 	{
 		for (int i = 0; i < bslist->size(); i++)
 		{
-			int CQI = getCQI(u, &bslist->at(i));
-			switch (CQI)
-			{
-			case 16:
-				cout << "CQI error, BS type is neither macro nor ap." << endl;
-				break;
-			case -1:
-				break;
-			default:
+			if (calc_CQI(u, &bslist->at(i)) == 0)
+				continue;
+			else
 				u->availBS.push_back(&bslist->at(i));
-				break;
-			}
 		}
 	}
 }
@@ -122,27 +105,27 @@ void availbs(UE* u, vector<BS> *bslist)
 double predict_Capacity(UE* u, BS* b)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[getCQI(u, b) - 1] * total_RBG / (b->connectingUE.size() + 1);
+		return resource_element * macro_eff[calc_CQI(u, b) - 1] * total_RBG / (b->connectingUE.size() + 1);
 	if (b->type == ap)
-		return ap_capacity[getCQI(u, b) - 1] / (b->connectingUE.size() + 1);
+		return ap_capacity[calc_CQI(u, b) - 1] / (b->connectingUE.size() + 1);
 }
 
 //計算UE與BS的System Capacity
 double getCapacity(UE* u, BS* b)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[getCQI(u, b) - 1] * total_RBG;
+		return resource_element * macro_eff[calc_CQI(u, b) - 1] * total_RBG;
 	if (b->type == ap)
-		return ap_capacity[getCQI(u, b) - 1];
+		return ap_capacity[calc_CQI(u, b) - 1];
 }
 
 //計算UE與目前連接BS的Capacity
 double getCapacity(UE* u)
 {
 	if (u->connecting_BS->type == macro)
-		return resource_element * macro_eff[getCQI(u, u->connecting_BS) - 1] * total_RBG / u->connecting_BS->connectingUE.size();
+		return resource_element * macro_eff[calc_CQI(u, u->connecting_BS) - 1] * total_RBG / u->connecting_BS->connectingUE.size();
 	if (u->connecting_BS->type == ap)
-		return ap_capacity[getCQI(u, u->connecting_BS) - 1] / u->connecting_BS->connectingUE.size();
+		return ap_capacity[calc_CQI(u, u->connecting_BS) - 1] / u->connecting_BS->connectingUE.size();
 }
 
 /* 試算UE加入BS後，BS的Avg. system time(T*) */
@@ -194,10 +177,7 @@ double getrho(BS* b)
 	double Xj = 0;		//在BS底下的UE的avg service time
 	for (int i = 0; i < b->connectingUE.size(); i++)
 	{
-		double capacity_i = getCapacity(b->connectingUE[i]);
-		double weight_i = b->connectingUE[i]->lambdai / b->lambda;
-		double pktsize_i = b->connectingUE[i]->packet_size;
-		Xj += pktsize_i / capacity_i * weight_i;
+		Xj += b->connectingUE[i]->packet_size / getCapacity(b->connectingUE[i]) * (b->connectingUE[i]->lambdai / b->lambda);
 	}
 	return b->lambda * Xj;
 }
@@ -293,8 +273,8 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist)
 			//如果現在這個的Capacity比minbs的Capacity一樣，就比距離
 			if (minbs_capacity == capacity)
 			{
-				double minbs_distance = getDistance(u, minbs);
-				double distance = getDistance(u, bslist->at(i));
+				double minbs_distance = calc_distance(u, minbs);
+				double distance = calc_distance(u, bslist->at(i));
 				if (minbs_distance > distance)
 				{
 					minbs = bslist->at(i);
@@ -336,7 +316,10 @@ int is_influence_ue(UE *u)
 			}
 		}
 		if (influence == false)
+		{
 			has_no_influence_bs = true;
+			break;
+		}			
 	}
 	if (no_bs_to_offload)
 		return -1;
@@ -467,36 +450,63 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 			influence_bs.insert(influence_bs.end(), saturated_bs.begin(), saturated_bs.end());
 
 			connection_status cs_origin = *cs;		//cs的初始狀態
-			connection_status min_influence_cs;		//最小的影響的cs
-			min_influence_cs.influence = -1;		//預設值，用以標示還在初始化狀態
-			double cs_min_T = -1;
+			
+			//min_influence_cs.influence = -1;		//預設值，用以標示還在初始化狀態
+
+			BS* bs_min_T = NULL;			//offload過後的BS中，T最小的
+			double min_T;					//offload過後的BS中，T的最小值
+			connection_status cs_min_T;		//offload過後的BS中，T最小的cs
 			for (int i = 0; i < influence_bs.size(); i++)	//for all influence bs
 			{
 				*cs = cs_origin;
-				double T = predictT(u, influence_bs[i]);	//UE u如果加入受影響BS j後的T
+				double T = predictT(u, influence_bs.at(i));	//UE u如果加入受影響BS j後的T
 				
 				//UE分類:選出DB不被滿足的UE，然後分為:會影響UE(influence_ue)與不會影響UE(no_influence_ue)
 				vector <UE*> influence_ue;		//會影響其他BS的UE
 				vector <UE*> no_influence_ue;	//不會影響其他BS的UE
 				//如果BS已飽和，T就會是-1，此時要先offload UE出去再看能不能加入，因此T為BS加入UE前的system time
 				if (T == -1)
-					T = influence_bs.at(i)->systemT;
-				for (int j = 0; j < influence_bs.at(i)->connectingUE.size(); j++)
 				{
-					if (influence_bs.at(i)->connectingUE[j]->delay_budget < T)			//如果UE的DB小於T(不被滿足)
+					for (int j = 0; j < influence_bs.at(i)->connectingUE.size(); j++)
 					{
-						if (influence_bs.at(i)->connectingUE[j]->availBS.size() != 0)	//如果UE有BS可以offload (availbs.size()>0)
+						if (influence_bs.at(i)->connectingUE.at(j)->delay_budget < influence_bs.at(i)->systemT)		//不被滿足的UE
 						{
-							switch (is_influence_ue(influence_bs.at(i)->connectingUE[j]))
+							if (influence_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)							//有其他BS可以offload
 							{
-							case 0:
-								no_influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
-								break;
-							case 1:
-								influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
-								break;
-							default:
-								break;
+								switch (is_influence_ue(influence_bs.at(i)->connectingUE[j]))
+								{
+								case 0:
+									no_influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+									break;
+								case 1:
+									influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+									break;
+								default:
+									break;
+								}							
+							}								
+						}							
+					}
+				}
+				else
+				{
+					for (int j = 0; j < influence_bs.at(i)->connectingUE.size(); j++)
+					{
+						if (influence_bs.at(i)->connectingUE.at(j)->delay_budget < T)			//不被滿足的UE
+						{
+							if (influence_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)		//有其他BS可以offload
+							{
+								switch (is_influence_ue(influence_bs.at(i)->connectingUE[j]))
+								{
+								case 0:
+									no_influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+									break;
+								case 1:
+									influence_ue.push_back(influence_bs.at(i)->connectingUE[j]);
+									break;
+								default:
+									break;
+								}
 							}
 						}
 					}
@@ -528,52 +538,54 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
-					findbs_dso(ue_sorted.at(j), cs, depth + 1);
-					T = predictT(u, influence_bs[i]);
-					if (T == -1)
-						continue;
-					if (check_satisfy(influence_bs[i], T))	//offload掉一些UE後，能夠滿足所有DB了
-						break;
+					if (findbs_dso(ue_sorted.at(j), cs, depth + 1))
+					{
+						cs->influence++;					//成功offload一個UE，影響+1
+						T = predictT(u, influence_bs.at(i));	//更新T，看還需不需要繼續offload
+						if (T != -1 && check_satisfy(influence_bs.at(i), T))	//offload掉一些UE後，UE能夠加入且能夠滿足所有DB了
+							break;
+					}
 				}
 				if (T == -1)		//offload所有UE後還是無法加入UE
 					continue;
 				//比較
-				if (cs_min_T == -1)
+				if (bs_min_T == NULL)
 				{
-					cs_min_T = T;
-					ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
-					min_influence_cs = *cs;
-					continue;
+					bs_min_T = influence_bs.at(i);
+					min_T = T;
+					cs_min_T = *cs;
 				}
 				else
 				{
-					if (T < cs_min_T)		//如果T比較小
+					if (T < min_T)		//如果T比較小
 					{
-						cs_min_T = T;
-						ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
-						min_influence_cs = *cs;
-						continue;
+						bs_min_T = influence_bs.at(i);
+						min_T = T;
+						cs_min_T = *cs;
 					}
-					if (T == cs_min_T)		//如果T一樣大，比影響大小
+					else
 					{
-						if (min_influence_cs.influence < cs->influence)
+						if (T == min_T)		//如果T一樣
 						{
-							cs_min_T = T;
-							ue_join_bs(u, influence_bs[i]);		//已經為UE挪出空位了，然後就把UE加進來	
-							min_influence_cs = *cs;
-							continue;
+							if (cs->influence < cs_min_T.influence)		//比影響大小
+							{
+								bs_min_T = influence_bs.at(i);
+								min_T = T;
+								cs_min_T = *cs;
+							}
 						}
 					}
 				}
 			}
-			if (cs_min_T == -1)		///沒有辦法為UE offload UE 出去
+			if (bs_min_T == NULL)		//沒有辦法為UE offload UE 出去
 			{
 				*cs = cs_origin;
 				return false;
 			}
 			else
 			{
-				*cs = min_influence_cs;
+				ue_join_bs(u, bs_min_T);
+				*cs = cs_min_T;
 				return true;
 			}
 		}
