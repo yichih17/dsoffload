@@ -70,7 +70,7 @@ struct connection_status
 
 //function declare
 //in distribute.cpp
-extern void distribution(type_bs dtype);
+extern void distribution(type_bs dtype, int number);
 //in packet_arrival.cpp
 extern void packet_arrival();
 //in function.cpp

@@ -421,7 +421,6 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 		if (targetBS != NULL)
 		{
 			ue_join_bs(u, targetBS);
-			cs->influence++;
 			return true;
 		}
 		else
@@ -437,7 +436,6 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 			if (targetBS != NULL)
 			{
 				ue_join_bs(u, targetBS);
-				cs->influence++;
 				return true;
 			}
 			else

@@ -40,9 +40,7 @@ void readUE()
 	freadUE.open("UE_dis.txt", ios::in);
 	if (freadUE.fail())						//抓計事本內的UE座標
 	{
-		cout << "UE分布不存在\n產生新分布" << endl;
-		distribution(ue);
-		readUE();
+		cout << "UE分布不存在\n";
 	}
 	else
 	{
@@ -73,9 +71,7 @@ void readAP(vector <BS> &bslist)
 	freadAP.open("AP_dis.txt", ios::in);
 	if (freadAP.fail())						//抓計事本內的UE座標
 	{
-		cout << "AP分布不存在\n產生新分布" << endl;
-		distribution(ap);
-		readAP(bslist);
+		cout << "AP分布不存在\n";
 	}
 	else
 	{
@@ -100,33 +96,31 @@ void readAP(vector <BS> &bslist)
 
 int main()
 {
-	for (double i = 0; i < 1; i++)
+	for (int i = 1; i < 16; i++)	//UE數量
 	{
-		cout << i << endl;
-		vbslist.clear();
-		vuelist.clear();
-		initialconfig(vbslist);
-		//distribution(ue);
-		//countAPrange();
-		//UE and AP location initial
-		readAP(vbslist);		//讀入BS
-//		cout << "Number of BS :" << vbslist.size() << "\n";
-		readUE();		//讀入UE
-//		cout << "Number of UE :" << vuelist.size() << "\n";
+		for (double j = 0; j < 100; j++)	//實驗次數
+		{
+			cout << "UE number = " << i << ", " << j << endl;				//實驗進度
+			distribution(ue, i * 1000);		//產生UE分布
+//			distribution(ap, i * 1000);		//產生AP分布
 
-		//packet_arrival();
-		/*	// Show UE coordinates
-			for (int i = 0; i < vuelist.size(); i++)
-				cout << "UE " << i << ": X=" << vuelist[i].coor_X << ", Y=" << vuelist[i].coor_Y << "; DB=" << vuelist[i].delaybg << "\n";
-			for (int i = 0; i < vbslist.size(); i++)
-				cout << "BS " << i << ": X=" << vbslist[i].coor_X << ", Y=" << vbslist[i].coor_Y << "; type=" << vbslist[i].type << "\n";
-		*/
+			vbslist.clear();				//bslist, uelist初始化
+			vuelist.clear();
 
-		//minT_algorithm(vuelist, vbslist);
+			initialconfig(vbslist);			//macro eNB初始化
+			readAP(vbslist);				//讀入BS
+			readUE();						//讀入UE
+			
+//			countAPrange();					//計算AP可傳送資料的範圍大小
+//			packet_arrival();				//產生packet arrival
 
-		proposed_algorithm(vuelist, vbslist);
+//			cout << "Number of BS :" << vbslist.size() << "\n";
+//			cout << "Number of UE :" << vuelist.size() << "\n";
+			
+//			minT_algorithm(vuelist, vbslist);
+			proposed_algorithm(vuelist, vbslist);
+		}
 	}
-	
 	return 0;
 }
 
@@ -215,10 +209,15 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	//	cout << count << ", ";
 	//}
 
+	char result_filename[50];
+	char result_detail_filename[50];
+	sprintf_s(result_filename, "dso_depth%d_UE%d_result.txt", MAX_DEPTH, uelist.size());
+	sprintf_s(result_detail_filename, "dso_depth%d_UE%d_result_detail.txt", MAX_DEPTH, uelist.size());
+
 	fstream result;
-	result.open("dso_depth0_result.txt", ios::out | ios::app);
+	result.open(result_filename, ios::out | ios::app);
 	fstream result2;
-	result2.open("dso_depth0_result_detail.txt", ios::out | ios::app);
+	result2.open(result_detail_filename, ios::out | ios::app);
 	if (result.fail())
 		cout << "檔案無法開啟" << endl;
 	else
@@ -238,8 +237,8 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 				double capacityj = getCapacity(bslist[i].connectingUE[j]);
 				Xj += bslist[i].connectingUE[j]->packet_size / capacityj * (bslist[i].connectingUE[j]->lambdai / bslist[i].lambda);
 				avg_capacity_of_ue_under_bs += capacityj / bslist[i].connectingUE.size();
-				avg_capacity_ue += capacityj / number_ue;
-				avg_delay_ue += bslist[i].systemT / number_ue;
+				avg_capacity_ue += capacityj / uelist.size();
+				avg_delay_ue += bslist[i].systemT / uelist.size();
 				non_outage_ue_num++;
 			}
 			rho_bs = Xj * bslist[i].lambda;;
@@ -251,9 +250,9 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << rho_bs << endl;
 			//printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
 		}
-		cout << number_ue - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
-		result << number_ue - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
-		result2 << number_ue - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
+		cout << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
+		result << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
+		result2 << uelist.size() - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
 	}
 //	cout << "Number of outage UE is:" << outage << endl;
 //	cout << "avg T: " << avgt << ", avg rho: " << avgrho << ", avg ue num: " << avguenum << endl;
