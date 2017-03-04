@@ -96,9 +96,9 @@ void readAP(vector <BS> &bslist)
 
 int main()
 {
-	for (int i = 1; i < 16; i++)	//UE數量
+	for (int i = 0; i < 16; i++)	//UE數量
 	{
-		for (double j = 0; j < 100; j++)	//實驗次數
+		for (double j = 0; j < 10; j++)	//實驗次數
 		{
 			cout << "UE number = " << i << ", " << j << endl;				//實驗進度
 			distribution(ue, i * 1000);		//產生UE分布

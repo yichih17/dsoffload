@@ -16,7 +16,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define MAX_DEPTH 0
+#define MAX_DEPTH 1
 
 #include<vector>
 

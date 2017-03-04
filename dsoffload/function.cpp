@@ -592,8 +592,8 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 			}
 			else
 			{
-				ue_join_bs(u, bs_min_T);
 				*cs = cs_min_T;
+				ue_join_bs(u, bs_min_T);
 				return true;
 			}
 		}
