@@ -231,7 +231,7 @@ BS* findbs_minT(UE *u, vector <BS> *bslist)
 }
 
 //for algorithm dso
-BS* findbs_minT(UE* u, vector<BS*> *bslist)
+BS* findbs_minT(UE* u, vector<BS*> *bslist, vector <double> *T_bslist)
 {
 	//初始化最小T的BS
 	BS* minbs = NULL;
@@ -240,7 +240,7 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist)
 	//計算UE加入BS後的T，並比較最小的出來
 	for (int i = 0; i < bslist->size(); i++)
 	{
-		double T = predictT(u, bslist->at(i));
+		double T = T_bslist->at(i);
 		//如果T == -1，代表無法加入		*如果最後都不能加入就會return NULL
 		if (T == -1)
 			continue;
@@ -384,17 +384,23 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 	if (u->availBS.size() == 0)
 		availbs(u, &cs->bslist);
 	
-	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs)
+	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs) 和 無法加入的BS(saturated_bs)
 	vector <BS*> no_influence_bs;		//不受影響BS
 	vector <BS*> influence_bs;			//受影響BS
 	vector <BS*> saturated_bs;			//已飽和BS
+	vector <double> T_no_influence_bs;
+	vector <double> T_influence_bs;
+	vector <double> T_saturated_bs;
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
-		bool influence = false;				//試算加入BS後影響的UE數量
+		bool influence = false;			//試算加入BS後影響的UE數量
 		double T = predictT(u, u->availBS.at(i));	//試算加入BS後的T
 		//現在無法加入的BS也當作influence，offload UE出去之後也許就能加入
 		if (T == -1)
+		{
 			saturated_bs.push_back(u->availBS[i]);
+			T_saturated_bs.push_back(T);
+		}			
 		else
 		{
 			//計算availbs[i]下UE的DB有無被滿足
@@ -408,16 +414,22 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 				}
 			}
 			if (influence)
+			{
 				influence_bs.push_back(u->availBS[i]);
+				T_influence_bs.push_back(T);
+			}				
 			else
+			{
 				no_influence_bs.push_back(u->availBS[i]);
+				T_no_influence_bs.push_back(T);
+			}				
 		}
 	}
 
 	//如果有不受影響BS就選T最小的	
 	if (no_influence_bs.size() > 0)
 	{
-		BS *targetBS = findbs_minT(u, &no_influence_bs);	//可加入的BS中T最小的
+		BS *targetBS = findbs_minT(u, &no_influence_bs, &T_no_influence_bs);	//可加入的BS中T最小的
 		if (targetBS != NULL)
 		{
 			ue_join_bs(u, targetBS);
@@ -432,7 +444,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 		//如果已到演算法最大深度，選T最小的加
 		if (depth == MAX_DEPTH)
 		{
-			BS *targetBS = findbs_minT(u, &influence_bs);	//可加入的BS中T最小的
+			BS *targetBS = findbs_minT(u, &influence_bs, &T_influence_bs);	//可加入的BS中T最小的
 			if (targetBS != NULL)
 			{
 				ue_join_bs(u, targetBS);
@@ -446,7 +458,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 		{
 			//influence_bs和saturated_bs都該offload看看比影響大小
 			influence_bs.insert(influence_bs.end(), saturated_bs.begin(), saturated_bs.end());
-
+			T_influence_bs.insert(T_influence_bs.end(), T_saturated_bs.begin(), T_saturated_bs.end());
 			connection_status cs_origin = *cs;		//cs的初始狀態
 			
 			//min_influence_cs.influence = -1;		//預設值，用以標示還在初始化狀態
@@ -457,7 +469,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 			for (int i = 0; i < influence_bs.size(); i++)	//for all influence bs
 			{
 				*cs = cs_origin;
-				double T = predictT(u, influence_bs.at(i));	//UE u如果加入受影響BS j後的T
+				double T = T_influence_bs.at(i);	//UE u如果加入受影響BS j後的T
 				
 				//UE分類:選出DB不被滿足的UE，然後分為:會影響UE(influence_ue)與不會影響UE(no_influence_ue)
 				vector <UE*> influence_ue;		//會影響其他BS的UE
@@ -529,8 +541,6 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 						sort(influence_ue.begin(), influence_ue.end(), ue_sort_cp);
 						ue_sorted = influence_ue;
 					}
-					else
-						continue;	//沒有UE可以offload，跳過這個influence_bs
 				}
 
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
@@ -538,7 +548,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 				{
 					if (findbs_dso(ue_sorted.at(j), cs, depth + 1))
 					{
-						cs->influence++;					//成功offload一個UE，影響+1
+						cs->influence++;						//成功offload一個UE，影響+1
 						T = predictT(u, influence_bs.at(i));	//更新T，看還需不需要繼續offload
 						if (T != -1 && check_satisfy(influence_bs.at(i), T))	//offload掉一些UE後，UE能夠加入且能夠滿足所有DB了
 							break;
