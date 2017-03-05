@@ -96,9 +96,9 @@ void readAP(vector <BS> &bslist)
 
 int main()
 {
-	for (int i = 0; i < 16; i++)	//UE數量
+	for (int i = 1; i < 20; i++)	//UE數量
 	{
-		for (double j = 0; j < 10; j++)	//實驗次數
+		for (double j = 0; j < 2000; j++)	//實驗次數
 		{
 			cout << "UE number = " << i << ", " << j << endl;				//實驗進度
 			distribution(ue, i * 1000);		//產生UE分布
@@ -222,9 +222,18 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 		cout << "檔案無法開啟" << endl;
 	else
 	{
-		double t_bs = 0, rho_bs = 0, uenum_bs = 0, avg_capacity_of_ue_under_bs = 0;
-		double avg_t = 0, avg_rho = 0, avg_uenum = 0, avg_capacity_under_bs = 0;
-		double avg_capacity_ue = 0, avg_delay_ue = 0;
+		double t_bs = 0;							//System time of BS
+		double rho_bs = 0;							//Rho of BS
+		double uenum_bs = 0;						//# of UE of BS
+		double avg_capacity_of_ue_under_bs = 0;		//Average capacity of UE under the BS
+
+		double avg_t = 0;							//Average T of all BS in the system
+		double avg_rho = 0;							//Average Rho of all BS in the system
+		double avg_uenum = 0;						//Average UE number of all BS in the system
+
+		double avg_capacity_ue = 0;					//Average capacity of UE in the system
+		double avg_delay_ue = 0;					//Average delay of UE in the system
+		double avg_availbs = 0;
 		vector <double> ue_capacity, ue_delay;
 		int non_outage_ue_num = 0;
 		for (int i = 0; i < bslist.size(); i++)
@@ -232,6 +241,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 			t_bs = bslist[i].systemT;
 			uenum_bs = bslist[i].connectingUE.size();
 			double Xj = 0;
+			avg_capacity_of_ue_under_bs = 0;
 			for (int j = 0; j < bslist[i].connectingUE.size(); j++)
 			{
 				double capacityj = getCapacity(bslist[i].connectingUE[j]);
@@ -240,19 +250,19 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 				avg_capacity_ue += capacityj / uelist.size();
 				avg_delay_ue += bslist[i].systemT / uelist.size();
 				non_outage_ue_num++;
+				avg_availbs += bslist[i].connectingUE[j]->availBS.size() / uelist.size();
 			}
 			rho_bs = Xj * bslist[i].lambda;;
 			avg_t += t_bs / bslist.size();
 			avg_rho += rho_bs / bslist.size();
 			avg_uenum += uenum_bs / bslist.size();
-			avg_capacity_under_bs += avg_capacity_of_ue_under_bs / bslist.size();
 
-			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << rho_bs << endl;
+			result2 << "BS " << bslist[i].num << " has " << bslist[i].connectingUE.size() << "UE, T :" << bslist[i].systemT << ", rho : " << rho_bs << ", avg UE capacity : " << avg_capacity_of_ue_under_bs << endl;
 			//printf("BS%3d has %2zd UE, T : %12lf, rho : %lf\n", bslist[i].num, bslist[i].connectingUE.size(), bslist[i].systemT, getrho(&bslist[i]));
 		}
-		cout << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
-		result << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
-		result2 << uelist.size() - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_under_bs << " " << avg_capacity_ue << " " << avg_delay_ue << endl;
+		cout << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " <<  avg_capacity_ue << " " << avg_delay_ue << " " << avg_availbs << endl;
+		result << uelist.size() - non_outage_ue_num << " " << avg_t << " " << avg_rho << " " << avg_uenum << " " <<  avg_capacity_ue << " " << avg_delay_ue << " " << avg_availbs << endl;
+		result2 << uelist.size() - non_outage_ue_num <<  " " << avg_t << " " << avg_rho << " " << avg_uenum << " " << avg_capacity_ue << " " << avg_delay_ue << " " << avg_availbs << endl;
 	}
 //	cout << "Number of outage UE is:" << outage << endl;
 //	cout << "avg T: " << avgt << ", avg rho: " << avgrho << ", avg ue num: " << avguenum << endl;
