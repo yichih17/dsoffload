@@ -102,7 +102,7 @@ int main()
 		{
 			cout << "UE number = " << i << ", " << j << endl;				//實驗進度
 			distribution(ue, i * 1000);		//產生UE分布
-			distribution(ap, i * 1000);		//產生AP分布
+			distribution(ap, 200);		//產生AP分布
 
 			vbslist.clear();				//bslist, uelist初始化
 			vuelist.clear();
