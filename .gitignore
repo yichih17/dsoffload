@@ -270,3 +270,5 @@ ModelManifest.xml
 /dsoffload/dso_depth0_UE1000_result.txt
 /dsoffload/dso_depth0_UE10000_result_detail.txt
 /dsoffload/dso_depth0_UE10000_result.txt
+*.txt
+*.txt
