@@ -147,9 +147,7 @@ double predictT(UE* u, BS* b)
 	Xj += u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)) * (u->lambdai / lambda);
 	//When Rho > 1, return -1;
 	double rho = Xj * lambda;
-	//if (rho == 1)
-	//	cout << "stop" << endl;
-	if (rho >= 0.999999)
+	if (rho >= 0.999)
 		return -1;
 	Xj2 += pow(u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)), 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
@@ -442,7 +440,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 	else
 	{
 		//如果已到演算法最大深度，選T最小的加
-		if (depth == MAX_DEPTH)
+		if (depth == max_depth)
 		{
 			BS *targetBS = findbs_minT(u, &influence_bs, &T_influence_bs);	//可加入的BS中T最小的
 			if (targetBS != NULL)

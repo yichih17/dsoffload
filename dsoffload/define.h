@@ -1,8 +1,6 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define number_ue 10000	//UE個數
-#define number_ap 200	//AP個數
 #define power_macro 46	//transmissino power of macro eNB
 #define power_ap 23		//transmission power of wifi ap
 #define R 1723			//Macro eNB半徑
@@ -16,10 +14,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define MAX_DEPTH 2
-
 #include<vector>
-
 
 enum type_bs { macro, ap, ue };
 enum type_ue { type1, type2, type3, type4};
@@ -28,6 +23,8 @@ struct BS;
 struct UE;
 extern std::vector <BS> vbslist;
 extern std::vector <UE> vuelist;
+
+extern int max_depth;
 
 /*attribute of BS*/
 struct BS
@@ -52,7 +49,6 @@ struct UE
 	double bit_rate;
 	BS* connecting_BS;
 	std::vector <BS*> availBS;
-	std::vector <double> availBS_T;
 };
 
 struct result

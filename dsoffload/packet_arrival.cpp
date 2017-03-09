@@ -25,7 +25,7 @@ string IntToString(int &i)
 }
 
 /*產生UE的packet arrival rate*/
-void packet_arrival()
+void packet_arrival(int number_ue)
 {
 	//定義UE服務類型 (*未來可增加UE的多樣性，混入各不同服務類型的UE)
 	//VoIP: bit rate(10K bps) packet size(800 bits)
