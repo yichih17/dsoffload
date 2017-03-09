@@ -118,7 +118,7 @@ int main()
 //			packet_arrival(number);					//²£¥Ípacket arrival
 			for (int depth = 0; depth < 3; depth++)
 			{
-				printf("times: %d, UE number: %d, depth: %d", times, number_ue, depth);
+				printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
 				max_depth = depth;
 				proposed_algorithm(vuelist, vbslist);
 
