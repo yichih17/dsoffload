@@ -241,3 +241,5 @@ ModelManifest.xml
 # FAKE - F# Make
 .fake/
 *.txt
+dsoffload/UE_dis.txt
+dsoffload/AP_dis.txt
