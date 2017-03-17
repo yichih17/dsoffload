@@ -243,3 +243,5 @@ ModelManifest.xml
 *.txt
 dsoffload/UE_dis.txt
 dsoffload/AP_dis.txt
+dsoffload/AP_dis.txt
+*.csv
