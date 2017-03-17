@@ -25,6 +25,8 @@ extern std::vector <BS> vbslist;
 extern std::vector <UE> vuelist;
 
 extern int max_depth;
+int range_macro[];
+int range_ap[];
 
 /*attribute of BS*/
 struct BS
@@ -82,5 +84,9 @@ extern double getrho(BS* b);
 extern BS* findbs_minT(UE *u, std::vector <BS> *bslist);
 extern bool findbs_dso(UE* u, connection_status* cs, int k);
 extern void add_UE_to_BS(UE* u, BS* b);
+extern void availbs(UE* u, std::vector<BS> *bslist);
+
+//SINR-based
+void findbs_sinr(UE *u, std::vector <BS> *bslist);
 
 #endif // !_DEFIEN_H

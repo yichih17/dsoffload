@@ -153,6 +153,7 @@
     <ClCompile Include="function.cpp" />
     <ClCompile Include="packet_arrival.cpp" />
     <ClCompile Include="sim.cpp" />
+    <ClCompile Include="SINR-based.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -10,6 +10,7 @@ using namespace std;
 vector <UE> vuelist;
 vector <BS> vbslist;
 
+void SINR_based(vector <UE> uelist, vector <BS> bslist);
 result minT_algorithm(vector <UE> uelist, vector <BS> bslist);
 result proposed_algorithm(vector <UE> uelist, vector <BS> bslist);
 
@@ -97,9 +98,9 @@ void readAP(vector <BS> &bslist)
 
 int main()
 {
-	for (int times = 1; times < 101; times++)
+	for (int times = 1; times < 2; times++)
 	{
-		for (int number = 1; number < 16; number++)
+		for (int number = 1; number < 2; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -116,17 +117,24 @@ int main()
 //			cout << "Number of UE :" << vuelist.size() << "\n";
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);					//產生packet arrival
-			for (int depth = 0; depth < 3; depth++)
-			{
-				printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
-				max_depth = depth;
-				proposed_algorithm(vuelist, vbslist);
+			//for (int depth = 0; depth < 1; depth++)
+			//{
+			//	printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
+			//	max_depth = depth;
+			//	proposed_algorithm(vuelist, vbslist);
 
-			}
-			minT_algorithm(vuelist, vbslist);
+			//}
+			//minT_algorithm(vuelist, vbslist);
+			SINR_based(vuelist, vbslist);
 		}		
 	}
 	return 0;
+}
+
+void SINR_based(vector<UE> uelist, vector<BS> bslist)
+{
+	for (int i = 0; i < uelist.size(); i++)
+		findbs_sinr(&uelist.at(i), &bslist);
 }
 
 result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
@@ -225,7 +233,7 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 		double t_WIFIUE_avg = 0, t_WIFIUE_max = -1, t_WIFIUE_min = -1, t_WIFIUE_stdev = 0;								//UE_T
 
 																														//WIFI
-		int UE_number_WIFI = 0;
+		double UE_number_WIFI = 0;
 		t_total += bslist.at(0).systemT / bslist.size();
 		rho_total += rho_LTE / bslist.size();
 		vector <double> rho;
@@ -333,6 +341,7 @@ result minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 		result_separate << t_LTE << " " << t_avg_WIFI << " " << t_stdev_WIFI << " ";
 		result_separate << rho_LTE << " " << rho_avg_WIFI << " " << rho_stdev_WIFI << " ";
 		result_separate << UE_number_LTE << " " << UE_number_avg_WIFI << " " << UE_number_stdev_WIFI << " ";
+		cout << UE_number_LTE << " " << UE_number_avg_WIFI << " " << UE_number_stdev_WIFI << " " << endl;
 		result_separate << capacity_LTEUE_avg << " " << capacity_LTEUE_stdev << " " << capacity_WIFIUE_avg << " " << capacity_WIFIUE_stdev << " ";
 		result_separate << t_LTEUE << " " << t_WIFIUE_avg << " " << t_WIFIUE_stdev << endl;
 
@@ -438,7 +447,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 			capacity_LTEUE_stdev += pow(capacity_LTEUE.at(i) - capacity_LTEUE_avg, 2);
 		capacity_LTEUE_stdev /= bslist.at(0).connectingUE.size();
 		capacity_LTEUE_stdev = sqrt(capacity_LTEUE_stdev);
-
+		result_detail << "BS " << bslist[0].num << " has " << bslist[0].connectingUE.size() << "UE, T :" << bslist[0].systemT << ", rho : " << rho_LTE << endl;
 
 		double t_avg_WIFI = 0, t_max_WIFI = -1, t_min_WIFI = -1, t_stdev_WIFI = 0;										//BS_T
 		double rho_avg_WIFI = 0, rho_max_WIFI = -1, rho_min_WIFI = -1, rho_stdev_WIFI = 0;								//BS_rho
@@ -447,7 +456,7 @@ result proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 		double t_WIFIUE_avg = 0, t_WIFIUE_max = -1, t_WIFIUE_min = -1, t_WIFIUE_stdev = 0;								//UE_T
 
 		//WIFI
-		int UE_number_WIFI = 0;
+		double UE_number_WIFI = 0;
 		t_total += bslist.at(0).systemT / bslist.size();
 		rho_total += rho_LTE / bslist.size();
 		vector <double> rho;

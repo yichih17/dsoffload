@@ -32,5 +32,8 @@
     <ClCompile Include="packet_arrival.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SINR-based.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
