@@ -152,6 +152,7 @@
     <ClCompile Include="distribute.cpp" />
     <ClCompile Include="function.cpp" />
     <ClCompile Include="packet_arrival.cpp" />
+    <ClCompile Include="result.cpp" />
     <ClCompile Include="sim.cpp" />
     <ClCompile Include="SINR-based.cpp" />
   </ItemGroup>

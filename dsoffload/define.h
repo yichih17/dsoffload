@@ -86,7 +86,10 @@ extern bool findbs_dso(UE* u, connection_status* cs, int k);
 extern void add_UE_to_BS(UE* u, BS* b);
 extern void availbs(UE* u, std::vector<BS> *bslist);
 
-//SINR-based
+//SINR-based.cpp
 void findbs_sinr(UE *u, std::vector <BS> *bslist);
+
+//result.cpp
+void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);
 
 #endif // !_DEFIEN_H

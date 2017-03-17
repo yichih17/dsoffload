@@ -53,7 +53,6 @@ void joinbs(UE* u, BS* targetbs)
 	targetbs->connectingUE.push_back(u);
 	targetbs->lambda += u->lambdai;
 	targetbs->systemT = calc_T(targetbs);
-	cout << targetbs->systemT << endl;
 }
 
 double calc_T(BS* b)
@@ -66,8 +65,8 @@ double calc_T(BS* b)
 		Xj2 += pow(b->connectingUE.at(i)->packet_size / getCapacity(b->connectingUE.at(i)), 2) * (b->connectingUE.at(i)->lambdai / b->lambda);
 	}		
 	double rho = b->lambda * Xj;
-	if (rho > 0.99)
-		T = Xj + b->lambda * Xj2 / (1 - 0.99);
+	if (rho > 0.95)
+		T = Xj + b->lambda * Xj2 / (1 - 0.95);
 	else
 		T = Xj + b->lambda * Xj2 / (1 - rho);
 	return T;

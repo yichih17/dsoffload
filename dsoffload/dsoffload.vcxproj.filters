@@ -35,5 +35,8 @@
     <ClCompile Include="SINR-based.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="result.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
