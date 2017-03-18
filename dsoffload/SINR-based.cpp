@@ -11,34 +11,34 @@ double calc_T(BS* b);
 void findbs_sinr(UE *u, vector <BS> *bslist)
 {
 	BS *targetbs = NULL;
-	double minPL = 0;
+	double max_received_power = 0;
 	for (int i = 0; i < bslist->size(); i++)
 	{
 		double distance = calc_distance(u, &bslist->at(i)) / 1000;
-		double pathloss;
+		double receiced_power;
 		if (bslist->at(i).type == macro)
 		{
 			if (distance > range_macro[0] / 1000.0)
 				continue;
-			pathloss = 128.1 + 37.6 * log10(distance);
+			receiced_power = power_macro - (128.1 + 37.6 * log10(distance));
 		}			
 		else
 		{
 			if (distance > range_ap[0] / 1000.0)
 				continue;
-			pathloss = 140.1 + 36.7 * log10(distance);
+			receiced_power = power_ap - (140.1 + 36.7 * log10(distance));
 		}
 			
 		if (targetbs == NULL)
 		{
-			minPL = pathloss;
+			max_received_power = receiced_power;
 			targetbs = &bslist->at(i);
 		}			
 		else
 		{
-			if (pathloss < minPL)
+			if (receiced_power > max_received_power)
 			{
-				minPL = pathloss;
+				max_received_power = receiced_power;
 				targetbs = &bslist->at(i);
 			}
 		}
