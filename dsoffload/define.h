@@ -1,9 +1,9 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define power_macro 46	//transmissino power of macro eNB
-#define power_ap 23		//transmission power of wifi ap
-#define R 1723			//Macro eNB¥b®|
+#define power_macro 46.0	//transmissino power of macro eNB
+#define power_ap 23.0		//transmission power of wifi ap
+#define R 1723				//Macro eNB¥b®|
 
 #define pktsize 500.0	//Packet size (bit)
 #define subcarrier 12	//number of subcarrier (12)
