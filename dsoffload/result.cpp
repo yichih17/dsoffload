@@ -158,7 +158,10 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 
 	fstream output_result;
 	char filename_result[50];
-	sprintf_s(filename_result, "%s_UE%d_result.csv", algorithm_name, uelist->size());
+	if (UE_dis_type == uniform)
+		sprintf_s(filename_result, "%s_UE%d_result.csv", algorithm_name, uelist->size());
+	if (UE_dis_type == hotspot)
+		sprintf_s(filename_result, "hs_%s_UE%d_result.csv", algorithm_name, uelist->size());
 	output_result.open(filename_result, ios::out | ios::app);
 
 	//fstream output_extra;

@@ -105,8 +105,7 @@ int main()
 			int number_ap = 200;
 			int number_ue = number * 1000;
 			
-			distribution(ap, number_ap);	//產生AP分布
-			distribution(ue, number_ue);	//產生UE分布
+			distribution(number_ap, number_ue);	//產生AP、UE分布
 
 			vbslist.clear();					//vbslist, vuelist初始化
 			vuelist.clear();
