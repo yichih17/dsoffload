@@ -14,10 +14,13 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
+#define UE_dis_type 0	//distribution mode of UE (0:uniform, 1:hotspot)
+
 #include<vector>
 
 enum type_bs { macro, ap, ue };
 enum type_ue { type1, type2, type3, type4};
+enum type_distribution {uniform, hotspot};
 
 struct BS;
 struct UE;
@@ -66,9 +69,15 @@ struct connection_status
 	int outage_dso;
 };
 
+struct hotspot
+{
+	double coor_x;
+	double coor_y;
+};
+
 //function declare
 //in distribute.cpp
-extern void distribution(type_bs dtype, int number);
+extern void distribution(int AP_number, int UE_number);
 //in packet_arrival.cpp
 extern void packet_arrival();
 //in function.cpp
