@@ -149,8 +149,10 @@
     <ClInclude Include="define.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="delay-sensitive.cpp" />
     <ClCompile Include="distribute.cpp" />
     <ClCompile Include="function.cpp" />
+    <ClCompile Include="minT.cpp" />
     <ClCompile Include="packet_arrival.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="sim.cpp" />

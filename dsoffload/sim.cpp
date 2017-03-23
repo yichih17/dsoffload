@@ -138,15 +138,8 @@ void SINR_based(vector<UE> uelist, vector<BS> bslist)
 
 void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 {
-	int outage_minT = 0;
 	for (int i = 0; i < uelist.size(); i++)
-	{
-		BS *target_bs = findbs_minT(&uelist[i], &bslist);
-		if (target_bs == NULL)
-			outage_minT++;
-		else
-			add_UE_to_BS(&uelist[i], target_bs);
-	}
+		findbs_minT(&uelist.at(i), &bslist);
 	result_output(&bslist, &uelist, "minT");
 }
 

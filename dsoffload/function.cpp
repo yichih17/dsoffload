@@ -180,54 +180,6 @@ double getrho(BS* b)
 	return b->lambda * Xj;
 }
 
-//UE尋找合適的BS
-BS* findbs_minT(UE *u, vector <BS> *bslist)
-{
-	availbs(u, bslist);
-	//預設最佳BS為macro eNB
-	BS* minTbs = u->availBS[0];
-	double T_minTbs = predictT(u, u->availBS[0]);
-	if (T_minTbs <= 0)
-	{
-		if (u->availBS.size() <= 1)
-			return NULL;
-		else
-		{
-			T_minTbs = 999999;
-			minTbs = NULL;
-		}			
-	}
-	double T;
-	for (int i = 1; i < u->availBS.size(); i++)
-	{
-		T = predictT(u, u->availBS[i]);
-		if (T <= 0)
-			return NULL;
-		else
-		{
-			//T比較小
-			if (T < T_minTbs)
-			{
-				T_minTbs = T;
-				minTbs = u->availBS[i];
-			}
-			//T相同，比C
-			else if (T == T_minTbs)
-			{
-				double C_minTbs = predict_Capacity(u, minTbs);
-				double C = predict_Capacity(u, u->availBS[i]);
-				if (C < C_minTbs)
-				{
-					T_minTbs = T;
-					minTbs = u->availBS[i];
-				}
-			}
-		}
-		
-	}
-	return minTbs;
-}
-
 //for algorithm dso
 BS* findbs_minT(UE* u, vector<BS*> *bslist, vector <double> *T_bslist)
 {
