@@ -31,6 +31,19 @@ extern int max_depth;
 int range_macro[];
 int range_ap[];
 
+extern int calc_dis_count;
+extern int calc_cqi_count;
+extern int availbs_count;
+extern int predict_capacity_count;
+extern int getcapacity1_count;
+extern int getcapacity2_count;
+extern int predictT_count;
+extern int getT_count;
+extern int is_influence_ue_count;
+extern int is_all_ue_be_satisify_count;
+extern int ue_join_bs_count;
+extern int check_satisfy_count;
+
 /*attribute of BS*/
 struct BS
 {
@@ -53,6 +66,7 @@ struct UE
 	double packet_size;
 	double bit_rate;
 	BS* connecting_BS;
+	int connecting_BS_CQI;
 	std::vector <BS*> availBS;
 };
 
@@ -91,7 +105,6 @@ extern double predictT(UE* u, BS* b);
 extern double getT(BS* b);
 extern double getrho(BS* b);
 extern bool findbs_dso(UE* u, connection_status* cs, int k);
-extern void add_UE_to_BS(UE* u, BS* b);
 extern void availbs(UE* u, std::vector<BS> *bslist);
 
 //SINR-based.cpp

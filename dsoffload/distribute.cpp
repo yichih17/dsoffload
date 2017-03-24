@@ -47,6 +47,8 @@ bool in_hotspot(UE *u)
 
 void distribution(int AP_number, int UE_number)
 {
+	aplist.clear();
+	uelist.clear();
 	//²£¥ÍAP®y¼Ð
 	for (int i = 0; i < AP_number; i++)
 	{
