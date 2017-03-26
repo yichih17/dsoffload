@@ -13,6 +13,7 @@ vector <BS> vbslist;
 void SINR_based(vector <UE> uelist, vector <BS> bslist);
 void minT_algorithm(vector <UE> uelist, vector <BS> bslist);
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist);
+void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist);
 
 int max_depth;
 
@@ -110,7 +111,7 @@ int main()
 {
 	for (int times = 1; times <101; times++)
 	{
-		for (int number = 10; number < 11; number++)
+		for (int number = 1; number < 16; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -126,11 +127,12 @@ int main()
 			//printf("times: %d, UE number: %d\n", times, number_ue);
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);					//產生packet arrival
-			for (int depth = 0; depth < 1; depth++)
+			for (int depth = 0; depth < 3; depth++)
 			{
 				printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
 				max_depth = depth;
 				proposed_algorithm(vuelist, vbslist);
+				//proposed_algorithm_new(vuelist, vbslist);
 			}
 			minT_algorithm(vuelist, vbslist);
 			SINR_based(vuelist, vbslist);
@@ -210,6 +212,39 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
 	sprintf_s(filename, "dso_%d", max_depth);
+	result_output(&bslist, &uelist, filename);
+	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
+}
+
+void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
+{
+	calc_dis_count = 0;
+	calc_cqi_count = 0;
+	availbs_count = 0;
+	predict_capacity_count = 0;
+	getcapacity1_count = 0;
+	getcapacity2_count = 0;
+	predictT_count = 0;
+	getT_count = 0;
+	is_influence_ue_count = 0;
+	is_all_ue_be_satisify_count = 0;
+	ue_join_bs_count = 0;
+	check_satisfy_count = 0;
+	outage_proposed = 0;
+	connection_status cs;
+	cs.bslist.assign(bslist.begin(), bslist.end());
+	cs.uelist.assign(uelist.begin(), uelist.end());
+	cs.outage_dso = 0;
+	for (int i = 0; i < cs.uelist.size(); i++)
+	{
+		cs.influence = 0;
+		findbs_dso_test(&cs.uelist[i], &cs, 0);
+	}
+
+	uelist.assign(cs.uelist.begin(), cs.uelist.end());
+	bslist.assign(cs.bslist.begin(), cs.bslist.end());
+	char filename[50];
+	sprintf_s(filename, "dso_new_%d", max_depth);
 	result_output(&bslist, &uelist, filename);
 	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
 }

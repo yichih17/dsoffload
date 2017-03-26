@@ -30,6 +30,8 @@ extern std::vector <UE> vuelist;
 extern int max_depth;
 int range_macro[];
 int range_ap[];
+extern double macro_eff[15];
+extern double ap_capacity[8];
 
 extern int calc_dis_count;
 extern int calc_cqi_count;
@@ -66,7 +68,7 @@ struct UE
 	double packet_size;
 	double bit_rate;
 	BS* connecting_BS;
-	int connecting_BS_CQI;
+	int CQI;
 	std::vector <BS*> availBS;
 };
 
@@ -112,6 +114,9 @@ void findbs_sinr(UE *u, std::vector <BS> *bslist);
 
 //minT.cpp
 void findbs_minT(UE *u, std::vector <BS> *bslist);
+
+//delay-sensitive.cpp
+bool findbs_dso_test(UE* u, connection_status* cs, int depth);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);
