@@ -14,7 +14,7 @@
 
 #define TTI 1000		//total simulation time (TTI)
 
-#define UE_dis_type 0	//distribution mode of UE (0:uniform, 1:hotspot)
+#define UE_dis_type 1	//distribution mode of UE (0:uniform, 1:hotspot)
 
 #include<vector>
 

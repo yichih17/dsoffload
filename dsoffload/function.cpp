@@ -65,31 +65,12 @@ int calc_CQI(UE* u, BS* b)
 void availbs(UE* u, vector<BS> *bslist)
 {
 	availbs_count++;
-	//如果UE的availbs已經有資料，清除並更新
-	if (u->availBS.size() != 0)
-		u->availBS.clear();
-	if (u->connecting_BS != NULL)
+	for (int i = 0; i < bslist->size(); i++)
 	{
-		for (int i = 0; i < bslist->size(); i++)
-		{
-			//如果UE已連接BS，availbs就不該出現已連接的BS
-			if (u->connecting_BS->num == bslist->at(i).num)
-				continue;
-			if (calc_CQI(u, &bslist->at(i)) == 0)
-				continue;
-			else
-				u->availBS.push_back(&bslist->at(i));
-		}
-	}
-	else
-	{
-		for (int i = 0; i < bslist->size(); i++)
-		{
-			if (calc_CQI(u, &bslist->at(i)) == 0)
-				continue;
-			else
-				u->availBS.push_back(&bslist->at(i));
-		}
+		if (calc_CQI(u, &bslist->at(i)) == 0)
+			continue;
+		else
+			u->availBS.push_back(&bslist->at(i));
 	}
 }
 
@@ -153,12 +134,13 @@ double predictT(UE* u, BS* b)
 		Xj += pktsize_i / capacity_i * weight;
 		Xj2 += pow(pktsize_i / capacity_i, 2) * weight;
 	}
-	Xj += u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)) * (u->lambdai / lambda);
+	double capacity_u = getCapacity(u, b) / (b->connectingUE.size() + 1);
+	Xj += u->packet_size / capacity_u * (u->lambdai / lambda);
 	//When Rho > 1, return -1;
 	double rho = Xj * lambda;
 	if (rho >= 0.999)
 		return -1;
-	Xj2 += pow(u->packet_size / (getCapacity(u, b) / (b->connectingUE.size() + 1)), 2) * (u->lambdai / lambda);
+	Xj2 += pow(u->packet_size / capacity_u, 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
 	return Xj + lambda * Xj2 / (1 - lambda * Xj);
 }
@@ -345,7 +327,7 @@ bool check_satisfy(BS* b, double T)
 bool findbs_dso(UE* u, connection_status* cs, int depth)
 {
 	//尋找availbs
-	if (u->availBS.size() == 0)
+	if (u->connecting_BS == NULL)
 		availbs(u, &cs->bslist);
 	
 	//availbs分類: 依照有無影響分成受影響BS(influence_bs) 與 不受影響BS(no_influence_bs) 和 無法加入的BS(saturated_bs)

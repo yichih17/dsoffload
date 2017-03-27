@@ -63,9 +63,9 @@ void readUE()
 		{
 			freadUE >> buffery;				//讀取y座標
 			UE temp;
-			temp.num = num++;			//assign編號，然後index++
-			temp.coor_X = stof(bufferx);//String to double
-			temp.coor_Y = stof(buffery);//把座標給UE
+			temp.num = num++;				//assign編號，然後index++
+			temp.coor_X = stof(bufferx);	//String to double
+			temp.coor_Y = stof(buffery);	//把座標給UE
 			//initialize
 			temp.connecting_BS = NULL;
 			temp.bit_rate = 10;
@@ -95,15 +95,39 @@ void readAP()
 			freadAP >> buffery;				//讀取y座標	
 			BS temp;
 			temp.num = i++;
-			temp.type = ap;				//設定基地台類型(AP)
-			temp.coor_X = stof(bufferx);//String to double
-			temp.coor_Y = stof(buffery);//把座標給AP
+			temp.type = ap;					//設定基地台類型(AP)
+			temp.coor_X = stof(bufferx);	//String to double
+			temp.coor_Y = stof(buffery);	//把座標給AP
 			//initialize
 			temp.connectingUE.clear();
 			temp.lambda = 0;
 			temp.systemT = 0;
 			vbslist.push_back(temp);
 		}
+	}
+}
+void initialUE()
+{
+	for (int i = 0; i < vuelist.size(); i++)
+	{
+		vuelist.at(i).num = i;
+		vuelist.at(i).connecting_BS = NULL;
+		vuelist.at(i).bit_rate = 10;
+		vuelist.at(i).packet_size = 800;
+		vuelist.at(i).delay_budget = 100;
+		vuelist.at(i).lambdai = vuelist.at(i).bit_rate / vuelist.at(i).packet_size;
+	}
+}
+
+void initialAP()
+{
+	for (int i = 1; i < vbslist.size(); i++)
+	{
+		vbslist.at(i).num = i;
+		vbslist.at(i).type = ap;
+		vbslist.at(i).connectingUE.clear();
+		vbslist.at(i).lambda = 0;
+		vbslist.at(i).systemT = 0;
 	}
 }
 
@@ -115,16 +139,16 @@ int main()
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
-			
-			distribution(number_ap, number_ue);	//產生AP、UE分布
 
 			vbslist.clear();					//vbslist, vuelist初始化
 			vuelist.clear();
 
 			initialconfig();					//macro eNB初始化
-			readAP();					//讀入BS
-			readUE();							//讀入UE
-			//printf("times: %d, UE number: %d\n", times, number_ue);
+			distribution(number_ap, number_ue);	//產生AP、UE分布
+			initialUE();
+			initialAP();
+//			readAP();							//讀入BS
+//			readUE();							//讀入UE
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);					//產生packet arrival
 			for (int depth = 0; depth < 3; depth++)
