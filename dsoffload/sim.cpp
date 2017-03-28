@@ -136,7 +136,9 @@ int main()
 {
 	for (int times = 1; times < 101; times++)
 	{
-		for (int number = 1; number < 16; number++)
+		double start_time = 0, end_time = 0;
+		start_time = clock();
+		for (int number = 1; number < 2; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -153,7 +155,7 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			for (int depth = 0; depth < 3; depth++)
+			for (int depth = 0; depth < 1; depth++)
 			{
 				max_depth = depth;
 				proposed_algorithm(vuelist, vbslist);
@@ -162,6 +164,8 @@ int main()
 			minT_algorithm(vuelist, vbslist);
 			SINR_based(vuelist, vbslist);
 		}
+		end_time = clock();
+		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";
 	}
 	return 0;
 }
