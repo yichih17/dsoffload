@@ -138,7 +138,7 @@ int main()
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number < 2; number++)
+		for (int number = 1; number < 16; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -155,7 +155,7 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			for (int depth = 0; depth < 1; depth++)
+			for (int depth = 0; depth < 3; depth++)
 			{
 				max_depth = depth;
 				proposed_algorithm(vuelist, vbslist);
