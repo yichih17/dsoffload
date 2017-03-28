@@ -106,6 +106,7 @@ void readAP()
 		}
 	}
 }
+
 void initialUE()
 {
 	for (int i = 0; i < vuelist.size(); i++)
@@ -140,17 +141,17 @@ int main()
 			int number_ap = 200;
 			int number_ue = number * 1000;
 
-			vbslist.clear();					//vbslist, vuelist初始化
-			vuelist.clear();
+			vbslist.clear();					//vbslist清空
+			vuelist.clear();					//vuelist清空
 
 			initialconfig();					//macro eNB初始化
 			distribution(number_ap, number_ue);	//產生AP、UE分布
-			initialUE();
-			initialAP();
+			initialUE();						//UE參數初始化
+			initialAP();						//AP參數初始化
 //			readAP();							//讀入BS
 //			readUE();							//讀入UE
 //			countAPrange();						//計算AP可傳送資料的範圍大小
-//			packet_arrival(number);					//產生packet arrival
+//			packet_arrival(number);				//產生packet arrival
 			for (int depth = 0; depth < 3; depth++)
 			{
 				printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
