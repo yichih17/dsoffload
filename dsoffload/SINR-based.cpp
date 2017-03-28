@@ -65,8 +65,8 @@ double calc_T(BS* b)
 		Xj2 += pow(b->connectingUE.at(i)->packet_size / getCapacity(b->connectingUE.at(i)), 2) * (b->connectingUE.at(i)->lambdai / b->lambda);
 	}		
 	double rho = b->lambda * Xj;
-	if (rho > 0.95)
-		T = Xj + b->lambda * Xj2 / (1 - 0.95);
+	if (rho > 0.999)
+		T = 3000;
 	else
 		T = Xj + b->lambda * Xj2 / (1 - rho);
 	return T;

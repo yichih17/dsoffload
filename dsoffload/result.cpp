@@ -30,6 +30,8 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	double avg_T_UE = 0;
 	double avg_T_UE_LTE = 0;
 	double avg_T_UE_WIFI = 0;
+	int DB_satisfied = 0;
+	double throughput = 0;
 
 	for (int i = 0; i < bslist->size(); i++)
 	{
@@ -44,8 +46,14 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 				double capacity = getCapacity(bslist->at(i).connectingUE.at(j));
 				capacity_LTEUE.push_back(capacity);
 				avg_capacity_LTEUE += capacity;
+				if (capacity > bslist->at(i).connectingUE.at(j)->lambdai)
+					throughput += bslist->at(i).connectingUE.at(j)->lambdai;
+				else
+					throughput += capacity;
 				T_LTEUE.push_back(bslist->at(i).systemT);
 				avg_T_UE_LTE += bslist->at(i).systemT;
+				if (bslist->at(i).systemT < bslist->at(i).connectingUE.at(j)->delay_budget)
+					DB_satisfied++;
 			}
 		}	
 		else
@@ -59,8 +67,14 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 				double capacity = getCapacity(bslist->at(i).connectingUE.at(j));
 				capacity_WIFIUE.push_back(capacity);
 				avg_capacity_WIFIUE += capacity;
+				if (capacity > bslist->at(i).connectingUE.at(j)->lambdai)
+					throughput += bslist->at(i).connectingUE.at(j)->lambdai;
+				else
+					throughput += capacity;
 				T_WIFIUE.push_back(bslist->at(i).systemT);
 				avg_T_UE_WIFI += bslist->at(i).systemT;
+				if (bslist->at(i).systemT < bslist->at(i).connectingUE.at(j)->delay_budget)
+					DB_satisfied++;
 			}
 		}
 
@@ -173,5 +187,10 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << "," 
 		<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << "," 
 		<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << "," 
-		<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << endl;
+		<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << endl;
+	//cout << outage_UE << "," << avg_T << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << ","
+	//	<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
+	//	<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
+	//	<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
+	//	<< DB_satisfied << "," << throughput << endl;
 }

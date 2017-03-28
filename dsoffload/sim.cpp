@@ -134,13 +134,13 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <101; times++)
+	for (int times = 1; times < 101; times++)
 	{
 		for (int number = 1; number < 16; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
-
+			printf("times: %d, UE number: %d\n", times, number_ue);
 			vbslist.clear();					//vbslist清空
 			vuelist.clear();					//vuelist清空
 
@@ -152,9 +152,9 @@ int main()
 //			readUE();							//讀入UE
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
+			
 			for (int depth = 0; depth < 3; depth++)
 			{
-				printf("times: %d, UE number: %d, depth: %d\n", times, number_ue, depth);
 				max_depth = depth;
 				proposed_algorithm(vuelist, vbslist);
 				//proposed_algorithm_new(vuelist, vbslist);
@@ -168,59 +168,35 @@ int main()
 
 void SINR_based(vector<UE> uelist, vector<BS> bslist)
 {
-	calc_dis_count = 0;
-	calc_cqi_count = 0;
-	availbs_count = 0;
-	predict_capacity_count = 0;
-	getcapacity1_count = 0;
-	getcapacity2_count = 0;
-	predictT_count = 0;
-	getT_count = 0;
-	is_influence_ue_count = 0;
-	is_all_ue_be_satisify_count = 0;
-	ue_join_bs_count = 0;
-	check_satisfy_count = 0;
-	outage_proposed = 0;
+	double start_time = 0, end_time = 0;
+	start_time = clock();
+
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_sinr(&uelist.at(i), &bslist);
+	end_time = clock();
+	cout << "SINR, run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	result_output(&bslist, &uelist, "SINR");
 }
 
 void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 {
-	calc_dis_count = 0;
-	calc_cqi_count = 0;
-	availbs_count = 0;
-	predict_capacity_count = 0;
-	getcapacity1_count = 0;
-	getcapacity2_count = 0;
-	predictT_count = 0;
-	getT_count = 0;
-	is_influence_ue_count = 0;
-	is_all_ue_be_satisify_count = 0;
-	ue_join_bs_count = 0;
-	check_satisfy_count = 0;
-	outage_proposed = 0;
+	double start_time = 0, end_time = 0;
+	start_time = clock();
+
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_minT(&uelist.at(i), &bslist);
+
+	end_time = clock();
+	cout << "minT, run time: " << (end_time - start_time) / 1000 << " s" << endl;
+
 	result_output(&bslist, &uelist, "minT");
 }
 
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 {
-	calc_dis_count = 0;
-	calc_cqi_count = 0;
-	availbs_count = 0;
-	predict_capacity_count = 0;
-	getcapacity1_count = 0;
-	getcapacity2_count = 0;
-	predictT_count = 0;
-	getT_count = 0;
-	is_influence_ue_count = 0;
-	is_all_ue_be_satisify_count = 0;
-	ue_join_bs_count = 0;
-	check_satisfy_count = 0;
-	outage_proposed = 0;
+	double start_time = 0, end_time = 0;
+	start_time = clock();
+
 	connection_status cs;
 	cs.bslist.assign(bslist.begin(), bslist.end());
 	cs.uelist.assign(uelist.begin(), uelist.end());
@@ -230,7 +206,8 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 		cs.influence = 0;
 		findbs_dso(&cs.uelist[i], &cs, 0);
 	}
-	
+	end_time = clock();
+	cout << "dso" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
@@ -240,6 +217,8 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 
 void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
 {
+	//double start_time = 0, end_time = 0;
+	//start_time = clock();
 	calc_dis_count = 0;
 	calc_cqi_count = 0;
 	availbs_count = 0;
@@ -262,7 +241,8 @@ void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
 		cs.influence = 0;
 		findbs_dso_test(&cs.uelist[i], &cs, 0);
 	}
-
+	//end_time = clock();
+	//cout << (end_time - start_time) - CLOCKS_PER_SEC << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
