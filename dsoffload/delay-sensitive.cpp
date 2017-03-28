@@ -231,13 +231,11 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 
 double get_distance(UE* u, BS* b)
 {
-	calc_dis_count++;
 	return sqrt(pow((u->coor_X - b->coor_X), 2) + pow((u->coor_Y - b->coor_Y), 2));
 }
 
 int get_CQI(BS* b, double distance)
 {
-	calc_cqi_count++;
 	int CQI = 0;
 	if (b->type == macro)	//計算LTE的CQI
 	{
@@ -291,7 +289,6 @@ int get_CQI(UE* u, BS* b)
 
 double predict_C(UE* u)
 {
-	predict_capacity_count++;
 	if (u->connecting_BS->type == macro)
 		return resource_element * macro_eff[u->CQI - 1] * total_RBG / (u->connecting_BS->connectingUE.size() + 1);
 	if (u->connecting_BS->type == ap)
@@ -300,7 +297,6 @@ double predict_C(UE* u)
 
 double predict_C(UE* u, BS* b)
 {
-	predict_capacity_count++;
 	if (b->type == macro)
 		return resource_element * macro_eff[get_CQI(u, b) - 1] * total_RBG / (b->connectingUE.size() + 1);
 	if (b->type == ap)
@@ -309,7 +305,6 @@ double predict_C(UE* u, BS* b)
 
 double predict_C(UE* u, BS* b, int CQI)
 {
-	predict_capacity_count++;
 	if (b->type == macro)
 		return resource_element * macro_eff[CQI - 1] * total_RBG / (b->connectingUE.size() + 1);
 	if (b->type == ap)
@@ -318,7 +313,6 @@ double predict_C(UE* u, BS* b, int CQI)
 
 double get_C(UE* u)
 {
-	getcapacity1_count++;
 	if (u->connecting_BS->type == macro)
 		return resource_element * macro_eff[u->CQI - 1] * total_RBG / u->connecting_BS->connectingUE.size();
 	if (u->connecting_BS->type == ap)
@@ -327,7 +321,6 @@ double get_C(UE* u)
 
 double predict_T(UE* u, BS* b)
 {
-	predictT_count++;
 	int CQI = get_CQI(u, b);
 	//試算u加入b後的lambda
 	double lambda = b->lambda + u->lambdai;
@@ -355,7 +348,6 @@ double predict_T(UE* u, BS* b)
 
 double predict_T(UE* u, BS* b, int CQI)
 {
-	predictT_count++;
 	//試算u加入b後的lambda
 	double lambda = b->lambda + u->lambdai;
 	//計算u加入b後的Xj
@@ -382,7 +374,6 @@ double predict_T(UE* u, BS* b, int CQI)
 
 double update_T(BS* b)
 {
-	getT_count++;
 	double Xj = 0;
 	double Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
@@ -397,7 +388,6 @@ double update_T(BS* b)
 
 bool influence(BS* b, double T)
 {
-	is_influence_ue_count++;
 	for (int i = 0; i < b->connectingUE.size(); i++)
 	{
 		if (T > b->connectingUE.at(i)->delay_budget)
@@ -469,7 +459,6 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T)
 
 void joinBS(UE* u, BS* targetBS, double T)
 {
-	ue_join_bs_count++;
 	if (u->connecting_BS != NULL)
 	{
 		u->connecting_BS->lambda -= u->lambdai;
@@ -536,7 +525,6 @@ bool ue_cp(UE* a, UE* b) { return a->lambdai / get_C(a) > b->lambdai / get_C(b);
 
 bool all_ue_satisfy(BS* b, double T)
 {
-	check_satisfy_count++;
 	for (int i = 0; i < b->connectingUE.size(); i++)
 		if (b->connectingUE[i]->delay_budget < T)
 			return false;

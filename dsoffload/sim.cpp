@@ -184,7 +184,6 @@ void SINR_based(vector<UE> uelist, vector<BS> bslist)
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_sinr(&uelist.at(i), &bslist);
 	result_output(&bslist, &uelist, "SINR");
-	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
 }
 
 void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
@@ -205,7 +204,6 @@ void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_minT(&uelist.at(i), &bslist);
 	result_output(&bslist, &uelist, "minT");
-	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
 }
 
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
@@ -238,7 +236,6 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	char filename[50];
 	sprintf_s(filename, "dso_%d", max_depth);
 	result_output(&bslist, &uelist, filename);
-	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
 }
 
 void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
@@ -271,5 +268,4 @@ void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
 	char filename[50];
 	sprintf_s(filename, "dso_new_%d", max_depth);
 	result_output(&bslist, &uelist, filename);
-	printf("%d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d, %d\n", calc_dis_count, calc_cqi_count, availbs_count, predict_capacity_count, getcapacity1_count, getcapacity2_count, predictT_count, getT_count, is_influence_ue_count, is_all_ue_be_satisify_count, ue_join_bs_count, check_satisfy_count);
 }

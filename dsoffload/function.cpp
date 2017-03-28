@@ -28,14 +28,12 @@ double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 
 //計算UE與BS間的距離
 double calc_distance(UE* u, BS* b)
 {
-	calc_dis_count++;
 	return sqrt(pow((u->coor_X - b->coor_X), 2) + pow((u->coor_Y - b->coor_Y), 2));
 }
 
 //計算UE與BS的CQI
 int calc_CQI(UE* u, BS* b)
 {
-	calc_cqi_count++;
 	double distance = calc_distance(u, b);
 	int CQI = 0;
 	if (b->type == macro)	//計算LTE的CQI
@@ -64,7 +62,6 @@ int calc_CQI(UE* u, BS* b)
 //更新UE可連接的BS清單
 void availbs(UE* u, vector<BS> *bslist)
 {
-	availbs_count++;
 	for (int i = 0; i < bslist->size(); i++)
 	{
 		if (calc_CQI(u, &bslist->at(i)) == 0)
@@ -90,7 +87,6 @@ void availbs(UE* u, vector<BS> *bslist)
 //試算UE加入BS後的Capacity
 double predict_Capacity(UE* u, BS* b)
 {
-	predict_capacity_count++;
 	if (b->type == macro)
 		return resource_element * macro_eff[calc_CQI(u, b) - 1] * total_RBG / (b->connectingUE.size() + 1);
 	if (b->type == ap)
@@ -100,7 +96,6 @@ double predict_Capacity(UE* u, BS* b)
 //計算UE與BS的System Capacity
 double getCapacity(UE* u, BS* b)
 {
-	getcapacity1_count++;
 	if (b->type == macro)
 		return resource_element * macro_eff[calc_CQI(u, b) - 1] * total_RBG;
 	if (b->type == ap)
@@ -110,7 +105,6 @@ double getCapacity(UE* u, BS* b)
 //計算UE與目前連接BS的Capacity
 double getCapacity(UE* u)
 {
-	getcapacity2_count++;
 	if (u->connecting_BS->type == macro)
 		return resource_element * macro_eff[calc_CQI(u, u->connecting_BS) - 1] * total_RBG / u->connecting_BS->connectingUE.size();
 	if (u->connecting_BS->type == ap)
@@ -120,7 +114,6 @@ double getCapacity(UE* u)
 /* 試算UE加入BS後，BS的Avg. system time(T*) */
 double predictT(UE* u, BS* b)
 {
-	predictT_count++;
 	//試算u加入b後的lambda
 	double lambda = b->lambda + u->lambdai;
 	//計算u加入b後的Xj
@@ -148,7 +141,6 @@ double predictT(UE* u, BS* b)
 //計算BS的avg system time(delay)
 double getT(BS* b)
 {
-	getT_count++;
 	double Xj = 0;		//在BS底下的UE的avg service time
 	double Xj2 = 0;		//在BS底下的UE的avg Xj2
 	for (int i = 0; i < b->connectingUE.size(); i++)
@@ -240,7 +232,6 @@ BS* findbs_minT(UE* u, vector<BS*> *bslist, vector <double> *T_bslist)
 //檢查offload UE會不會對其他BS造成影響
 int is_influence_ue(UE *u)
 {
-	is_influence_ue_count++;
 	bool no_bs_to_offload = true;					//有沒有其他BS可以加
 	bool has_no_influence_bs = false;				//有沒有offload後不會被影響的BS
 	for (int i = 0; i < u->availBS.size(); i++)
@@ -275,7 +266,6 @@ bool ue_sort_cp(UE* a, UE* b) { return a->lambdai/getCapacity(a) > b->lambdai/ge
 
 bool is_all_ue_be_satisify(BS* b)
 {
-	is_all_ue_be_satisify_count++;
 	int unsatisfy = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)
 		if (b->systemT > b->connectingUE[i]->delay_budget)
@@ -286,7 +276,6 @@ bool is_all_ue_be_satisify(BS* b)
 //把UE加入BS
 void ue_join_bs(UE* u, BS* b)
 {
-	ue_join_bs_count++;
 	if (u->connecting_BS != NULL)
 	{
 		u->connecting_BS->lambda -= u->lambdai;
@@ -317,7 +306,6 @@ void ue_join_bs(UE* u, BS* b)
 
 bool check_satisfy(BS* b, double T)
 {
-	check_satisfy_count++;
 	for (int i = 0; i < b->connectingUE.size(); i++)
 		if (b->connectingUE[i]->delay_budget < T)
 			return false;
