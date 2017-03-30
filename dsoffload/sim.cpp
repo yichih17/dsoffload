@@ -134,7 +134,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times < 101; times++)
+	for (int times = 1; times < 20; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
@@ -155,13 +155,13 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			for (int depth = 0; depth < 3; depth++)
-			{
-				max_depth = depth;
-				proposed_algorithm(vuelist, vbslist);
-				//proposed_algorithm_new(vuelist, vbslist);
-			}
-			minT_algorithm(vuelist, vbslist);
+			//for (int depth = 0; depth < 3; depth++)
+			//{
+			//	max_depth = depth;
+			//	proposed_algorithm(vuelist, vbslist);
+			//	//proposed_algorithm_new(vuelist, vbslist);
+			//}
+			//minT_algorithm(vuelist, vbslist);
 			SINR_based(vuelist, vbslist);
 		}
 		end_time = clock();

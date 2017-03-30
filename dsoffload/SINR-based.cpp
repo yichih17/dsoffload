@@ -2,6 +2,7 @@
 #include<iostream>
 #include<vector>
 #include<math.h>
+#define T_upper_bound 3000
 
 using namespace std;
 
@@ -57,6 +58,8 @@ void joinbs(UE* u, BS* targetbs)
 
 double calc_T(BS* b)
 {
+	if (b->systemT == T_upper_bound)
+		return T_upper_bound;
 	double T = 0;
 	double Xj = 0, Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)
@@ -66,7 +69,7 @@ double calc_T(BS* b)
 	}		
 	double rho = b->lambda * Xj;
 	if (rho > 0.999)
-		T = 3000;
+		T = T_upper_bound;
 	else
 		T = Xj + b->lambda * Xj2 / (1 - rho);
 	return T;
