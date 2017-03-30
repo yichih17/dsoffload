@@ -103,7 +103,7 @@ void findbs_sinr(UE *u, std::vector <BS> *bslist);
 void findbs_minT(UE *u, std::vector <BS> *bslist);
 
 //delay-sensitive.cpp
-bool findbs_dso_test(UE* u, connection_status* cs, int depth);
+bool findbs_ex(UE* u, connection_status* cs, int depth);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);

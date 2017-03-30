@@ -334,7 +334,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 		{
 			saturated_bs.push_back(u->availBS[i]);
 			T_saturated_bs.push_back(T);
-		}			
+		}
 		else
 		{
 			//計算availbs[i]下UE的DB有無被滿足

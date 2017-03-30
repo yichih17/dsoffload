@@ -13,7 +13,7 @@ vector <BS> vbslist;
 void SINR_based(vector <UE> uelist, vector <BS> bslist);
 void minT_algorithm(vector <UE> uelist, vector <BS> bslist);
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist);
-void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist);
+void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist);
 
 int max_depth;
 
@@ -134,7 +134,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times < 20; times++)
+	for (int times = 1; times < 101; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
@@ -155,13 +155,13 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			//for (int depth = 0; depth < 3; depth++)
-			//{
-			//	max_depth = depth;
-			//	proposed_algorithm(vuelist, vbslist);
-			//	//proposed_algorithm_new(vuelist, vbslist);
-			//}
-			//minT_algorithm(vuelist, vbslist);
+			for (int depth = 0; depth < 3; depth++)
+			{
+				max_depth = depth;
+				proposed_algorithm(vuelist, vbslist);
+				proposed_algorithm_ex(vuelist, vbslist);
+			}
+			minT_algorithm(vuelist, vbslist);
 			SINR_based(vuelist, vbslist);
 		}
 		end_time = clock();
@@ -219,23 +219,10 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	result_output(&bslist, &uelist, filename);
 }
 
-void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
+void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist)
 {
-	//double start_time = 0, end_time = 0;
-	//start_time = clock();
-	calc_dis_count = 0;
-	calc_cqi_count = 0;
-	availbs_count = 0;
-	predict_capacity_count = 0;
-	getcapacity1_count = 0;
-	getcapacity2_count = 0;
-	predictT_count = 0;
-	getT_count = 0;
-	is_influence_ue_count = 0;
-	is_all_ue_be_satisify_count = 0;
-	ue_join_bs_count = 0;
-	check_satisfy_count = 0;
-	outage_proposed = 0;
+	double start_time = 0, end_time = 0;
+	start_time = clock();
 	connection_status cs;
 	cs.bslist.assign(bslist.begin(), bslist.end());
 	cs.uelist.assign(uelist.begin(), uelist.end());
@@ -243,13 +230,13 @@ void proposed_algorithm_new(vector <UE> uelist, vector <BS> bslist)
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		findbs_dso_test(&cs.uelist[i], &cs, 0);
+		findbs_ex(&cs.uelist[i], &cs, 0);
 	}
-	//end_time = clock();
-	//cout << (end_time - start_time) - CLOCKS_PER_SEC << endl;
+	end_time = clock();
+	cout << "dso" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
-	sprintf_s(filename, "dso_new_%d", max_depth);
+	sprintf_s(filename, "dso_ex_%d", max_depth);
 	result_output(&bslist, &uelist, filename);
 }

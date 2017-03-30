@@ -21,7 +21,7 @@ void joinBS(UE* u, BS* b, double T);
 bool ue_cp(UE* a, UE* b);
 bool all_ue_satisfy(BS* b, double T);
 
-bool findbs_dso_test(UE* u, connection_status* cs, int depth)
+bool findbs_ex(UE* u, connection_status* cs, int depth)
 {
 	vector <int> availBS_CQI;
 	if (u->availBS.size() == 0)
@@ -99,12 +99,15 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 			vector <double> offload_bs_T = influence_bs_T;
 			offload_bs_T.insert(offload_bs_T.end(), saturated_bs_T.begin(), saturated_bs_T.end());
 
+			connection_status cs_origin = *cs;
+
 			BS* bs_min_T = NULL;
 			double min_T;
 			connection_status cs_min_T;
 
 			for (int i = 0; i < offload_bs.size(); i++)
 			{
+				*cs = cs_origin;
 				vector <UE*> influence_ue;
 				vector <UE*> no_influence_ue;
 
@@ -116,8 +119,8 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 					{
 						if (offload_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)
 						{
-							if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < offload_bs.at(i)->systemT)
-							{
+							//if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < offload_bs.at(i)->systemT)
+							//{
 								switch (influence(offload_bs.at(i)->connectingUE.at(j)))
 								{
 								case 0:
@@ -128,7 +131,7 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 								default:
 									break;
 								}
-							}
+							//}
 						}
 					}
 				}
@@ -138,8 +141,8 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 					{
 						if (offload_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)
 						{
-							if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < T)
-							{
+							//if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < T)
+							//{
 								switch (influence(offload_bs.at(i)->connectingUE.at(j)))
 								{
 								case 0:
@@ -149,7 +152,7 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 									influence_ue.push_back(offload_bs.at(i)->connectingUE.at(j));
 								default:
 									break;
-								}
+								//}
 							}
 						}
 					}
@@ -175,25 +178,24 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 					}
 				}
 
-				connection_status temp_cs = *cs;
-
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
-					if (findbs_dso_test(ue_sorted.at(j), &temp_cs, depth + 1))
+					if (findbs_ex(ue_sorted.at(j), cs, depth + 1))
 					{
-						temp_cs.influence++;
+						cs->influence++;
 						T = predict_T(u, offload_bs.at(i));
-						if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
-							break;
+						//if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
+						//	break;
 					}
 				}
 				if (T == -1)
 					continue;
+
 				if (bs_min_T == NULL)
 				{
 					bs_min_T = offload_bs.at(i);
 					min_T = T;
-					cs_min_T = temp_cs;
+					cs_min_T = *cs;
 				}
 				else
 				{
@@ -201,24 +203,27 @@ bool findbs_dso_test(UE* u, connection_status* cs, int depth)
 					{
 						bs_min_T = offload_bs.at(i);
 						min_T = T;
-						cs_min_T = temp_cs;
+						cs_min_T = *cs;
 					}
 					else
 					{
 						if (T == min_T)		//如果T一樣
 						{
-							if (temp_cs.influence < cs_min_T.influence)		//比影響大小
+							if (cs->influence < cs_min_T.influence)		//比影響大小
 							{
 								bs_min_T = offload_bs.at(i);
 								min_T = T;
-								cs_min_T = temp_cs;
+								cs_min_T = *cs;
 							}
 						}
 					}
 				}
 			}
 			if (bs_min_T == NULL)		//沒有辦法為UE offload UE 出去
+			{
+				*cs = cs_origin;
 				return false;
+			}
 			else
 			{
 				*cs = cs_min_T;
@@ -489,6 +494,7 @@ void joinBS(UE* u, BS* targetBS, double T)
 	targetBS->systemT = T;
 }
 
+//檢查UE是否為influence_ue
 int influence(UE *u)
 {
 	bool no_bs_to_offload = true;
