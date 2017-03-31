@@ -219,6 +219,7 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	result_output(&bslist, &uelist, filename);
 }
 
+
 void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist)
 {
 	double start_time = 0, end_time = 0;
@@ -233,7 +234,7 @@ void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist)
 		findbs_ex(&cs.uelist[i], &cs, 0);
 	}
 	end_time = clock();
-	cout << "dso" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
+	cout << "dso_ex_" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];

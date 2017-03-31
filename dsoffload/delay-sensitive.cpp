@@ -21,6 +21,220 @@ void joinBS(UE* u, BS* b, double T);
 bool ue_cp(UE* a, UE* b);
 bool all_ue_satisfy(BS* b, double T);
 
+bool findbs_dso(UE* u, connection_status* cs, int depth)
+{
+	vector <int> availBS_CQI;
+	if (u->availBS.size() == 0)
+	{
+		for (int i = 0; i < cs->bslist.size(); i++)
+		{
+			int CQI = get_CQI(u, &cs->bslist.at(i));
+			if (CQI == 0)
+				continue;
+			u->availBS.push_back(&cs->bslist.at(i));
+			availBS_CQI.push_back(CQI);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < u->availBS.size(); i++)
+		{
+			int CQI = get_CQI(u, u->availBS.at(i));
+			availBS_CQI.push_back(CQI);
+		}
+	}
+
+	vector <BS*> influence_bs;
+	vector <BS*> no_influence_bs;
+	vector <BS*> saturated_bs;
+	vector <double> influence_bs_T;
+	vector <double> no_influence_bs_T;
+	vector <double> saturated_bs_T;
+
+	for (int i = 0; i < u->availBS.size(); i++)
+	{
+		double T = predict_T(u, u->availBS.at(i), availBS_CQI.at(i));
+		if (T == -1)
+		{
+			saturated_bs.push_back(u->availBS.at(i));
+			saturated_bs_T.push_back(T);
+		}
+		else
+		{
+			if (influence(&cs->bslist.at(i), T))
+			{
+				influence_bs.push_back(u->availBS.at(i));
+				influence_bs_T.push_back(T);
+			}
+			else
+			{
+				no_influence_bs.push_back(u->availBS.at(i));
+				no_influence_bs_T.push_back(T);
+			}
+		}
+	}
+
+	if (no_influence_bs.size() != 0)
+	{
+		if (join_minT_bs(u, &no_influence_bs, &no_influence_bs_T))
+			return true;
+		else
+			return false;
+	}
+	else
+	{
+		if (depth == max_depth)
+		{
+			if (influence_bs.size() == 0)
+				return false;
+			if (join_minT_bs(u, &influence_bs, &influence_bs_T))
+				return true;
+			else
+				return false;
+		}
+		else
+		{
+			vector <BS*> offload_bs = influence_bs;
+			offload_bs.insert(offload_bs.end(), saturated_bs.begin(), saturated_bs.end());
+			vector <double> offload_bs_T = influence_bs_T;
+			offload_bs_T.insert(offload_bs_T.end(), saturated_bs_T.begin(), saturated_bs_T.end());
+
+			connection_status cs_origin = *cs;
+
+			BS* bs_min_T = NULL;
+			double min_T;
+			connection_status cs_min_T;
+
+			for (int i = 0; i < offload_bs.size(); i++)
+			{
+				*cs = cs_origin;
+				vector <UE*> influence_ue;
+				vector <UE*> no_influence_ue;
+
+				double T = offload_bs_T.at(i);
+
+				if (T == -1)
+				{
+					for (int j = 0; j < offload_bs.at(i)->connectingUE.size(); j++)
+					{
+						if (offload_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)
+						{
+							if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < offload_bs.at(i)->systemT)
+							{
+								switch (influence(offload_bs.at(i)->connectingUE.at(j)))
+								{
+								case 0:
+									no_influence_ue.push_back(offload_bs.at(i)->connectingUE.at(j));
+									break;
+								case 1:
+									influence_ue.push_back(offload_bs.at(i)->connectingUE.at(j));
+								default:
+									break;
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					for (int j = 0; j < offload_bs.at(i)->connectingUE.size(); j++)
+					{
+						if (offload_bs.at(i)->connectingUE.at(j)->availBS.size() > 0)
+						{
+							if (offload_bs.at(i)->connectingUE.at(j)->delay_budget < T)
+							{
+								switch (influence(offload_bs.at(i)->connectingUE.at(j)))
+								{
+								case 0:
+									no_influence_ue.push_back(offload_bs.at(i)->connectingUE.at(j));
+									break;
+								case 1:
+									influence_ue.push_back(offload_bs.at(i)->connectingUE.at(j));
+								default:
+									break;
+								}
+							}
+						}
+					}
+				}
+
+				vector <UE*> ue_sorted;
+				if (no_influence_ue.size() > 0)
+				{
+					sort(no_influence_ue.begin(), no_influence_ue.end(), ue_cp);		//大到小排序
+					ue_sorted = no_influence_ue;
+					if (influence_ue.size() > 0)
+					{
+						sort(no_influence_ue.begin(), no_influence_ue.end(), ue_cp);
+						ue_sorted.insert(ue_sorted.end(), influence_ue.begin(), influence_ue.end());
+					}
+				}
+				else
+				{
+					if (influence_ue.size() > 0)
+					{
+						sort(influence_ue.begin(), influence_ue.end(), ue_cp);
+						ue_sorted = influence_ue;
+					}
+				}
+
+				for (int j = 0; j < ue_sorted.size(); j++)
+				{
+					if (findbs_dso(ue_sorted.at(j), cs, depth + 1))
+					{
+						cs->influence++;
+						T = predict_T(u, offload_bs.at(i));
+						if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
+							break;
+					}
+				}
+				if (T == -1)
+					continue;
+
+				if (bs_min_T == NULL)
+				{
+					bs_min_T = offload_bs.at(i);
+					min_T = T;
+					cs_min_T = *cs;
+				}
+				else
+				{
+					if (T < min_T)		//如果T比較小
+					{
+						bs_min_T = offload_bs.at(i);
+						min_T = T;
+						cs_min_T = *cs;
+					}
+					else
+					{
+						if (T == min_T)		//如果T一樣
+						{
+							if (cs->influence < cs_min_T.influence)		//比影響大小
+							{
+								bs_min_T = offload_bs.at(i);
+								min_T = T;
+								cs_min_T = *cs;
+							}
+						}
+					}
+				}
+			}
+			if (bs_min_T == NULL)		//沒有辦法為UE offload UE 出去
+			{
+				*cs = cs_origin;
+				return false;
+			}
+			else
+			{
+				*cs = cs_min_T;
+				joinBS(u, bs_min_T, min_T);
+			}
+		}
+	}
+	return true;
+}
+
+
 bool findbs_ex(UE* u, connection_status* cs, int depth)
 {
 	vector <int> availBS_CQI;

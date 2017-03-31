@@ -93,7 +93,7 @@ extern double getCapacity(UE* u);
 extern double predictT(UE* u, BS* b);
 extern double getT(BS* b);
 extern double getrho(BS* b);
-extern bool findbs_dso(UE* u, connection_status* cs, int k);
+extern bool findbs_dso_old(UE* u, connection_status* cs, int k);
 extern void availbs(UE* u, std::vector<BS> *bslist);
 
 //SINR-based.cpp
@@ -103,6 +103,7 @@ void findbs_sinr(UE *u, std::vector <BS> *bslist);
 void findbs_minT(UE *u, std::vector <BS> *bslist);
 
 //delay-sensitive.cpp
+bool findbs_dso(UE* u, connection_status* cs, int depth);
 bool findbs_ex(UE* u, connection_status* cs, int depth);
 
 //result.cpp

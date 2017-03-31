@@ -312,7 +312,7 @@ bool check_satisfy(BS* b, double T)
 	return true;
 }
 
-bool findbs_dso(UE* u, connection_status* cs, int depth)
+bool findbs_dso_old(UE* u, connection_status* cs, int depth)
 {
 	//尋找availbs
 	if (u->connecting_BS == NULL)
@@ -480,7 +480,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth)
 				//Offload UE，直到BS的所有UE都被滿足 或 所有能offload的不影響UE都offload
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
-					if (findbs_dso(ue_sorted.at(j), cs, depth + 1))
+					if (findbs_dso_old(ue_sorted.at(j), cs, depth + 1))
 					{
 						cs->influence++;						//成功offload一個UE，影響+1
 						T = predictT(u, influence_bs.at(i));	//更新T，看還需不需要繼續offload

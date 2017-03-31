@@ -187,7 +187,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << "," 
 		<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << "," 
 		<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << "," 
-		<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << endl;
+		<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << "," << throughput << endl;
 	//cout << outage_UE << "," << avg_T << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << ","
 	//	<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 	//	<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
