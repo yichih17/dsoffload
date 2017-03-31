@@ -35,7 +35,7 @@ bool in_hotspot(UE *u)
 	double distance = 0;
 	for (int i = 0; i < vbslist.size() * (1 - hs_ratio); i++)
 	{
-		distance = calc_distance(u, &vbslist[i]);
+		distance = get_distance(u, &vbslist[i]);
 		if (distance <= range_ap[0])
 			return true;
 	}

@@ -15,7 +15,7 @@ void findbs_sinr(UE *u, vector <BS> *bslist)
 	double max_received_power = 0;
 	for (int i = 0; i < bslist->size(); i++)
 	{
-		double distance = calc_distance(u, &bslist->at(i)) / 1000;
+		double distance = get_distance(u, &bslist->at(i)) / 1000;
 		double receiced_power;
 		if (bslist->at(i).type == macro)
 		{
@@ -51,6 +51,7 @@ void findbs_sinr(UE *u, vector <BS> *bslist)
 void joinbs(UE* u, BS* targetbs)
 {
 	u->connecting_BS = targetbs;
+	u->CQI = get_CQI(u, targetbs);
 	targetbs->connectingUE.push_back(u);
 	targetbs->lambda += u->lambdai;
 	targetbs->systemT = calc_T(targetbs);
@@ -64,8 +65,8 @@ double calc_T(BS* b)
 	double Xj = 0, Xj2 = 0;
 	for (int i = 0; i < b->connectingUE.size(); i++)
 	{
-		Xj += b->connectingUE.at(i)->packet_size / getCapacity(b->connectingUE.at(i)) * (b->connectingUE.at(i)->lambdai / b->lambda);
-		Xj2 += pow(b->connectingUE.at(i)->packet_size / getCapacity(b->connectingUE.at(i)), 2) * (b->connectingUE.at(i)->lambdai / b->lambda);
+		Xj += b->connectingUE.at(i)->packet_size / get_C(b->connectingUE.at(i)) * (b->connectingUE.at(i)->lambdai / b->lambda);
+		Xj2 += pow(b->connectingUE.at(i)->packet_size / get_C(b->connectingUE.at(i)), 2) * (b->connectingUE.at(i)->lambdai / b->lambda);
 	}		
 	double rho = b->lambda * Xj;
 	if (rho > 0.999)

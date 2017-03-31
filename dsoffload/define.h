@@ -83,18 +83,6 @@ struct hotspot
 extern void distribution(int AP_number, int UE_number);
 //in packet_arrival.cpp
 extern void packet_arrival();
-//in function.cpp
-//extern void countAPrange();
-extern double calc_distance(UE* u, BS* b);
-extern int calc_CQI(UE* u, BS* b);
-extern double predict_Capacity(UE* u, BS* b);
-extern double getCapacity(UE* u, BS* b);
-extern double getCapacity(UE* u);
-extern double predictT(UE* u, BS* b);
-extern double getT(BS* b);
-extern double getrho(BS* b);
-extern bool findbs_dso_old(UE* u, connection_status* cs, int k);
-extern void availbs(UE* u, std::vector<BS> *bslist);
 
 //SINR-based.cpp
 void findbs_sinr(UE *u, std::vector <BS> *bslist);
@@ -103,6 +91,12 @@ void findbs_sinr(UE *u, std::vector <BS> *bslist);
 void findbs_minT(UE *u, std::vector <BS> *bslist);
 
 //delay-sensitive.cpp
+double get_distance(UE* u, BS* b);
+int get_CQI(UE* u, BS* b);
+double get_C(UE* u);
+double predict_C(UE* u, BS* b);
+double predict_C(UE* u, BS* b, int CQI);
+double predict_T(UE* u, BS* b, int CQI);
 bool findbs_dso(UE* u, connection_status* cs, int depth);
 bool findbs_ex(UE* u, connection_status* cs, int depth);
 

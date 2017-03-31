@@ -26,9 +26,6 @@
     <ClCompile Include="distribute.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="function.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="packet_arrival.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

@@ -21,6 +21,11 @@ void joinBS(UE* u, BS* b, double T);
 bool ue_cp(UE* a, UE* b);
 bool all_ue_satisfy(BS* b, double T);
 
+int range_macro[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
+int range_ap[] = { 185, 152, 133, 109, 84, 64, 60, 56 };
+double macro_eff[15] = { 0.1523, 0.2344, 0.377, 0.6016, 0.8770, 1.1758, 1.4766, 1.9141, 2.4063, 2.7305, 3.3223, 3.9023, 4.5234, 5.1152, 5.5546 };
+double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 };	//65Mbps = 65000000bps = 65000 bits/ms
+
 bool findbs_dso(UE* u, connection_status* cs, int depth)
 {
 	vector <int> availBS_CQI;
