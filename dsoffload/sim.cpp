@@ -142,7 +142,7 @@ int main()
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
-			printf("times: %d, UE number: %d\n", times, number_ue);
+			printf("times: %d, UE number: %d, distribution mode: %d\n", times, number_ue, UE_dis_type);
 			vbslist.clear();					//vbslist清空
 			vuelist.clear();					//vuelist清空
 
