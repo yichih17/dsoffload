@@ -4,6 +4,7 @@
 #include<fstream>
 #include<string>
 #include<vector>
+#include<thread>
 
 using namespace std;
 
@@ -12,10 +13,8 @@ vector <BS> vbslist;
 
 void SINR_based(vector <UE> uelist, vector <BS> bslist);
 void minT_algorithm(vector <UE> uelist, vector <BS> bslist);
-void proposed_algorithm(vector <UE> uelist, vector <BS> bslist);
-void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist);
-
-int max_depth;
+void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max);
+void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max);
 
 int calc_dis_count = 0;
 int calc_cqi_count = 0;
@@ -134,11 +133,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times < 101; times++)
+	for (int times = 1; times < 2; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number < 16; number++)
+		for (int number = 4; number < 5; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -155,14 +154,29 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
+			//thread dso0(proposed_algorithm, vuelist, vbslist, 0);
+			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
+			//thread dso1(proposed_algorithm, vuelist, vbslist, 1);
+			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
+			//thread dso2(proposed_algorithm, vuelist, vbslist, 2);
+			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
+			//thread mint_thread(minT_algorithm, vuelist, vbslist);
+			//thread sinr_thread(SINR_based, vuelist, vbslist);
+
+			//dso0.join();
+			//dso0_ex.join();
+			//dso1.join();
+			//dso1_ex.join();
+			//dso2.join();
+			//dso2_ex.join();
+			//sinr_thread.join();
+			//mint_thread.join();
+
 			for (int depth = 0; depth < 3; depth++)
 			{
-				max_depth = depth;
-				proposed_algorithm(vuelist, vbslist);
-				proposed_algorithm_ex(vuelist, vbslist);
+				proposed_algorithm(vuelist, vbslist, depth);
+				proposed_algorithm_ex(vuelist, vbslist, depth);
 			}
-			minT_algorithm(vuelist, vbslist);
-			SINR_based(vuelist, vbslist);
 		}
 		end_time = clock();
 		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";
@@ -196,7 +210,7 @@ void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	result_output(&bslist, &uelist, "minT");
 }
 
-void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
+void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
@@ -208,19 +222,19 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist)
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		findbs_dso(&cs.uelist[i], &cs, 0);
+		findbs_dso(&cs.uelist[i], &cs, 0, depth_max);
 	}
 	end_time = clock();
-	cout << "dso" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
+	cout << "dso" << depth_max << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
-	sprintf_s(filename, "dso_%d", max_depth);
+	sprintf_s(filename, "dso_%d", depth_max);
 	result_output(&bslist, &uelist, filename);
 }
 
 
-void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist)
+void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
@@ -231,13 +245,13 @@ void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist)
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		findbs_ex(&cs.uelist[i], &cs, 0);
+		findbs_ex(&cs.uelist[i], &cs, 0, depth_max);
 	}
 	end_time = clock();
-	cout << "dso_ex_" << max_depth << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
+	cout << "dso_ex_" << depth_max << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
-	sprintf_s(filename, "dso_ex_%d", max_depth);
+	sprintf_s(filename, "dso_ex_%d", depth_max);
 	result_output(&bslist, &uelist, filename);
 }

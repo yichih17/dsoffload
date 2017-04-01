@@ -27,7 +27,6 @@ struct UE;
 extern std::vector <BS> vbslist;
 extern std::vector <UE> vuelist;
 
-extern int max_depth;
 int range_macro[];
 int range_ap[];
 extern double macro_eff[15];
@@ -97,8 +96,8 @@ double get_C(UE* u);
 double predict_C(UE* u, BS* b);
 double predict_C(UE* u, BS* b, int CQI);
 double predict_T(UE* u, BS* b, int CQI);
-bool findbs_dso(UE* u, connection_status* cs, int depth);
-bool findbs_ex(UE* u, connection_status* cs, int depth);
+bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max);
+bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);
