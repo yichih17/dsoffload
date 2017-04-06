@@ -46,8 +46,8 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 				double capacity = get_C(bslist->at(i).connectingUE.at(j));
 				capacity_LTEUE.push_back(capacity);
 				avg_capacity_LTEUE += capacity;
-				if (capacity > bslist->at(i).connectingUE.at(j)->lambdai)
-					throughput += bslist->at(i).connectingUE.at(j)->lambdai;
+				if (capacity > bslist->at(i).connectingUE.at(j)->bit_rate)
+					throughput += bslist->at(i).connectingUE.at(j)->bit_rate;
 				else
 					throughput += capacity;
 				T_LTEUE.push_back(bslist->at(i).systemT);
@@ -67,8 +67,8 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 				double capacity = get_C(bslist->at(i).connectingUE.at(j));
 				capacity_WIFIUE.push_back(capacity);
 				avg_capacity_WIFIUE += capacity;
-				if (capacity > bslist->at(i).connectingUE.at(j)->lambdai)
-					throughput += bslist->at(i).connectingUE.at(j)->lambdai;
+				if (capacity > bslist->at(i).connectingUE.at(j)->bit_rate)
+					throughput += bslist->at(i).connectingUE.at(j)->bit_rate;
 				else
 					throughput += capacity;
 				T_WIFIUE.push_back(bslist->at(i).systemT);
