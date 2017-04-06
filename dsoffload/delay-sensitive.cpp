@@ -563,7 +563,7 @@ double predict_T(UE* u, BS* b)
 	double Xuj = u->packet_size / predict_C(u, b, CQI);
 	Xj += Xuj * (u->lambdai / lambda);
 	double rho = Xj * lambda;
-	if (rho >= 0.999)		//Saturated
+	if (rho >= rho_max)		//Saturated
 		return -1;
 	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
@@ -589,7 +589,7 @@ double predict_T(UE* u, BS* b, int CQI)
 	double Xuj = u->packet_size / predict_C(u, b, CQI);
 	Xj += Xuj * (u->lambdai / lambda);
 	double rho = Xj * lambda;
-	if (rho >= 0.999)		//Saturated
+	if (rho >= rho_max)		//Saturated
 		return -1;
 	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
 	//用M/G/1公式算T
