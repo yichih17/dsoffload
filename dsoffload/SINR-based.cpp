@@ -2,17 +2,20 @@
 #include<iostream>
 #include<vector>
 #include<math.h>
+#include<algorithm>
+
 #define T_upper_bound 3000
 
 using namespace std;
 
-void joinbs(UE* u, BS* targetbs);
+int max_power(vector <double> power);
+void joinBS_simple(UE* u, BS* targetbs, double T);
 double calc_T(BS* b);
 
 void findbs_sinr(UE *u, vector <BS> *bslist)
 {
-	BS *targetbs = NULL;
-	double max_received_power = 0;
+	vector <BS*> availbs;
+	vector <double> P_received;
 	for (int i = 0; i < bslist->size(); i++)
 	{
 		double distance = get_distance(u, &bslist->at(i)) / 1000;
@@ -21,40 +24,52 @@ void findbs_sinr(UE *u, vector <BS> *bslist)
 		{
 			if (distance > range_macro[0] / 1000.0)
 				continue;
+			availbs.push_back(&bslist->at(i));
 			receiced_power = power_macro - (128.1 + 37.6 * log10(distance));
-		}			
+			P_received.push_back(receiced_power);
+		}
 		else
 		{
 			if (distance > range_ap[0] / 1000.0)
 				continue;
+			availbs.push_back(&bslist->at(i));
 			receiced_power = power_ap - (140.1 + 36.7 * log10(distance));
-		}
-			
-		if (targetbs == NULL)
-		{
-			max_received_power = receiced_power;
-			targetbs = &bslist->at(i);
-		}			
-		else
-		{
-			if (receiced_power > max_received_power)
-			{
-				max_received_power = receiced_power;
-				targetbs = &bslist->at(i);
-			}
+			P_received.push_back(receiced_power);
 		}
 	}
-	joinbs(u, targetbs);
+
+	while(P_received.size()!=0)
+	{
+		int max_index = max_power(P_received);
+		double T = predict_T(u, availbs[max_index]);
+		//T method
+		if (T != -1)
+		{
+			joinBS_simple(u, availbs[max_index], T);
+			break;
+		}
+		else
+		{
+			P_received.erase(P_received.begin() + max_index);
+			availbs.erase(availbs.begin() + max_index);
+		}		
+	}
 	return;
 }
 
-void joinbs(UE* u, BS* targetbs)
+int max_power(vector <double> power)
 {
-	u->connecting_BS = targetbs;
-	u->CQI = get_CQI(u, targetbs);
-	targetbs->connectingUE.push_back(u);
-	targetbs->lambda += u->lambdai;
-	targetbs->systemT = calc_T(targetbs);
+	int max_index = 0;
+	double max_power = power[0];
+	for (int i = 1; i < power.size(); i++)
+	{
+		if (power[i] > max_power)
+		{
+			max_index = i;
+			max_power = power[i];
+		}
+	}
+	return max_index;
 }
 
 double calc_T(BS* b)
@@ -69,7 +84,7 @@ double calc_T(BS* b)
 		Xj2 += pow(b->connectingUE.at(i)->packet_size / get_C(b->connectingUE.at(i)), 2) * (b->connectingUE.at(i)->lambdai / b->lambda);
 	}		
 	double rho = b->lambda * Xj;
-	if (rho > 0.999)
+	if (rho > rho_max)
 		T = T_upper_bound;
 	else
 		T = Xj + b->lambda * Xj2 / (1 - rho);

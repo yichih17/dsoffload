@@ -13,6 +13,7 @@ vector <BS> vbslist;
 
 void SINR_based(vector <UE> uelist, vector <BS> bslist);
 void minT_algorithm(vector <UE> uelist, vector <BS> bslist);
+void capacity_based(vector <UE> uelist, vector <BS> bslist);
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max);
 void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max);
 
@@ -133,7 +134,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 25; times++)
+	for (int times = 1; times <= 20; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
@@ -141,7 +142,7 @@ int main()
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
-			printf("times: %d, UE number: %d, distribution mode: %d\n", times, number_ue, UE_dis_type);
+			printf("\ntimes: %d, UE number: %d, distribution mode: %d\n", times, number_ue, UE_dis_type);
 			vbslist.clear();					//vbslist清空
 			vuelist.clear();					//vuelist清空
 
@@ -154,31 +155,31 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			//thread dso0(proposed_algorithm, vuelist, vbslist, 0);
-			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
-			//thread dso1(proposed_algorithm, vuelist, vbslist, 1);
-			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
-			//thread dso2(proposed_algorithm, vuelist, vbslist, 2);
-			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
-			//thread mint_thread(minT_algorithm, vuelist, vbslist);
-			//thread sinr_thread(SINR_based, vuelist, vbslist);
+			thread dso0(proposed_algorithm, vuelist, vbslist, 0);
+			thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
+			thread dso1(proposed_algorithm, vuelist, vbslist, 1);
+			thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
+			thread dso2(proposed_algorithm, vuelist, vbslist, 2);
+			thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
+			thread sinr_thread(SINR_based, vuelist, vbslist);
+			thread capa_thread(capacity_based, vuelist, vbslist);
 
-			//dso0.join();
-			//dso0_ex.join();
-			//dso1.join();
-			//dso1_ex.join();
-			//dso2.join();
-			//dso2_ex.join();
-			//sinr_thread.join();
-			//mint_thread.join();
+			dso0.join();
+			dso0_ex.join();
+			dso1.join();
+			dso1_ex.join();
+			dso2.join();
+			dso2_ex.join();
+			sinr_thread.join();
+			capa_thread.join();
 
-			minT_algorithm(vuelist, vbslist);
-			SINR_based(vuelist, vbslist);
-			for (int depth = 0; depth < 3; depth++)
-			{
-				proposed_algorithm(vuelist, vbslist, depth);
-				proposed_algorithm_ex(vuelist, vbslist, depth);
-			}
+			//SINR_based(vuelist, vbslist);
+			//capacity_based(vuelist, vbslist);
+			//for (int depth = 0; depth < 3; depth++)
+			//{
+			//	proposed_algorithm(vuelist, vbslist, depth);
+			//	proposed_algorithm_ex(vuelist, vbslist, depth);
+			//}
 		}
 		end_time = clock();
 		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";
@@ -190,26 +191,33 @@ void SINR_based(vector<UE> uelist, vector<BS> bslist)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
-
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_sinr(&uelist.at(i), &bslist);
 	end_time = clock();
 	printf("SINR, run time: %f\n", (end_time - start_time) / 1000);
-	//cout << "SINR, run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	result_output(&bslist, &uelist, "SINR");
+}
+
+void capacity_based(vector<UE> uelist, vector<BS> bslist)
+{
+	double start_time = 0, end_time = 0;
+	start_time = clock();
+	for (int i = 0; i < uelist.size(); i++)
+		findbs_capa(&uelist.at(i), &bslist);
+	end_time = clock();
+	printf("Capa, run time: %f\n", (end_time - start_time) / 1000);
+	result_output(&bslist, &uelist, "Capa");
 }
 
 void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
-
 	for (int i = 0; i < uelist.size(); i++)
 		findbs_minT(&uelist.at(i), &bslist);
 
 	end_time = clock();
 	printf("minT, run time: %f\n", (end_time - start_time) / 1000);
-	//cout << "minT, run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	result_output(&bslist, &uelist, "minT");
 }
 
@@ -229,7 +237,6 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max)
 	}
 	end_time = clock();
 	printf("dso%d, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	//cout << "dso" << depth_max << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
@@ -253,7 +260,6 @@ void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max
 	}
 	end_time = clock();
 	printf("dso_ex_%d, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	//cout << "dso_ex_" << depth_max << ", run time: " << (end_time - start_time) / 1000 << " s" << endl;
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];

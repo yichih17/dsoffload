@@ -94,26 +94,26 @@ void distribution(int AP_number, int UE_number)
 		}
 	
 	//輸出AP座標
-	fstream APwrite;
-	APwrite.open("AP_dis.txt", ios::out | ios::trunc);
-	if (APwrite.fail())
-		cout << "檔案無法開啟" << endl;
-	else
-	{
-		for (int i = 0; i < AP_number; i++)
-			APwrite << vbslist[i].coor_X << " " << vbslist[i].coor_Y << endl;
-	}
-	APwrite.close();
+	//fstream APwrite;
+	//APwrite.open("AP_dis.txt", ios::out | ios::trunc);
+	//if (APwrite.fail())
+	//	cout << "檔案無法開啟" << endl;
+	//else
+	//{
+	//	for (int i = 0; i < AP_number; i++)
+	//		APwrite << vbslist[i].coor_X << " " << vbslist[i].coor_Y << endl;
+	//}
+	//APwrite.close();
 
 	//輸出UE座標
-	fstream UEwrite;
-	UEwrite.open("UE_dis.txt", ios::out | ios::trunc);
-	if (UEwrite.fail())
-		cout << "檔案無法開啟" << endl;
-	else
-	{
-		for (int i = 0; i < UE_number; i++)
-			UEwrite << vuelist[i].coor_X << " " << vuelist[i].coor_Y << endl;
-	}
-	UEwrite.close();
+	//fstream UEwrite;
+	//UEwrite.open("UE_dis.txt", ios::out | ios::trunc);
+	//if (UEwrite.fail())
+	//	cout << "檔案無法開啟" << endl;
+	//else
+	//{
+	//	for (int i = 0; i < UE_number; i++)
+	//		UEwrite << vuelist[i].coor_X << " " << vuelist[i].coor_Y << endl;
+	//}
+	//UEwrite.close();
 }

@@ -35,9 +35,6 @@
     <ClCompile Include="result.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="minT.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="delay-sensitive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

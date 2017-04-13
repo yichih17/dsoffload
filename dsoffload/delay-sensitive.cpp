@@ -17,9 +17,11 @@ double update_T(BS* b);
 bool influence(BS* b, double T);
 int influence(UE *u);
 bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T);
+void joinBS_simple(UE* u, BS* targetbs, double T);
 void joinBS(UE* u, BS* b, double T);
 bool ue_cp(UE* a, UE* b);
 bool all_ue_satisfy(BS* b, double T);
+template <class T> int max_index(vector <T> v);
 
 int range_macro[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
 int range_ap[] = { 185, 152, 133, 109, 84, 64, 60, 56 };
@@ -239,7 +241,6 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 	return true;
 }
 
-
 bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max)
 {
 	vector <int> availBS_CQI;
@@ -451,6 +452,98 @@ bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max)
 		}
 	}
 	return true;
+}
+
+void findbs_minT(UE *u, vector <BS> *bslist)
+{
+	double minT = 0;
+	int targetBS_CQI = 0;
+	BS *targetBS = NULL;
+	for (int i = 0; i < bslist->size(); i++)
+	{
+		int CQI = get_CQI(u, &bslist->at(i));
+		if (CQI == 0)
+			continue;
+		double T = predict_T(u, &bslist->at(i), CQI);
+		if (T == -1)
+			continue;
+		if (targetBS == NULL)
+		{
+			targetBS = &bslist->at(i);
+			minT = T;
+			targetBS_CQI = CQI;
+		}
+		else
+		{
+			if (T < minT)
+			{
+				targetBS = &bslist->at(i);
+				minT = T;
+				targetBS_CQI = CQI;
+			}
+			else
+			{
+				if (T == minT)
+				{
+					double capacity = predict_C(u, &bslist->at(i), CQI);
+					double capacity_targetbs = predict_C(u, targetBS, targetBS_CQI);
+					if (capacity > capacity_targetbs)
+					{
+						targetBS = &bslist->at(i);
+						minT = T;
+						targetBS_CQI = CQI;
+					}
+					else
+					{
+						if (capacity == capacity_targetbs)
+						{
+							double distance = get_distance(u, &bslist->at(i));
+							double distance_targetBS = get_distance(u, targetBS);
+							if (distance < distance_targetBS)
+							{
+								targetBS = &bslist->at(i);
+								minT = T;
+								targetBS_CQI = CQI;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	if (targetBS != NULL)
+		joinBS_simple(u, targetBS, minT);
+}
+
+void findbs_capa(UE *u, vector <BS> *bslist)
+{
+	vector <double> capacity;
+	vector <BS*> availbs;
+	for (int i = 0; i < bslist->size(); i++)
+	{
+		int CQI = get_CQI(u, &bslist->at(i));
+		if (CQI == 0)
+			continue;
+		availbs.push_back(&bslist->at(i));
+		capacity.push_back(predict_C(u, &bslist->at(i)));
+	}
+
+	while (availbs.size()!=0)
+	{
+		int max = max_index(capacity);
+		double T = predict_T(u, availbs[max]);
+		if (T == -1)
+		{
+			availbs.erase(availbs.begin() + max);
+			capacity.erase(capacity.begin() + max);
+		}
+		else
+		{
+			joinBS_simple(u, availbs[max], T);
+			break;
+		}
+	}
+	return;
 }
 
 double get_distance(UE* u, BS* b)
@@ -681,6 +774,15 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T)
 	return true;
 }
 
+void joinBS_simple(UE* u, BS* targetbs, double T)
+{
+	u->connecting_BS = targetbs;
+	u->CQI = get_CQI(u, targetbs);
+	targetbs->connectingUE.push_back(u);
+	targetbs->lambda += u->lambdai;
+	targetbs->systemT = T;
+}
+
 void joinBS(UE* u, BS* targetBS, double T)
 {
 	if (u->connecting_BS != NULL)
@@ -754,4 +856,20 @@ bool all_ue_satisfy(BS* b, double T)
 		if (b->connectingUE[i]->delay_budget < T)
 			return false;
 	return true;
+}
+
+template <class T>
+int max_index(vector <T> v)
+{
+	int index = 0;
+	T max = v[0];
+	for (int i = 1; i < v.size(); i++)
+	{
+		if (v[i] > max)
+		{
+			index = i;
+			max = v[i];
+		}
+	}
+	return index;
 }

@@ -87,18 +87,19 @@ extern void packet_arrival();
 //SINR-based.cpp
 void findbs_sinr(UE *u, std::vector <BS> *bslist);
 
-//minT.cpp
-void findbs_minT(UE *u, std::vector <BS> *bslist);
-
 //delay-sensitive.cpp
 double get_distance(UE* u, BS* b);
 int get_CQI(UE* u, BS* b);
 double get_C(UE* u);
 double predict_C(UE* u, BS* b);
 double predict_C(UE* u, BS* b, int CQI);
+double predict_T(UE* u, BS* b);
 double predict_T(UE* u, BS* b, int CQI);
+double update_T(BS* b);
 bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max);
 bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max);
+void findbs_minT(UE *u, std::vector <BS> *bslist);
+void findbs_capa(UE *u, std::vector <BS> *bslist);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);
