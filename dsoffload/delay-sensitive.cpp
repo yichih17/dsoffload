@@ -13,6 +13,8 @@ double predict_C(UE* u, BS* b, int CQI);
 double get_C(UE* u);
 double predict_T(UE* u, BS* b);
 double predict_T(UE* u, BS* b, int CQI);
+double predict_T_constraint(UE* u, BS* b);
+double predict_T_constraint(UE* u, BS* b, int CQI);
 double update_T(BS* b);
 bool influence(BS* b, double T);
 int influence(UE *u);
@@ -22,6 +24,7 @@ void joinBS(UE* u, BS* b, double T);
 bool ue_cp(UE* a, UE* b);
 bool all_ue_satisfy(BS* b, double T);
 template <class T> int max_index(vector <T> v);
+double BS_T_constraint(BS *b);
 
 int range_macro[] = { 1732, 1511, 1325, 1162, 1019, 894, 784, 688, 623, 565, 512, 449, 407, 357, 303 };
 int range_ap[] = { 185, 152, 133, 109, 84, 64, 60, 56 };
@@ -60,7 +63,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
-		double T = predict_T(u, u->availBS.at(i), availBS_CQI.at(i));
+		double T = predict_T_constraint(u, u->availBS.at(i), availBS_CQI.at(i));
 		if (T == -1)
 		{
 			saturated_bs.push_back(u->availBS.at(i));
@@ -188,12 +191,12 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 				int offloaedd_ue_number = 0;
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
-					double T_before = offload_bs.at(i)->systemT;
+//					double T_before = offload_bs.at(i)->systemT;
 					if (findbs_dso(ue_sorted.at(j), cs, depth + 1, depth_max))
 					{
 						offloaedd_ue_number++;
 						cs->influence++;
-						T = predict_T(u, offload_bs.at(i));
+						T = predict_T_constraint(u, offload_bs.at(i));
 						if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
 							break;
 					}
@@ -692,6 +695,65 @@ double predict_T(UE* u, BS* b, int CQI)
 	return Xj + lambda * Xj2 / (1 - lambda * Xj);
 }
 
+double predict_T_constraint(UE* u, BS* b)
+{
+	int CQI = get_CQI(u, b);
+	//試算u加入b後的lambda
+	double lambda = b->lambda + u->lambdai;
+	//計算u加入b後的Xj
+	double Xj = 0;
+	double Xj2 = 0;
+	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
+	{
+		double pktsize_i = b->connectingUE.at(i)->packet_size;
+		double capacity_i = predict_C(b->connectingUE.at(i));
+		double weight_i = b->connectingUE.at(i)->lambdai / lambda;
+		double Xij = pktsize_i / capacity_i;
+		Xj += Xij * weight_i;
+		Xj2 += pow(Xij, 2) * weight_i;
+	}
+	double Xuj = u->packet_size / predict_C(u, b, CQI);
+	Xj += Xuj * (u->lambdai / lambda);
+	double rho = Xj * lambda;
+	if (rho >= rho_max)		//Saturated
+		return -1;
+	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
+	//用M/G/1公式算T
+	double T = Xj + lambda * Xj2 / (1 - lambda * Xj);
+	if (T > b->systemT_constraint)
+		return -1;
+	return T;
+}
+
+double predict_T_constraint(UE* u, BS* b, int CQI)
+{
+	//試算u加入b後的lambda
+	double lambda = b->lambda + u->lambdai;
+	//計算u加入b後的Xj
+	double Xj = 0;
+	double Xj2 = 0;
+	for (int i = 0; i < b->connectingUE.size(); i++)	//原本在b的UE的Xij加起來
+	{
+		double pktsize_i = b->connectingUE.at(i)->packet_size;
+		double capacity_i = predict_C(b->connectingUE.at(i));
+		double weight_i = b->connectingUE.at(i)->lambdai / lambda;
+		double Xij = pktsize_i / capacity_i;
+		Xj += Xij * weight_i;
+		Xj2 += pow(Xij, 2) * weight_i;
+	}
+	double Xuj = u->packet_size / predict_C(u, b, CQI);
+	Xj += Xuj * (u->lambdai / lambda);
+	double rho = Xj * lambda;
+	if (rho >= rho_max)		//Saturated
+		return -1;
+	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
+	//用M/G/1公式算T
+	double T = Xj + lambda * Xj2 / (1 - lambda * Xj);
+	if (T > b->systemT_constraint)
+		return -1;
+	return T;
+}
+
 double update_T(BS* b)
 {
 	double Xj = 0;
@@ -802,6 +864,8 @@ void joinBS(UE* u, BS* targetBS, double T)
 		}
 		u->connecting_BS->systemT = update_T(u->connecting_BS);
 		u->availBS.push_back(u->connecting_BS);
+		u->connecting_BS->systemT_constraint = BS_T_constraint(u->connecting_BS);
+
 	}
 	for (int delete_bs = 0; delete_bs < u->availBS.size(); delete_bs++)
 	{
@@ -816,6 +880,7 @@ void joinBS(UE* u, BS* targetBS, double T)
 	targetBS->lambda += u->lambdai;
 	targetBS->connectingUE.push_back(u);
 	targetBS->systemT = T;
+	targetBS->systemT_constraint = BS_T_constraint(targetBS);
 }
 
 //檢查UE是否為influence_ue
@@ -875,4 +940,14 @@ int max_index(vector <T> v)
 		}
 	}
 	return index;
+}
+
+double BS_T_constraint(BS *b)
+{
+	vector <int> vdb;
+	for (int i = 0; i < b->connectingUE.size(); i++)
+		vdb.push_back(b->connectingUE.at(i)->delay_budget);
+	sort(vdb.begin(), vdb.end());
+	int mid = b->connectingUE.size() / 2;
+	return (double)vdb.at(mid);
 }
