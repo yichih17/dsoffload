@@ -109,13 +109,46 @@ void readAP()
 
 void initialUE()
 {
+	int type_count[UE_type_number] = { 0 };
+	int type_max = vuelist.size() / UE_type_number + 1;
+	srand((unsigned)time(NULL));			//給定亂數種子
+
 	for (int i = 0; i < vuelist.size(); i++)
 	{
+		int type;
+		do
+		{
+			type = rand() % 3;
+			if (type_count[type] == type_max)
+				cout << " ";
+		} while (type_count[type] == type_max);
+
+		type_count[type]++;
+		vuelist.at(i).type = (type_ue)type;
+
+		switch (vuelist.at(i).type)
+		{
+		case 0:
+			vuelist.at(i).bit_rate = 10;
+			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).delay_budget = 50;
+			break;
+		case 1:
+			vuelist.at(i).bit_rate = 10;
+			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).delay_budget = 100;
+			break;
+		case 2:
+			vuelist.at(i).bit_rate = 10;
+			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).delay_budget = 300;
+			break;
+		default:
+			break;
+		}
+
 		vuelist.at(i).num = i;
 		vuelist.at(i).connecting_BS = NULL;
-		vuelist.at(i).bit_rate = 10;
-		vuelist.at(i).packet_size = 800;
-		vuelist.at(i).delay_budget = 100;
 		vuelist.at(i).lambdai = vuelist.at(i).bit_rate / vuelist.at(i).packet_size;
 	}
 }
@@ -138,7 +171,7 @@ int main()
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number <= 15; number++)
+		for (int number = 15; number <= 15; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -155,31 +188,31 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			thread dso0(proposed_algorithm, vuelist, vbslist, 0);
-			thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
-			thread dso1(proposed_algorithm, vuelist, vbslist, 1);
-			thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
-			thread dso2(proposed_algorithm, vuelist, vbslist, 2);
-			thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
-			thread sinr_thread(SINR_based, vuelist, vbslist);
-			thread capa_thread(capacity_based, vuelist, vbslist);
+			//thread dso0(proposed_algorithm, vuelist, vbslist, 0);
+			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
+			//thread dso1(proposed_algorithm, vuelist, vbslist, 1);
+			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
+			//thread dso2(proposed_algorithm, vuelist, vbslist, 2);
+			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
+			//thread sinr_thread(SINR_based, vuelist, vbslist);
+			//thread capa_thread(capacity_based, vuelist, vbslist);
 
-			dso0.join();
-			dso0_ex.join();
-			dso1.join();
-			dso1_ex.join();
-			dso2.join();
-			dso2_ex.join();
-			sinr_thread.join();
-			capa_thread.join();
+			//dso0.join();
+			//dso0_ex.join();
+			//dso1.join();
+			//dso1_ex.join();
+			//dso2.join();
+			//dso2_ex.join();
+			//sinr_thread.join();
+			//capa_thread.join();
 
-			//SINR_based(vuelist, vbslist);
-			//capacity_based(vuelist, vbslist);
-			//for (int depth = 0; depth < 3; depth++)
-			//{
-			//	proposed_algorithm(vuelist, vbslist, depth);
-			//	proposed_algorithm_ex(vuelist, vbslist, depth);
-			//}
+			SINR_based(vuelist, vbslist);
+			capacity_based(vuelist, vbslist);
+			for (int depth = 0; depth < 3; depth++)
+			{
+				proposed_algorithm(vuelist, vbslist, depth);
+				proposed_algorithm_ex(vuelist, vbslist, depth);
+			}
 		}
 		end_time = clock();
 		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";

@@ -15,12 +15,13 @@
 #define TTI 1000		//total simulation time (TTI)
 
 #define UE_dis_type 1	//distribution mode of UE (0:uniform, 1:hotspot)
+#define UE_type_number 3
 #define rho_max 0.99
 
 #include<vector>
 
 enum type_bs { macro, ap, ue };
-enum type_ue { type1, type2, type3, type4};
+enum type_ue { type1, type2, type3, type4 };
 enum type_distribution {uniform, hotspot};
 
 struct BS;

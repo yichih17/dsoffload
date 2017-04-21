@@ -185,10 +185,13 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 					}
 				}
 
+				int offloaedd_ue_number = 0;
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
+					double T_before = offload_bs.at(i)->systemT;
 					if (findbs_dso(ue_sorted.at(j), cs, depth + 1, depth_max))
 					{
+						offloaedd_ue_number++;
 						cs->influence++;
 						T = predict_T(u, offload_bs.at(i));
 						if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
