@@ -168,11 +168,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 20; times++)
+	for (int times = 1; times <= 5; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 15; number <= 15; number++)
+		for (int number = 1; number <= 15; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -194,6 +194,7 @@ int main()
 			thread dso2(proposed_algorithm, vuelist, vbslist, 2);
 			thread sinr_thread(SINR_based, vuelist, vbslist);
 			thread capa_thread(capacity_based, vuelist, vbslist);
+
 			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
 			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
 			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
@@ -203,6 +204,7 @@ int main()
 			dso2.join();
 			sinr_thread.join();
 			capa_thread.join();
+
 			//dso0_ex.join();
 			//dso1_ex.join();
 			//dso2_ex.join();

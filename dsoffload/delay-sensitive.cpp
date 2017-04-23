@@ -944,10 +944,33 @@ int max_index(vector <T> v)
 
 double BS_T_constraint(BS *b)
 {
-	vector <int> vdb;
+	int type_conut[3] = { 0 };
 	for (int i = 0; i < b->connectingUE.size(); i++)
-		vdb.push_back(b->connectingUE.at(i)->delay_budget);
-	sort(vdb.begin(), vdb.end());
-	int mid = b->connectingUE.size() / 2;
-	return (double)vdb.at(mid);
+	{
+		if (b->connectingUE.at(i)->delay_budget == 50)
+			type_conut[0]++;
+		else
+		{
+			if (b->connectingUE.at(i)->delay_budget == 100)
+				type_conut[1]++;
+			else
+				type_conut[2]++;
+		}
+	}
+
+	int half;
+	if (b->connectingUE.size() % 2 == 0)
+		half = b->connectingUE.size() / 2;
+	else
+		half = b->connectingUE.size() / 2 + 1;
+
+	if (type_conut[2] >= half)
+		return 300;
+	else
+	{
+		if (type_conut[2] + type_conut[1] >= half)
+			return 100;
+		else
+			return 50;
+	}
 }
