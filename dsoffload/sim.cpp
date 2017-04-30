@@ -168,7 +168,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 5; times++)
+	for (int times = 1; times <= 50; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();

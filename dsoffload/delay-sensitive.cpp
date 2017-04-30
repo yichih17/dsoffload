@@ -958,17 +958,11 @@ double BS_T_constraint(BS *b)
 		}
 	}
 
-	int half;
-	if (b->connectingUE.size() % 2 == 0)
-		half = b->connectingUE.size() / 2;
-	else
-		half = b->connectingUE.size() / 2 + 1;
-
-	if (type_conut[2] >= half)
+	if (type_conut[2] >= b->connectingUE.size() * 0.5)
 		return 300;
 	else
 	{
-		if (type_conut[2] + type_conut[1] >= half)
+		if (type_conut[2] + type_conut[1] >= b->connectingUE.size() * 0.5)
 			return 100;
 		else
 			return 50;
