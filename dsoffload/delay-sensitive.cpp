@@ -2,7 +2,6 @@
 #include<vector>
 #include<algorithm>
 #include"define.h"
-#define T_threshold 0.5
 
 using namespace std;
 

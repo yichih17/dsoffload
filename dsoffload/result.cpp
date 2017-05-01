@@ -205,10 +205,12 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	{
 		fstream detail_analysis;
 		char filename_detail[50];
+		double t_max = T_threshold;
+		int x = t_max * 100;
 		if (UE_dis_type == uniform)
-			sprintf_s(filename_detail, "%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
+			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size(), x);
 		if (UE_dis_type == hotspot)
-			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
+			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size(), x);
 
 		detail_analysis.open(filename_detail, ios::out | ios::trunc);
 		for (int i = 0; i < bslist->size(); i++)
