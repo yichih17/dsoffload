@@ -2,6 +2,7 @@
 #include<vector>
 #include<algorithm>
 #include"define.h"
+#define T_threshold 0.5
 
 using namespace std;
 
@@ -33,6 +34,7 @@ double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 
 
 bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 {
+	//計算可連接基地台
 	vector <int> availBS_CQI;
 	if (u->availBS.size() == 0)
 	{
@@ -54,6 +56,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 		}
 	}
 
+	//基地台分類
 	vector <BS*> influence_bs;
 	vector <BS*> no_influence_bs;
 	vector <BS*> saturated_bs;
@@ -63,28 +66,36 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
-		double T = predict_T_constraint(u, u->availBS.at(i), availBS_CQI.at(i));
-		if (T == -1)
+		double T = predict_T(u, u->availBS.at(i), availBS_CQI.at(i));
+		if (T == -1)										//load飽和
 		{
 			saturated_bs.push_back(u->availBS.at(i));
 			saturated_bs_T.push_back(T);
 		}
 		else
 		{
-			if (influence(&cs->bslist.at(i), T))
+			if (T > u->availBS.at(i)->systemT_constraint)	//T上限飽和
 			{
-				influence_bs.push_back(u->availBS.at(i));
-				influence_bs_T.push_back(T);
+				saturated_bs.push_back(u->availBS.at(i));
+				saturated_bs_T.push_back(T);
 			}
 			else
 			{
-				no_influence_bs.push_back(u->availBS.at(i));
-				no_influence_bs_T.push_back(T);
+				if (influence(&cs->bslist.at(i), T))		//受影響
+				{
+					influence_bs.push_back(u->availBS.at(i));
+					influence_bs_T.push_back(T);
+				}
+				else
+				{											//不受影響
+					no_influence_bs.push_back(u->availBS.at(i));
+					no_influence_bs_T.push_back(T);
+				}
 			}
 		}
 	}
 
-	if (no_influence_bs.size() != 0)
+	if (no_influence_bs.size() != 0)						//優先加入不受影響基地台
 	{
 		if (join_minT_bs(u, &no_influence_bs, &no_influence_bs_T))
 			return true;
@@ -93,7 +104,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 	}
 	else
 	{
-		if (depth == depth_max)
+		if (depth == depth_max)								//從受影響基地台擇一
 		{
 			if (influence_bs.size() == 0)
 				return false;
@@ -103,7 +114,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 				return false;
 		}
 		else
-		{
+		{													//嘗試offload UE出去看看
 			vector <BS*> offload_bs = influence_bs;
 			offload_bs.insert(offload_bs.end(), saturated_bs.begin(), saturated_bs.end());
 			vector <double> offload_bs_T = influence_bs_T;
@@ -188,20 +199,22 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max)
 					}
 				}
 
-				int offloaedd_ue_number = 0;
+				//int offloaedd_ue_number = 0;
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
 //					double T_before = offload_bs.at(i)->systemT;
 					if (findbs_dso(ue_sorted.at(j), cs, depth + 1, depth_max))
 					{
-						offloaedd_ue_number++;
+						//offloaedd_ue_number++;
 						cs->influence++;
-						T = predict_T_constraint(u, offload_bs.at(i));
+						T = predict_T(u, offload_bs.at(i));
 						if (T != -1 && all_ue_satisfy(offload_bs.at(i), T))
 							break;
 					}
 				}
 				if (T == -1)
+					continue;
+				if (T > offload_bs.at(i)->systemT_constraint)
 					continue;
 
 				if (bs_min_T == NULL)
@@ -890,10 +903,13 @@ int influence(UE *u)
 	bool has_no_influence_bs = false;
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
+		if (u->availBS.at(i)->num == 0)
+			continue;
+
+		no_bs_to_offload = false;
 		double T = predict_T(u, u->availBS.at(i));
 		if (T == -1)
 			continue;
-		no_bs_to_offload = false;
 		bool influence = false;
 		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
 		{
@@ -958,11 +974,11 @@ double BS_T_constraint(BS *b)
 		}
 	}
 
-	if (type_conut[2] >= b->connectingUE.size() * 0.5)
+	if (type_conut[2] >= b->connectingUE.size() * T_threshold)
 		return 300;
 	else
 	{
-		if (type_conut[2] + type_conut[1] >= b->connectingUE.size() * 0.5)
+		if (type_conut[2] + type_conut[1] >= b->connectingUE.size() * T_threshold)
 			return 100;
 		else
 			return 50;

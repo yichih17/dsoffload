@@ -2,6 +2,8 @@
 #include<vector>
 #include<fstream>
 #include"define.h"
+#define analysis_mode 1		// 1:show the detail information of BS (delay budget distribution, system time)
+#define output_mode 0		// 0:output csv; 1:print on the screen
 
 using namespace std;
 
@@ -183,14 +185,48 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	//sprintf_s(filename_result, "%s_UE%d_extra.csv", algorithm_name, uelist->size());
 	//output_extra.open(filename_extra, ios::out | ios::app);
 
-	output_result << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
-		<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << "," 
-		<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << "," 
-		<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << "," 
-		<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << "," << throughput << endl;
-	//cout << outage_UE << "," << avg_T << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << ","
-	//	<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
-	//	<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
-	//	<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
-	//	<< DB_satisfied << "," << throughput << endl;
+	if (output_mode == 0)
+	{
+		output_result << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
+			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
+			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
+			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
+			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << "," << throughput << endl;
+	}
+	else
+	{
+		cout << outage_UE << "," << avg_T << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << ","
+			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
+			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
+			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
+			<< DB_satisfied << "," << throughput << endl;
+	}
+	if (analysis_mode == 1)
+	{
+		fstream detail_analysis;
+		char filename_detail[50];
+		if (UE_dis_type == uniform)
+			sprintf_s(filename_detail, "%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
+		if (UE_dis_type == hotspot)
+			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
+
+		detail_analysis.open(filename_detail, ios::out | ios::trunc);
+		for (int i = 0; i < bslist->size(); i++)
+		{
+			int db50 = 0, db100 = 0, db300 = 0;
+			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
+			{
+				int db = bslist->at(i).connectingUE.at(j)->delay_budget;
+				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
+					db50++;
+				else if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
+					db100++;
+				else if (bslist->at(i).connectingUE.at(j)->delay_budget == 300)
+					db300++;
+			}
+			double systemT = bslist->at(i).systemT;
+			int db_limit = bslist->at(i).systemT_constraint;
+			detail_analysis << bslist->at(i).num << "," << db50 << "," << db100 << "," << db300 << "," << bslist->at(i).systemT << "," << bslist->at(i).systemT_constraint << endl;
+		}
+	}
 }

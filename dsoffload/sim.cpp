@@ -168,11 +168,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 50; times++)
+	for (int times = 1; times <= 1; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number <= 15; number++)
+		for (int number = 10; number <= 10; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -204,7 +204,7 @@ int main()
 			dso2.join();
 			sinr_thread.join();
 			capa_thread.join();
-
+			
 			//dso0_ex.join();
 			//dso1_ex.join();
 			//dso2_ex.join();
