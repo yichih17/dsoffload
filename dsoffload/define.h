@@ -1,25 +1,28 @@
 #ifndef _DEFIEN_H
 #define _DEFIEN_H
 
-#define power_macro 46.0	//transmissino power of macro eNB
-#define power_ap 23.0		//transmission power of wifi ap
-#define R 1723				//Macro eNB半徑
+#define power_macro 46.0	//Transmissino power of macro eNB (dBm)
+#define power_ap 23.0		//Transmission power of wifi ap (dBm)
+#define R 1723				//Radius of macro eNB (m)
 
-#define pktsize 500.0	//Packet size (bit)
-#define subcarrier 12	//number of subcarrier (12)
-#define	total_symbol 14	//number of symbol in a RB (14)
-#define ctrl_symbol 2	//number of symbol for control signal in a RB (1~3)
-#define resource_element (total_symbol - ctrl_symbol) * subcarrier	//number of resource element per RB for data
-#define total_RBG 100	//number of total RBG(Resource Block Group)
+#define pktsize 500.0		//Packet size (bits)
+#define subcarrier 12		//Number of subcarrier (12)
+#define	total_symbol 14		//Number of symbol in a RB (14)
+#define ctrl_symbol 2		//Number of symbol for control signal in a RB (1~3)
+#define resource_element (total_symbol - ctrl_symbol) * subcarrier	//Number of resource element per RB for data
+#define total_RBG 100		//Number of total RBG (20Mhz=100)
 
-#define TTI 1000		//total simulation time (TTI)
+#define TTI 1000			//Total simulation time (TTI)
 
-#define UE_dis_type 1	//distribution mode of UE (0:uniform, 1:hotspot)
-#define read_mode 1		//UE的讀入模式: 0-直接產生直接存在程式內 1-產生後輸出txt，在從主程式讀入
+#define UE_dis_type 1		//distribution mode of UE (0:uniform, 1:hotspot)
+#define UE_type_number 3	//Number of UE types 
+#define rho_max 0.99		//Max load of BSs
+#define T_threshold 0.75		//Guarantee satisfied UE percentage
 
-#define UE_type_number 3
-#define rho_max 0.99
-#define T_threshold 0.5
+//For debug
+#define read_mode 1			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.
+#define analysis_mode 1		//For analysis the detail information of BSs (include the distribution of UE delay budget, the system time, the system time constrain). 1:output detail
+#define output_mode 0		//Output form. 0:output csv file; 1:print on the screen
 
 #include<vector>
 
