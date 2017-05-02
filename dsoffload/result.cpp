@@ -2,7 +2,7 @@
 #include<vector>
 #include<fstream>
 #include"define.h"
-#define analysis_mode 1		// 1:show the detail information of BS (delay budget distribution, system time)
+#define analysis_mode 0		// 1:show the detail information of BS (delay budget distribution, system time)
 #define output_mode 0		// 0:output csv; 1:print on the screen
 
 using namespace std;

@@ -5,6 +5,7 @@
 #include<time.h>
 #include"define.h"
 
+
 using std::string;
 using std::fstream;
 using std::cout;
@@ -14,6 +15,8 @@ using std::ios;
 using std::vector;
 
 double hs_ratio = 0.8;
+vector <BS> blist;
+vector <UE> ulist;
 
 template <class T>
 void uniformdistribution(T* equip)
@@ -33,9 +36,9 @@ void uniformdistribution(T* equip)
 bool in_hotspot(UE *u)
 {
 	double distance = 0;
-	for (int i = 1; i <= (vbslist.size() - 1) * (1 - hs_ratio); i++)
+	for (int i = 1; i <= (blist.size() - 1) * (1 - hs_ratio); i++)
 	{
-		distance = get_distance(u, &vbslist[i]);
+		distance = get_distance(u, &blist[i]);
 		if (distance <= range_ap[0])
 			return true;
 	}
@@ -49,7 +52,7 @@ void distribution(int AP_number, int UE_number)
 	{
 		BS ap; 
 		uniformdistribution(&ap);
-		vbslist.push_back(ap);
+		blist.push_back(ap);
 	}		
 	
 	//產生UE座標
@@ -82,38 +85,48 @@ void distribution(int AP_number, int UE_number)
 			{
 				uniformdistribution(&ue);
 			} while (in_hotspot(&ue) != hs_u);
-			vuelist.push_back(ue);
+			ulist.push_back(ue);
 		}
 	}
 	else
+	{
 		for (int i = 0; i < UE_number; i++)
 		{
 			UE ue;
 			uniformdistribution(&ue);
-			vuelist.push_back(ue);
+			ulist.push_back(ue);
 		}
+	}
 	
-	//輸出AP座標
-	//fstream APwrite;
-	//APwrite.open("AP_dis.txt", ios::out | ios::trunc);
-	//if (APwrite.fail())
-	//	cout << "檔案無法開啟" << endl;
-	//else
-	//{
-	//	for (int i = 0; i < AP_number; i++)
-	//		APwrite << vbslist[i].coor_X << " " << vbslist[i].coor_Y << endl;
-	//}
-	//APwrite.close();
+	if (read_mode == 1)
+	{
+		//輸出AP座標
+		fstream APwrite;
+		APwrite.open("AP_dis.txt", ios::out | ios::trunc);
+		if (APwrite.fail())
+			cout << "檔案無法開啟" << endl;
+		else
+		{
+			for (int i = 0; i < AP_number; i++)
+				APwrite << blist[i].coor_X << " " << blist[i].coor_Y << endl;
+		}
+		APwrite.close();
 
-	//輸出UE座標
-	//fstream UEwrite;
-	//UEwrite.open("UE_dis.txt", ios::out | ios::trunc);
-	//if (UEwrite.fail())
-	//	cout << "檔案無法開啟" << endl;
-	//else
-	//{
-	//	for (int i = 0; i < UE_number; i++)
-	//		UEwrite << vuelist[i].coor_X << " " << vuelist[i].coor_Y << endl;
-	//}
-	//UEwrite.close();
+		//輸出UE座標
+		fstream UEwrite;
+		UEwrite.open("UE_dis.txt", ios::out | ios::trunc);
+		if (UEwrite.fail())
+			cout << "檔案無法開啟" << endl;
+		else
+		{
+			for (int i = 0; i < UE_number; i++)
+				UEwrite << ulist[i].coor_X << " " << ulist[i].coor_Y << endl;
+		}
+		UEwrite.close();
+	}
+	else
+	{
+		vbslist.insert(vbslist.end(), blist.begin(), blist.end());
+		vuelist = ulist;
+	}
 }

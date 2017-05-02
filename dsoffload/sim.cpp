@@ -168,11 +168,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 1; times++)
+	for (int times = 1; times <= 10; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 10; number <= 10; number++)
+		for (int number = 1; number <= 5; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -182,40 +182,44 @@ int main()
 
 			initialconfig();					//macro eNB初始化
 			distribution(number_ap, number_ue);	//產生AP、UE分布
+			if (read_mode == 1)
+			{
+				readAP();							//讀入BS
+				readUE();							//讀入UE
+			}
 			initialUE();						//UE參數初始化
 			initialAP();						//AP參數初始化
-//			readAP();							//讀入BS
-//			readUE();							//讀入UE
+
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 			
-			thread dso0(proposed_algorithm, vuelist, vbslist, 0);
-			thread dso1(proposed_algorithm, vuelist, vbslist, 1);
-			thread dso2(proposed_algorithm, vuelist, vbslist, 2);
-			thread sinr_thread(SINR_based, vuelist, vbslist);
-			thread capa_thread(capacity_based, vuelist, vbslist);
+			//thread dso0(proposed_algorithm, vuelist, vbslist, 0);
+			//thread dso1(proposed_algorithm, vuelist, vbslist, 1);
+			//thread dso2(proposed_algorithm, vuelist, vbslist, 2);
+			//thread sinr_thread(SINR_based, vuelist, vbslist);
+			//thread capa_thread(capacity_based, vuelist, vbslist);
 
 			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
 			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
 			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
 
-			dso0.join();
-			dso1.join();
-			dso2.join();
-			sinr_thread.join();
-			capa_thread.join();
+			//dso0.join();
+			//dso1.join();
+			//dso2.join();
+			//sinr_thread.join();
+			//capa_thread.join();
 			
 			//dso0_ex.join();
 			//dso1_ex.join();
 			//dso2_ex.join();
 
-			//SINR_based(vuelist, vbslist);
-			//capacity_based(vuelist, vbslist);
-			//for (int depth = 0; depth < 3; depth++)
-			//{
-			//	proposed_algorithm(vuelist, vbslist, depth);
-			//	//proposed_algorithm_ex(vuelist, vbslist, depth);
-			//}
+			SINR_based(vuelist, vbslist);
+			capacity_based(vuelist, vbslist);
+			for (int depth = 0; depth < 3; depth++)
+			{
+				proposed_algorithm(vuelist, vbslist, depth);
+				//proposed_algorithm_ex(vuelist, vbslist, depth);
+			}
 		}
 		end_time = clock();
 		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";
