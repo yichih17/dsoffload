@@ -17,7 +17,7 @@
 #define UE_dis_type 1		//distribution mode of UE (0:uniform, 1:hotspot)
 #define UE_type_number 3	//Number of UE types 
 #define rho_max 0.99		//Max load of BSs
-#define T_threshold 0.75		//Guarantee satisfied UE percentage
+#define T_threshold 0.5		//Guarantee satisfied UE percentage
 
 //For debug
 #define read_mode 1			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.

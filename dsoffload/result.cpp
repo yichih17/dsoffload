@@ -3,7 +3,6 @@
 #include<fstream>
 #include"define.h"
 
-
 using namespace std;
 
 void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name[])
@@ -14,6 +13,10 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	int number_AP = 0;		//WIFI AP的數量
 	int number_UE_LTE = 0;	//LTE eNB UE的數量
 	int number_UE_WIFI = 0;	//WIFI AP UE的數量
+	int number_UE_DB_50 = 0;
+	int number_UE_DB_100 = 0;
+	int number_UE_DB_300 = 0;
+	int UE_DB[201][3] = { 0 };
 
 	double avg_T = 0;		//所有T的平均
 	double avg_T_LTE = 0;	//所有LTE eNB T的平均
@@ -32,6 +35,9 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	double avg_T_UE_LTE = 0;
 	double avg_T_UE_WIFI = 0;
 	int DB_satisfied = 0;
+	int DB50_satisfied = 0;
+	int DB100_satisfied = 0;
+	int DB300_satisfied = 0;
 	double throughput = 0;
 
 	for (int i = 0; i < bslist->size(); i++)
@@ -44,6 +50,31 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
 				number_UE_LTE++;
+				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
+				{
+					number_UE_DB_50++;
+					UE_DB[i][0]++;
+					if (bslist->at(i).systemT < 50)
+						DB50_satisfied++;
+				}					
+				else
+				{
+					if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
+					{
+						number_UE_DB_100++;
+						UE_DB[i][1]++;
+						if (bslist->at(i).systemT < 100)
+							DB100_satisfied++;
+					}
+						
+					else
+					{
+						number_UE_DB_300++;
+						UE_DB[i][2]++;
+						if (bslist->at(i).systemT < 300)
+							DB300_satisfied++;
+					}
+				}
 				double capacity = get_C(bslist->at(i).connectingUE.at(j));
 				capacity_LTEUE.push_back(capacity);
 				avg_capacity_LTEUE += capacity;
@@ -53,8 +84,6 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 					throughput += capacity;
 				T_LTEUE.push_back(bslist->at(i).systemT);
 				avg_T_UE_LTE += bslist->at(i).systemT;
-				if (bslist->at(i).systemT < bslist->at(i).connectingUE.at(j)->delay_budget)
-					DB_satisfied++;
 			}
 		}	
 		else
@@ -65,6 +94,31 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
 				number_UE_WIFI++;
+				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
+				{
+					number_UE_DB_50++;
+					UE_DB[i][0]++;
+					if (bslist->at(i).systemT < 50)
+						DB50_satisfied++;
+				}
+				else
+				{
+					if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
+					{
+						number_UE_DB_100++;
+						UE_DB[i][1]++;
+						if (bslist->at(i).systemT < 100)
+							DB100_satisfied++;
+					}
+
+					else
+					{
+						number_UE_DB_300++;
+						UE_DB[i][2]++;
+						if (bslist->at(i).systemT < 300)
+							DB300_satisfied++;
+					}
+				}
 				double capacity = get_C(bslist->at(i).connectingUE.at(j));
 				capacity_WIFIUE.push_back(capacity);
 				avg_capacity_WIFIUE += capacity;
@@ -74,8 +128,6 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 					throughput += capacity;
 				T_WIFIUE.push_back(bslist->at(i).systemT);
 				avg_T_UE_WIFI += bslist->at(i).systemT;
-				if (bslist->at(i).systemT < bslist->at(i).connectingUE.at(j)->delay_budget)
-					DB_satisfied++;
 			}
 		}
 
@@ -85,6 +137,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 
 	non_outage_UE = number_UE_LTE + number_UE_WIFI;
 	outage_UE = uelist->size() - non_outage_UE;
+	DB_satisfied = DB50_satisfied + DB100_satisfied + DB300_satisfied;
 
 	avg_T /= bslist->size();
 	avg_T_LTE /= (double)number_eNB;
@@ -183,14 +236,15 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	//char filename_extra[50];
 	//sprintf_s(filename_result, "%s_UE%d_extra.csv", algorithm_name, uelist->size());
 	//output_extra.open(filename_extra, ios::out | ios::app);
-
+	
 	if (output_mode == 0)
 	{
 		output_result << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
-			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," << DB_satisfied << "," << throughput << endl;
+			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," 
+			<< DB_satisfied << "," << throughput << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
 	}
 	else
 	{
@@ -198,7 +252,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
-			<< DB_satisfied << "," << throughput << endl;
+			<< DB_satisfied << "," << throughput << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
 	}
 	if (analysis_mode == 1)
 	{
@@ -213,21 +267,6 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 
 		detail_analysis.open(filename_detail, ios::out | ios::trunc);
 		for (int i = 0; i < bslist->size(); i++)
-		{
-			int db50 = 0, db100 = 0, db300 = 0;
-			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
-			{
-				int db = bslist->at(i).connectingUE.at(j)->delay_budget;
-				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
-					db50++;
-				else if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
-					db100++;
-				else if (bslist->at(i).connectingUE.at(j)->delay_budget == 300)
-					db300++;
-			}
-			double systemT = bslist->at(i).systemT;
-			int db_limit = bslist->at(i).systemT_constraint;
-			detail_analysis << bslist->at(i).num << "," << db50 << "," << db100 << "," << db300 << "," << bslist->at(i).systemT << "," << bslist->at(i).systemT_constraint << endl;
-		}
+			detail_analysis << bslist->at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << bslist->at(i).systemT << "," << bslist->at(i).systemT_constraint << endl;
 	}
 }

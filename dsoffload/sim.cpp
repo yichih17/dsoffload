@@ -172,7 +172,7 @@ int main()
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 7; number <= 7; number++)
+		for (int number = 10; number <= 10; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -194,20 +194,20 @@ int main()
 //			packet_arrival(number);				//²£¥Ípacket arrival
 			
 			thread dso0(proposed_algorithm, vuelist, vbslist, 0);
-			thread dso1(proposed_algorithm, vuelist, vbslist, 1);
-			thread dso2(proposed_algorithm, vuelist, vbslist, 2);
-			thread sinr_thread(SINR_based, vuelist, vbslist);
-			thread capa_thread(capacity_based, vuelist, vbslist);
+			//thread dso1(proposed_algorithm, vuelist, vbslist, 1);
+			//thread dso2(proposed_algorithm, vuelist, vbslist, 2);
+			//thread sinr_thread(SINR_based, vuelist, vbslist);
+			//thread capa_thread(capacity_based, vuelist, vbslist);
 
 			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
 			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
 			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
 
 			dso0.join();
-			dso1.join();
-			dso2.join();
-			sinr_thread.join();
-			capa_thread.join();
+			//dso1.join();
+			//dso2.join();
+			//sinr_thread.join();
+			//capa_thread.join();
 			
 			//dso0_ex.join();
 			//dso1_ex.join();
