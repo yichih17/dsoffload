@@ -17,10 +17,10 @@
 #define UE_dis_type 1		//distribution mode of UE (0:uniform, 1:hotspot)
 #define UE_type_number 3	//Number of UE types 
 #define rho_max 0.99		//Max load of BSs
-#define T_threshold 0.5		//Guarantee satisfied UE percentage
+#define T_threshold 0.75	//Guarantee satisfied UE percentage
 
 //For debug
-#define read_mode 1			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.
+#define read_mode 0			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.
 #define analysis_mode 1		//For analysis the detail information of BSs (include the distribution of UE delay budget, the system time, the system time constrain). 1:output detail
 #define output_mode 0		//Output form. 0:output csv file; 1:print on the screen
 
@@ -104,10 +104,18 @@ double predict_C(UE* u, BS* b, int CQI);
 double predict_T(UE* u, BS* b);
 double predict_T(UE* u, BS* b, int CQI);
 double update_T(BS* b);
+bool influence(BS* b, double T);
+int influence(UE *u);
+bool all_ue_satisfy(BS* b, double T);
+bool ue_cp(UE* a, UE* b);
 bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max);
 bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max);
 void findbs_minT(UE *u, std::vector <BS> *bslist);
 void findbs_capa(UE *u, std::vector <BS> *bslist);
+
+bool findbs_dso90(UE* u, connection_status* cs, int depth, int depth_max);
+bool findbs_dso50(UE* u, connection_status* cs, int depth, int depth_max);
+bool findbs_dso25(UE* u, connection_status* cs, int depth, int depth_max);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);

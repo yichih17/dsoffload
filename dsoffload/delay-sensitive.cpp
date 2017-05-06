@@ -789,7 +789,6 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T)
 	{
 		joinBS(u, targetBS, minT);
 	}
-		
 
 	return true;
 }

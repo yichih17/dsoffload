@@ -261,11 +261,11 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		double t_max = T_threshold;
 		int x = t_max * 100;
 		if (UE_dis_type == uniform)
-			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size(), x);
+			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size());
 		if (UE_dis_type == hotspot)
-			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size(), x);
+			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
 
-		detail_analysis.open(filename_detail, ios::out | ios::trunc);
+		detail_analysis.open(filename_detail, ios::out | ios::app);
 		for (int i = 0; i < bslist->size(); i++)
 			detail_analysis << bslist->at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << bslist->at(i).systemT << "," << bslist->at(i).systemT_constraint << endl;
 	}
