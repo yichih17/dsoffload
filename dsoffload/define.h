@@ -20,7 +20,7 @@
 #define T_threshold 0.75	//Guarantee satisfied UE percentage
 
 //For debug
-#define read_mode 0			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.
+#define read_mode 1			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.
 #define analysis_mode 1		//For analysis the detail information of BSs (include the distribution of UE delay budget, the system time, the system time constrain). 1:output detail
 #define output_mode 0		//Output form. 0:output csv file; 1:print on the screen
 

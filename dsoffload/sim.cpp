@@ -201,32 +201,32 @@ int main()
 			sinr_thread.join();
 			capa_thread.join();
 			
-			//thread dso0_25(proposed_algorithm25, vuelist, vbslist, 0);
-			//thread dso0_50(proposed_algorithm50, vuelist, vbslist, 0);
-			//thread dso0_75(proposed_algorithm, vuelist, vbslist, 0);
-			//thread dso0_90(proposed_algorithm90, vuelist, vbslist, 0);
-			//dso0_25.join();
-			//dso0_50.join();
-			//dso0_75.join();
-			//dso0_90.join();
+			thread dso0_25(proposed_algorithm25, vuelist, vbslist, 0);
+			thread dso0_50(proposed_algorithm50, vuelist, vbslist, 0);
+			thread dso0_75(proposed_algorithm, vuelist, vbslist, 0);
+			thread dso0_90(proposed_algorithm90, vuelist, vbslist, 0);
+			dso0_25.join();
+			dso0_50.join();
+			dso0_75.join();
+			dso0_90.join();
 
-			//thread dso1_25(proposed_algorithm25, vuelist, vbslist, 1);
-			//thread dso1_50(proposed_algorithm50, vuelist, vbslist, 1);
-			//thread dso1_75(proposed_algorithm, vuelist, vbslist, 1);
-			//thread dso1_90(proposed_algorithm90, vuelist, vbslist, 1);
-			//dso1_25.join();
-			//dso1_50.join();
-			//dso1_75.join();
-			//dso1_90.join();
-			//
-			//thread dso2_25(proposed_algorithm25, vuelist, vbslist, 2);
-			//thread dso2_50(proposed_algorithm50, vuelist, vbslist, 2);
-			//thread dso2_75(proposed_algorithm, vuelist, vbslist, 2);
-			//thread dso2_90(proposed_algorithm90, vuelist, vbslist, 2);
-			//dso2_25.join();
-			//dso2_50.join();
-			//dso2_75.join();
-			//dso2_90.join();
+			thread dso1_25(proposed_algorithm25, vuelist, vbslist, 1);
+			thread dso1_50(proposed_algorithm50, vuelist, vbslist, 1);
+			thread dso1_75(proposed_algorithm, vuelist, vbslist, 1);
+			thread dso1_90(proposed_algorithm90, vuelist, vbslist, 1);
+			dso1_25.join();
+			dso1_50.join();
+			dso1_75.join();
+			dso1_90.join();
+			
+			thread dso2_25(proposed_algorithm25, vuelist, vbslist, 2);
+			thread dso2_50(proposed_algorithm50, vuelist, vbslist, 2);
+			thread dso2_75(proposed_algorithm, vuelist, vbslist, 2);
+			thread dso2_90(proposed_algorithm90, vuelist, vbslist, 2);
+			dso2_25.join();
+			dso2_50.join();
+			dso2_75.join();
+			dso2_90.join();
 			
 			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
 			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
