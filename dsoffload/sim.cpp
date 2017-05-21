@@ -132,18 +132,18 @@ void initialUE()
 		switch (vuelist.at(i).type)
 		{
 		case 0:
-			vuelist.at(i).bit_rate = 10;
-			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).bit_rate = 300;
+			vuelist.at(i).packet_size = 8000;
 			vuelist.at(i).delay_budget = 50;
 			break;
 		case 1:
-			vuelist.at(i).bit_rate = 10;
-			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).bit_rate = 300;
+			vuelist.at(i).packet_size = 8000;
 			vuelist.at(i).delay_budget = 100;
 			break;
 		case 2:
-			vuelist.at(i).bit_rate = 10;
-			vuelist.at(i).packet_size = 800;
+			vuelist.at(i).bit_rate = 300;
+			vuelist.at(i).packet_size = 8000;
 			vuelist.at(i).delay_budget = 300;
 			break;
 		default:
@@ -171,11 +171,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 2; times++)
+	for (int times = 1; times <= 10; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 10; number <= 10; number++)
+		for (int number = 1; number <= 7; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -196,19 +196,14 @@ int main()
 //			countAPrange();						//計算AP可傳送資料的範圍大小
 //			packet_arrival(number);				//產生packet arrival
 
-			thread sinr_thread(SINR_based, vuelist, vbslist);
-			thread capa_thread(capacity_based, vuelist, vbslist);
-			sinr_thread.join();
-			capa_thread.join();
-			
-			thread dso0_25(proposed_algorithm25, vuelist, vbslist, 0);
-			thread dso0_50(proposed_algorithm50, vuelist, vbslist, 0);
-			thread dso0_75(proposed_algorithm, vuelist, vbslist, 0);
-			thread dso0_90(proposed_algorithm90, vuelist, vbslist, 0);
-			dso0_25.join();
-			dso0_50.join();
-			dso0_75.join();
-			dso0_90.join();
+			thread dso2_25(proposed_algorithm25, vuelist, vbslist, 2);
+			thread dso2_50(proposed_algorithm50, vuelist, vbslist, 2);
+			thread dso2_75(proposed_algorithm, vuelist, vbslist, 2);
+			thread dso2_90(proposed_algorithm90, vuelist, vbslist, 2);
+			dso2_25.join();
+			dso2_50.join();
+			dso2_75.join();
+			dso2_90.join();
 
 			thread dso1_25(proposed_algorithm25, vuelist, vbslist, 1);
 			thread dso1_50(proposed_algorithm50, vuelist, vbslist, 1);
@@ -218,24 +213,21 @@ int main()
 			dso1_50.join();
 			dso1_75.join();
 			dso1_90.join();
-			
-			thread dso2_25(proposed_algorithm25, vuelist, vbslist, 2);
-			thread dso2_50(proposed_algorithm50, vuelist, vbslist, 2);
-			thread dso2_75(proposed_algorithm, vuelist, vbslist, 2);
-			thread dso2_90(proposed_algorithm90, vuelist, vbslist, 2);
-			dso2_25.join();
-			dso2_50.join();
-			dso2_75.join();
-			dso2_90.join();
-			
-			//thread dso0_ex(proposed_algorithm_ex, vuelist, vbslist, 0);
-			//thread dso1_ex(proposed_algorithm_ex, vuelist, vbslist, 1);
-			//thread dso2_ex(proposed_algorithm_ex, vuelist, vbslist, 2);
-						
-			//dso0_ex.join();
-			//dso1_ex.join();
-			//dso2_ex.join();
 
+			thread dso0_25(proposed_algorithm25, vuelist, vbslist, 0);
+			thread dso0_50(proposed_algorithm50, vuelist, vbslist, 0);
+			thread dso0_75(proposed_algorithm, vuelist, vbslist, 0);
+			thread dso0_90(proposed_algorithm90, vuelist, vbslist, 0);
+			dso0_25.join();
+			dso0_50.join();
+			dso0_75.join();
+			dso0_90.join();
+
+			thread sinr_thread(SINR_based, vuelist, vbslist);
+			thread capa_thread(capacity_based, vuelist, vbslist);
+			sinr_thread.join();
+			capa_thread.join();
+			
 			//SINR_based(vuelist, vbslist);
 			//capacity_based(vuelist, vbslist);
 			//for (int depth = 1; depth <= 1; depth++)

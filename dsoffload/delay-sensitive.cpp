@@ -624,33 +624,33 @@ int get_CQI(UE* u, BS* b)
 double predict_C(UE* u)
 {
 	if (u->connecting_BS->type == macro)
-		return resource_element * macro_eff[u->CQI - 1] * total_RBG / (u->connecting_BS->connectingUE.size() + 1);
+		return resource_element * macro_eff[u->CQI - 1] * total_RBG;
 	if (u->connecting_BS->type == ap)
-		return ap_capacity[u->CQI - 1] / (u->connecting_BS->connectingUE.size() + 1);
+		return ap_capacity[u->CQI - 1];
 }
 
 double predict_C(UE* u, BS* b)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[get_CQI(u, b) - 1] * total_RBG / (b->connectingUE.size() + 1);
+		return resource_element * macro_eff[get_CQI(u, b) - 1] * total_RBG;
 	if (b->type == ap)
-		return ap_capacity[get_CQI(u, b) - 1] / (b->connectingUE.size() + 1);
+		return ap_capacity[get_CQI(u, b) - 1];
 }
 
 double predict_C(UE* u, BS* b, int CQI)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[CQI - 1] * total_RBG / (b->connectingUE.size() + 1);
+		return resource_element * macro_eff[CQI - 1] * total_RBG;
 	if (b->type == ap)
-		return ap_capacity[CQI - 1] / (b->connectingUE.size() + 1);
+		return ap_capacity[CQI - 1];
 }
 
 double get_C(UE* u)
 {
 	if (u->connecting_BS->type == macro)
-		return resource_element * macro_eff[u->CQI - 1] * total_RBG / u->connecting_BS->connectingUE.size();
+		return resource_element * macro_eff[u->CQI - 1] * total_RBG;
 	if (u->connecting_BS->type == ap)
-		return ap_capacity[u->CQI - 1] / u->connecting_BS->connectingUE.size();
+		return ap_capacity[u->CQI - 1];
 }
 
 double predict_T(UE* u, BS* b)
@@ -667,15 +667,15 @@ double predict_T(UE* u, BS* b)
 		double capacity_i = predict_C(b->connectingUE.at(i));
 		double weight_i = b->connectingUE.at(i)->lambdai / lambda;
 		double Xij = pktsize_i / capacity_i;
-		Xj += Xij * weight_i;
-		Xj2 += pow(Xij, 2) * weight_i;
+		Xj += (Xij * weight_i);
+		Xj2 += (pow(Xij, 2) * weight_i);
 	}
 	double Xuj = u->packet_size / predict_C(u, b, CQI);
-	Xj += Xuj * (u->lambdai / lambda);
+	Xj += (Xuj * (u->lambdai / lambda));
 	double rho = Xj * lambda;
 	if (rho >= rho_max)		//Saturated
 		return -1;
-	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
+	Xj2 += (pow(Xuj, 2) * (u->lambdai / lambda));
 	//用M/G/1公式算T
 	return Xj + lambda * Xj2 / (1 - lambda * Xj);
 }
@@ -693,15 +693,15 @@ double predict_T(UE* u, BS* b, int CQI)
 		double capacity_i = predict_C(b->connectingUE.at(i));
 		double weight_i = b->connectingUE.at(i)->lambdai / lambda;
 		double Xij = pktsize_i / capacity_i;
-		Xj += Xij * weight_i;
-		Xj2 += pow(Xij, 2) * weight_i;
+		Xj += (Xij * weight_i);
+		Xj2 += (pow(Xij, 2) * weight_i);
 	}
 	double Xuj = u->packet_size / predict_C(u, b, CQI);
-	Xj += Xuj * (u->lambdai / lambda);
+	Xj += (Xuj * (u->lambdai / lambda));
 	double rho = Xj * lambda;
 	if (rho >= rho_max)		//Saturated
 		return -1;
-	Xj2 += pow(Xuj, 2) * (u->lambdai / lambda);
+	Xj2 += (pow(Xuj, 2) * (u->lambdai / lambda));
 	//用M/G/1公式算T
 	return Xj + lambda * Xj2 / (1 - lambda * Xj);
 }
@@ -714,8 +714,8 @@ double update_T(BS* b)
 	{
 		double weight_i = b->connectingUE.at(i)->lambdai / b->lambda;
 		double Xij = b->connectingUE.at(i)->packet_size / get_C(b->connectingUE.at(i));
-		Xj += Xij * weight_i;
-		Xj2 += pow(Xij, 2) * weight_i;
+		Xj += (Xij * weight_i);
+		Xj2 += (pow(Xij, 2) * weight_i);
 	}
 	return Xj + b->lambda * Xj2 / (1 - b->lambda * Xj);
 }
