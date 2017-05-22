@@ -151,9 +151,6 @@
   <ItemGroup>
     <ClCompile Include="delay-sensitive.cpp" />
     <ClCompile Include="distribute.cpp" />
-    <ClCompile Include="dso25.cpp" />
-    <ClCompile Include="dso50.cpp" />
-    <ClCompile Include="dso90.cpp" />
     <ClCompile Include="packet_arrival.cpp" />
     <ClCompile Include="result.cpp" />
     <ClCompile Include="sim.cpp" />

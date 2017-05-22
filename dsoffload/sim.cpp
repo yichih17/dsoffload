@@ -14,11 +14,7 @@ vector <BS> vbslist;
 void SINR_based(vector <UE> uelist, vector <BS> bslist);
 void minT_algorithm(vector <UE> uelist, vector <BS> bslist);
 void capacity_based(vector <UE> uelist, vector <BS> bslist);
-void proposed_algorithm25(vector <UE> uelist, vector <BS> bslist, int depth_max);
-void proposed_algorithm50(vector <UE> uelist, vector <BS> bslist, int depth_max);
-void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max);
-void proposed_algorithm90(vector <UE> uelist, vector <BS> bslist, int depth_max);
-void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max);
+void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, int DB_th);
 
 int calc_dis_count = 0;
 int calc_cqi_count = 0;
@@ -171,7 +167,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 10; times++)
+	for (int times = 1; times <= 500; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
@@ -193,53 +189,23 @@ int main()
 			initialUE();						//UE參數初始化
 			initialAP();						//AP參數初始化
 
-//			countAPrange();						//計算AP可傳送資料的範圍大小
-//			packet_arrival(number);				//產生packet arrival
-
-			thread dso2_25(proposed_algorithm25, vuelist, vbslist, 2);
-			thread dso2_50(proposed_algorithm50, vuelist, vbslist, 2);
-			thread dso2_75(proposed_algorithm, vuelist, vbslist, 2);
-			thread dso2_90(proposed_algorithm90, vuelist, vbslist, 2);
-			dso2_25.join();
-			dso2_50.join();
-			dso2_75.join();
-			dso2_90.join();
-
-			thread dso1_25(proposed_algorithm25, vuelist, vbslist, 1);
-			thread dso1_50(proposed_algorithm50, vuelist, vbslist, 1);
-			thread dso1_75(proposed_algorithm, vuelist, vbslist, 1);
-			thread dso1_90(proposed_algorithm90, vuelist, vbslist, 1);
-			dso1_25.join();
-			dso1_50.join();
-			dso1_75.join();
-			dso1_90.join();
-
-			thread dso0_25(proposed_algorithm25, vuelist, vbslist, 0);
-			thread dso0_50(proposed_algorithm50, vuelist, vbslist, 0);
-			thread dso0_75(proposed_algorithm, vuelist, vbslist, 0);
-			thread dso0_90(proposed_algorithm90, vuelist, vbslist, 0);
-			dso0_25.join();
-			dso0_50.join();
-			dso0_75.join();
-			dso0_90.join();
-
+			for (int depth = 2; depth >= 0; depth--)
+			{
+				thread dso100(proposed_algorithm, vuelist, vbslist, depth, 100);
+				thread dso75(proposed_algorithm, vuelist, vbslist, depth, 75);
+				thread dso50(proposed_algorithm, vuelist, vbslist, depth, 50);
+				thread dso25(proposed_algorithm, vuelist, vbslist, depth, 25);
+				thread dso0(proposed_algorithm, vuelist, vbslist, depth, 0);
+				dso100.join();
+				dso75.join();
+				dso50.join();
+				dso25.join();
+				dso0.join();
+			}
 			thread sinr_thread(SINR_based, vuelist, vbslist);
 			thread capa_thread(capacity_based, vuelist, vbslist);
 			sinr_thread.join();
 			capa_thread.join();
-			
-			//SINR_based(vuelist, vbslist);
-			//capacity_based(vuelist, vbslist);
-			//for (int depth = 1; depth <= 1; depth++)
-			//{
-			//	proposed_algorithm(vuelist, vbslist, depth);
-			//	proposed_algorithm_ex(vuelist, vbslist, depth);
-			//}
-
-			//for (int depth = 1; depth <=1; depth++)
-			//{
-			//	proposed_algorithm90(vuelist, vbslist, depth);
-			//}
 		}
 		end_time = clock();
 		cout << "一輪執行時間 : " << (end_time - start_time) / 1000 << " s\n\n";
@@ -281,7 +247,7 @@ void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	result_output(&bslist, &uelist, "minT");
 }
 
-void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max)
+void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, int DB_th)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
@@ -293,104 +259,13 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max)
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		cs.influence = 0;
-		findbs_dso(&cs.uelist[i], &cs, 0, depth_max);
+		findbs_dso(&cs.uelist[i], &cs, 0, depth_max, DB_th);
 	}
 	end_time = clock();
-	printf("dso%d_75, run time: %f\n", depth_max, (end_time - start_time) / 1000);
+	printf("DSO%d_%d, run time: %f\n", depth_max, DB_th, (end_time - start_time) / 1000);
 	uelist.assign(cs.uelist.begin(), cs.uelist.end());
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
-	sprintf_s(filename, "dso_%d_75", depth_max);
-	result_output(&bslist, &uelist, filename);
-}
-
-void proposed_algorithm25(vector <UE> uelist, vector <BS> bslist, int depth_max)
-{
-	double start_time = 0, end_time = 0;
-	start_time = clock();
-
-	connection_status cs;
-	cs.bslist.assign(bslist.begin(), bslist.end());
-	cs.uelist.assign(uelist.begin(), uelist.end());
-	cs.outage_dso = 0;
-	for (int i = 0; i < cs.uelist.size(); i++)
-	{
-		cs.influence = 0;
-		findbs_dso25(&cs.uelist[i], &cs, 0, depth_max);
-	}
-	end_time = clock();
-	printf("dso%d_25, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	uelist.assign(cs.uelist.begin(), cs.uelist.end());
-	bslist.assign(cs.bslist.begin(), cs.bslist.end());
-	char filename[50];
-	sprintf_s(filename, "dso_%d_25", depth_max);
-	result_output(&bslist, &uelist, filename);
-}
-
-void proposed_algorithm50(vector <UE> uelist, vector <BS> bslist, int depth_max)
-{
-	double start_time = 0, end_time = 0;
-	start_time = clock();
-
-	connection_status cs;
-	cs.bslist.assign(bslist.begin(), bslist.end());
-	cs.uelist.assign(uelist.begin(), uelist.end());
-	cs.outage_dso = 0;
-	for (int i = 0; i < cs.uelist.size(); i++)
-	{
-		cs.influence = 0;
-		findbs_dso50(&cs.uelist[i], &cs, 0, depth_max);
-	}
-	end_time = clock();
-	printf("dso%d_50, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	uelist.assign(cs.uelist.begin(), cs.uelist.end());
-	bslist.assign(cs.bslist.begin(), cs.bslist.end());
-	char filename[50];
-	sprintf_s(filename, "dso_%d_50", depth_max);
-	result_output(&bslist, &uelist, filename);
-}
-
-void proposed_algorithm90(vector <UE> uelist, vector <BS> bslist, int depth_max)
-{
-	double start_time = 0, end_time = 0;
-	start_time = clock();
-
-	connection_status cs;
-	cs.bslist.assign(bslist.begin(), bslist.end());
-	cs.uelist.assign(uelist.begin(), uelist.end());
-	cs.outage_dso = 0;
-	for (int i = 0; i < cs.uelist.size(); i++)
-	{
-		cs.influence = 0;
-		findbs_dso90(&cs.uelist[i], &cs, 0, depth_max);
-	}
-	end_time = clock();
-	printf("dso%d_90, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	uelist.assign(cs.uelist.begin(), cs.uelist.end());
-	bslist.assign(cs.bslist.begin(), cs.bslist.end());
-	char filename[50];
-	sprintf_s(filename, "dso_%d_90", depth_max);
-	result_output(&bslist, &uelist, filename);
-}
-
-void proposed_algorithm_ex(vector <UE> uelist, vector <BS> bslist, int depth_max)
-{
-	double start_time = 0, end_time = 0;
-	start_time = clock();
-	connection_status cs;
-	cs.bslist.assign(bslist.begin(), bslist.end());
-	cs.uelist.assign(uelist.begin(), uelist.end());
-	cs.outage_dso = 0;
-	for (int i = 0; i < cs.uelist.size(); i++)
-	{
-		cs.influence = 0;
-		findbs_ex(&cs.uelist[i], &cs, 0, depth_max);
-	}
-	end_time = clock();
-	printf("dso_ex_%d, run time: %f\n", depth_max, (end_time - start_time) / 1000);
-	uelist.assign(cs.uelist.begin(), cs.uelist.end());
-	bslist.assign(cs.bslist.begin(), cs.bslist.end());
-	char filename[50];
-	sprintf_s(filename, "dso_ex_%d", depth_max);
+	sprintf_s(filename, "DSO_%d_%d", depth_max, DB_th);
 	result_output(&bslist, &uelist, filename);
 }

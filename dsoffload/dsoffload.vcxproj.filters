@@ -38,14 +38,5 @@
     <ClCompile Include="delay-sensitive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dso90.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dso50.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dso25.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

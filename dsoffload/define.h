@@ -108,14 +108,9 @@ bool influence(BS* b, double T);
 int influence(UE *u);
 bool all_ue_satisfy(BS* b, double T);
 bool ue_cp(UE* a, UE* b);
-bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max);
-bool findbs_ex(UE* u, connection_status* cs, int depth, int depth_max);
+bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_th);
 void findbs_minT(UE *u, std::vector <BS> *bslist);
 void findbs_capa(UE *u, std::vector <BS> *bslist);
-
-bool findbs_dso90(UE* u, connection_status* cs, int depth, int depth_max);
-bool findbs_dso50(UE* u, connection_status* cs, int depth, int depth_max);
-bool findbs_dso25(UE* u, connection_status* cs, int depth, int depth_max);
 
 //result.cpp
 void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);

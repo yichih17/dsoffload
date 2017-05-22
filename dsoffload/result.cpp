@@ -38,7 +38,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	int DB50_satisfied = 0;
 	int DB100_satisfied = 0;
 	int DB300_satisfied = 0;
-	double throughput = 0;
+	double throughput = 0;		//³æ¦ì:Kbps
 
 	for (int i = 0; i < bslist->size(); i++)
 	{
@@ -46,6 +46,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		{
 			number_eNB++;
 			avg_T_LTE += bslist->at(i).systemT;
+			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).systemT_constraint << endl;
 			avg_UE_number_LTE += bslist->at(i).connectingUE.size();
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
@@ -90,6 +91,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		{
 			number_AP++;
 			avg_T_WIFI += bslist->at(i).systemT;
+			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).systemT_constraint << endl;
 			avg_UE_number_WIFI += bslist->at(i).connectingUE.size();
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
@@ -227,9 +229,9 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	fstream output_result;
 	char filename_result[50];
 	if (UE_dis_type == uniform)
-		sprintf_s(filename_result, "%s_UE%d_result.csv", algorithm_name, uelist->size());
+		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", uelist->size(), algorithm_name);
 	if (UE_dis_type == hotspot)
-		sprintf_s(filename_result, "hs_%s_UE%d_result.csv", algorithm_name, uelist->size());
+		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", uelist->size(), algorithm_name);
 	output_result.open(filename_result, ios::out | ios::app);
 
 	//fstream output_extra;
@@ -244,15 +246,16 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," 
-			<< DB_satisfied << "," << (double)throughput/(double)100 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
+			<< DB_satisfied << "," << (double)throughput/(double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
 	}
 	else
 	{
-		cout << outage_UE << "," << avg_T << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << ","
+		cout << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
-			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << ","
+			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
-			<< DB_satisfied << "," << throughput << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
+			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << ","
+			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
 	}
 	if (analysis_mode == 1)
 	{
