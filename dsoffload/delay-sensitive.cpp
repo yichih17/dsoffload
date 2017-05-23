@@ -46,48 +46,10 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 		for (int i = 0; i < cs->bslist.size(); i++)					//尋找可連接基地台
 		{
 			int CQI = get_CQI(u, &cs->bslist[i]);						//計算CQI
-			if (CQI != 0)
-			{
-				u->availBS.push_back(&cs->bslist.at(i));				//BS_i可連接
-				double T = predict_T(u, &cs->bslist[i], CQI);			//試算T
-				if (T == -1)											//Load飽和
-				{
-					offloading_BS.push_back(&cs->bslist[i]);
-					offloading_BST.push_back(T);
-				}
-				else
-				{
-					if (T > cs->bslist[i].systemT_constraint)			//T超過BS_i的門檻值
-					{
-						offloading_BS.push_back(&cs->bslist[i]);
-						offloading_BST.push_back(T);
-					}
-					else
-					{
-						//看有沒有影響原本在BS_i底下的UE
-						if (influence(&cs->bslist[i], T))
-						{
-							//有
-							offloading_BS.push_back(&cs->bslist[i]);
-							offloading_BST.push_back(T);
-						}
-						else
-						{
-							//沒有
-							uninfluence_BS.push_back(&cs->bslist[i]);
-							uninfluence_BST.push_back(T);
-						}
-					}
-				}
-			}			
-		}
-	}
-	else
-	{
-		//UE_u是offload UE
-		for (int i = 0; i < u->availBS.size(); i++)
-		{
-			double T = predict_T(u, &cs->bslist[i]);			//試算T
+			if (CQI == 0)
+				continue;
+			u->availBS.push_back(&cs->bslist.at(i));				//BS_i可連接
+			double T = predict_T(u, &cs->bslist[i], CQI);			//試算T
 			if (T == -1)											//Load飽和
 			{
 				offloading_BS.push_back(&cs->bslist[i]);
@@ -95,26 +57,49 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 			}
 			else
 			{
-				if (T > cs->bslist[i].systemT_constraint)			//T超過BS_i的門檻值
+				//看有沒有影響原本在BS_i底下的UE
+				if (influence(&cs->bslist[i], T))
 				{
+					//有
 					offloading_BS.push_back(&cs->bslist[i]);
 					offloading_BST.push_back(T);
 				}
 				else
 				{
-					//看有沒有影響原本在BS_i底下的UE
-					if (influence(&cs->bslist[i], T))
-					{
-						//有
-						offloading_BS.push_back(&cs->bslist[i]);
-						offloading_BST.push_back(T);
-					}
-					else
-					{
-						//沒有
-						uninfluence_BS.push_back(&cs->bslist[i]);
-						uninfluence_BST.push_back(T);
-					}
+					//沒有
+					uninfluence_BS.push_back(&cs->bslist[i]);
+					uninfluence_BST.push_back(T);
+				}
+			}
+		}
+	}
+	else
+	{
+		//UE_u是offload UE
+		for (int i = 0; i < u->availBS.size(); i++)
+		{
+			if (u->connecting_BS->num == u->availBS[i]->num)
+				continue;
+			double T = predict_T(u, u->availBS[i]);						//試算T
+			if (T == -1)												//Load飽和
+			{
+				offloading_BS.push_back(u->availBS[i]);
+				offloading_BST.push_back(T);
+			}
+			else
+			{
+				//看有沒有影響原本在BS_i底下的UE
+				if (influence(u->availBS[i], T))
+				{
+					//有
+					offloading_BS.push_back(u->availBS[i]);
+					offloading_BST.push_back(T);
+				}
+				else
+				{
+					//沒有
+					uninfluence_BS.push_back(u->availBS[i]);
+					uninfluence_BST.push_back(T);
 				}
 			}
 		}
@@ -123,13 +108,9 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 	if (uninfluence_BS.size() != 0)						//優先加入不受影響基地台
 	{
 		if (join_minT_bs(u, &uninfluence_BS, &uninfluence_BST, DB_th))
-		{
 			return true;
-		}			
 		else
-		{
 			return false;
-		}	
 	}
 	else
 	{
@@ -138,14 +119,13 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 			if (offloading_BS.size() == 0)
 				return false;
 
-			if (join_minT_bs(u, &offloading_BS, &offloading_BST, DB_th))
-			{
-				return true;
-			}				
-			else
-			{
+			if (offloading_BS.size() == 1 && offloading_BST[0] == -1)
 				return false;
-			}
+
+			if (join_minT_bs(u, &offloading_BS, &offloading_BST, DB_th))
+				return true;
+			else
+				return false;
 		}
 		else
 		{
@@ -163,46 +143,21 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 				vector <UE*> no_influence_ue;
 
 				double T = offloading_BST[i];
-
-				if (T == -1)
+				for (int j = 0; j < offloading_BS[i]->connectingUE.size(); j++)
 				{
-					for (int j = 0; j < offloading_BS[i]->connectingUE.size(); j++)
+					if (offloading_BS[i]->connectingUE[j]->availBS.size() < 2)
+						continue;
+					if (offloading_BS[i]->connectingUE[j]->delay_budget > offloading_BS[i]->systemT)
+						continue;
+					switch (influence(offloading_BS[i]->connectingUE[j]))
 					{
-						if (offloading_BS[i]->connectingUE[j]->availBS.size() > 0)
-						{
-							switch (influence(offloading_BS[i]->connectingUE[j]))
-							{
-							case 0:
-								no_influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
-								break;
-							case 1:
-								influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
-							default:
-								break;
-							}
-						}
-					}
-				}
-				else
-				{
-					for (int j = 0; j < offloading_BS[i]->connectingUE.size(); j++)
-					{
-						if (offloading_BS[i]->connectingUE[j]->availBS.size() > 0)
-						{
-							if (offloading_BS[i]->connectingUE[j]->delay_budget < T)
-							{
-								switch (influence(offloading_BS[i]->connectingUE[j]))
-								{
-								case 0:
-									no_influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
-									break;
-								case 1:
-									influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
-								default:
-									break;
-								}
-							}
-						}
+					case 0:
+						no_influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
+						break;
+					case 1:
+						influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
+					default:
+						break;
 					}
 				}
 
@@ -235,10 +190,15 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 						offloaedd_ue_number++;
 						cs->influence++;
 						T = predict_T(u, offloading_BS[i]);
-						if (T < predict_constraint(offloading_BS[i], u, DB_th) && all_ue_satisfy(offloading_BS[i], T))
+						if (T == -1)
+							continue;
+						if (T > predict_constraint(offloading_BS[i], u, DB_th))
+							continue;
+						if (all_ue_satisfy(offloading_BS[i], T))
 							break;
 					}
 				}
+
 				if (T == -1)
 					continue;
 				if (T > predict_constraint(offloading_BS[i], u, DB_th))
@@ -597,6 +557,9 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 			if (u->connecting_BS->systemT < list_T->at(i))
 				continue;
 
+		if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+			continue;
+
 		if (targetBS == NULL)
 		{
 			targetBS = list->at(i);
@@ -672,25 +635,17 @@ void joinBS(UE* u, BS* targetBS, double T, int DB_th)
 			}
 		}
 		u->connecting_BS->systemT = update_T(u->connecting_BS);
-		u->availBS.push_back(u->connecting_BS);
-		u->connecting_BS->systemT_constraint = get_T_constraint(u->connecting_BS, DB_th);
+		u->connecting_BS->T_max = get_T_constraint(u->connecting_BS, DB_th);
 	}
-	for (int delete_bs = 0; delete_bs < u->availBS.size(); delete_bs++)
-	{
-		if (u->availBS[delete_bs]->num == targetBS->num)
-		{
-			u->availBS.erase(u->availBS.begin() + delete_bs);
-			break;
-		}
-	}
+
 //	int predict = predict_constraint(targetBS, u);
 	u->connecting_BS = targetBS;
 	u->CQI = get_CQI(u, targetBS);
 	targetBS->lambda += u->lambdai;
 	targetBS->connectingUE.push_back(u);
 	targetBS->systemT = T;
-//	int old_constrain = targetBS->systemT_constraint;
-	targetBS->systemT_constraint = get_T_constraint(targetBS, DB_th);
+//	int old_constrain = targetBS->T_max;
+	targetBS->T_max = get_T_constraint(targetBS, DB_th);
 }
 
 //檢查UE是否為influence_ue
@@ -700,9 +655,8 @@ int influence(UE *u)
 	bool has_no_influence_bs = false;
 	for (int i = 0; i < u->availBS.size(); i++)
 	{
-		if (u->availBS.at(i)->num == 0)
+		if (u->availBS[i] == u->connecting_BS)
 			continue;
-
 		no_bs_to_offload = false;
 		double T = predict_T(u, u->availBS.at(i));
 		if (T == -1)
@@ -779,11 +733,12 @@ double get_T_constraint(BS *b, int DB_th)
 		}
 	}
 
-	if (type_conut[2] >= b->connectingUE.size() * threshold)
+	double index = b->connectingUE.size() * threshold;
+	if (type_conut[2] >= index)
 		return 300;
 	else
 	{
-		if (type_conut[2] + type_conut[1] >= b->connectingUE.size() * threshold)
+		if ((type_conut[2] + type_conut[1]) >= index)
 			return 100;
 		else
 		{
@@ -823,11 +778,12 @@ double predict_constraint(BS *b, UE *u, int DB_th)
 		}	
 	}
 
-	if (type_conut[2] >= (b->connectingUE.size() + 1) * threshold)
+	double index = (b->connectingUE.size() + 1) * threshold;
+	if (type_conut[2] >= index)
 		return 300;
 	else
 	{
-		if (type_conut[2] + type_conut[1] >= (b->connectingUE.size() + 1) * threshold)
+		if ((type_conut[2] + type_conut[1]) >= index)
 			return 100;
 		else
 		{

@@ -42,7 +42,7 @@ void initialconfig()
 	macro.connectingUE.clear();
 	macro.lambda = 0;
 	macro.systemT = 0;
-	macro.systemT_constraint = 1000;
+	macro.T_max = 1000;
 	vbslist.push_back(macro);
 }
 
@@ -102,7 +102,7 @@ void readAP()
 			temp.connectingUE.clear();
 			temp.lambda = 0;
 			temp.systemT = 0;
-			temp.systemT_constraint = 1000;
+			temp.T_max = 1000;
 			vbslist.push_back(temp);
 		}
 	}
@@ -161,7 +161,7 @@ void initialAP()
 		vbslist.at(i).connectingUE.clear();
 		vbslist.at(i).lambda = 0;
 		vbslist.at(i).systemT = 0;
-		vbslist.at(i).systemT_constraint = 1000;
+		vbslist.at(i).T_max = 1000;
 	}
 }
 
@@ -171,7 +171,7 @@ int main()
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number <= 7; number++)
+		for (int number = 10; number <= 12; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -258,6 +258,8 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, i
 	cs.outage_dso = 0;
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
+		//if (i % 1000 == 0)
+		//	cout << i << endl;
 		cs.influence = 0;
 		findbs_dso(&cs.uelist[i], &cs, 0, depth_max, DB_th);
 	}

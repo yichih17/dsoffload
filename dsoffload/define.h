@@ -48,7 +48,7 @@ struct BS
 	double coor_X, coor_Y;
 	double lambda;
 	double systemT;
-	double systemT_constraint;
+	double T_max;
 	std::vector <UE*> connectingUE;
 };
 

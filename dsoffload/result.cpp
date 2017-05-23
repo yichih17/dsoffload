@@ -46,7 +46,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		{
 			number_eNB++;
 			avg_T_LTE += bslist->at(i).systemT;
-			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).systemT_constraint << endl;
+			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).T_max << endl;
 			avg_UE_number_LTE += bslist->at(i).connectingUE.size();
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
@@ -91,7 +91,7 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		{
 			number_AP++;
 			avg_T_WIFI += bslist->at(i).systemT;
-			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).systemT_constraint << endl;
+			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).T_max << endl;
 			avg_UE_number_WIFI += bslist->at(i).connectingUE.size();
 			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
 			{
@@ -270,6 +270,6 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 
 		detail_analysis.open(filename_detail, ios::out | ios::app);
 		for (int i = 0; i < bslist->size(); i++)
-			detail_analysis << bslist->at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << bslist->at(i).systemT << "," << bslist->at(i).systemT_constraint << endl;
+			detail_analysis << bslist->at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << bslist->at(i).systemT << "," << bslist->at(i).T_max << endl;
 	}
 }
