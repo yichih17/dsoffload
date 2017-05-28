@@ -327,6 +327,7 @@ void findbs_capa(UE *u, vector <BS> *bslist)
 		double T = predict_T(u, availbs[max]);
 		if (T == -1)
 		{
+			cout << "T*=" << T << ", T=" << availbs[max]->systemT << endl;
 			availbs.erase(availbs.begin() + max);
 			capacity.erase(capacity.begin() + max);
 		}
@@ -557,8 +558,9 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 			if (u->connecting_BS->systemT < list_T->at(i))
 				continue;
 
-		if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
-			continue;
+		if (list_T->at(i) > 50)
+			if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+				continue;
 
 		if (targetBS == NULL)
 		{
@@ -604,9 +606,7 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 	if (targetBS == NULL)
 		return false;
 	else
-	{
 		joinBS(u, targetBS, minT, DB_th);
-	}
 
 	return true;
 }
