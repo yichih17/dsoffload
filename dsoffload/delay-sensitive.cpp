@@ -240,6 +240,8 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 			else
 			{
 				*cs = cs_min_T;
+				if(depth == 0)
+					cs->Offloaded_UE_Number += cs->influence;
 				joinBS(u, bs_min_T, min_T, DB_th);
 			}
 		}
@@ -327,7 +329,6 @@ void findbs_capa(UE *u, vector <BS> *bslist)
 		double T = predict_T(u, availbs[max]);
 		if (T == -1)
 		{
-			cout << "T*=" << T << ", T=" << availbs[max]->systemT << endl;
 			availbs.erase(availbs.begin() + max);
 			capacity.erase(capacity.begin() + max);
 		}

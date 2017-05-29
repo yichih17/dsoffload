@@ -77,7 +77,7 @@ struct connection_status
 	std::vector <BS> bslist;
 	std::vector <UE> uelist;
 	int influence;
-	int outage_dso;
+	int Offloaded_UE_Number;
 };
 
 struct hotspot
@@ -113,6 +113,6 @@ void findbs_minT(UE *u, std::vector <BS> *bslist);
 void findbs_capa(UE *u, std::vector <BS> *bslist);
 
 //result.cpp
-void result_output(std::vector <BS> *bslist, std::vector <UE> *uelist, char algorithm_name[]);
+void result_output(connection_status *cs, char algorithm_name[]);
 
 #endif // !_DEFIEN_H

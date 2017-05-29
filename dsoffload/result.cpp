@@ -5,7 +5,7 @@
 
 using namespace std;
 
-void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name[])
+void result_output(connection_status *cs, char algorithm_name[])
 {
 	int non_outage_UE = 0;	//Τ硈钡BSUE计秖
 	int outage_UE = 0;		//礚硈钡BSUE计秖
@@ -40,31 +40,31 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	int DB300_satisfied = 0;
 	double throughput = 0;		//虫:Kbps
 
-	for (int i = 0; i < bslist->size(); i++)
+	for (int i = 0; i < cs->bslist.size(); i++)
 	{
-		if (bslist->at(i).type == macro)
+		if (cs->bslist.at(i).type == macro)
 		{
 			number_eNB++;
-			avg_T_LTE += bslist->at(i).systemT;
+			avg_T_LTE += cs->bslist.at(i).systemT;
 			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).T_max << endl;
-			avg_UE_number_LTE += bslist->at(i).connectingUE.size();
-			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
+			avg_UE_number_LTE += cs->bslist.at(i).connectingUE.size();
+			for (int j = 0; j < cs->bslist.at(i).connectingUE.size(); j++)
 			{
 				number_UE_LTE++;
-				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
+				if (cs->bslist.at(i).connectingUE.at(j)->delay_budget == 50)
 				{
 					number_UE_DB_50++;
 					UE_DB[i][0]++;
-					if (bslist->at(i).systemT < 50)
+					if (cs->bslist.at(i).systemT < 50)
 						DB50_satisfied++;
 				}					
 				else
 				{
-					if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
+					if (cs->bslist.at(i).connectingUE.at(j)->delay_budget == 100)
 					{
 						number_UE_DB_100++;
 						UE_DB[i][1]++;
-						if (bslist->at(i).systemT < 100)
+						if (cs->bslist.at(i).systemT < 100)
 							DB100_satisfied++;
 					}
 						
@@ -72,44 +72,44 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 					{
 						number_UE_DB_300++;
 						UE_DB[i][2]++;
-						if (bslist->at(i).systemT < 300)
+						if (cs->bslist.at(i).systemT < 300)
 							DB300_satisfied++;
 					}
 				}
-				double capacity = get_C(bslist->at(i).connectingUE.at(j));
+				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j));
 				capacity_LTEUE.push_back(capacity);
 				avg_capacity_LTEUE += capacity;
-				if (capacity > bslist->at(i).connectingUE.at(j)->bit_rate)
-					throughput += bslist->at(i).connectingUE.at(j)->bit_rate;
+				if (capacity > cs->bslist.at(i).connectingUE.at(j)->bit_rate)
+					throughput += cs->bslist.at(i).connectingUE.at(j)->bit_rate;
 				else
 					throughput += capacity;
-				T_LTEUE.push_back(bslist->at(i).systemT);
-				avg_T_UE_LTE += bslist->at(i).systemT;
+				T_LTEUE.push_back(cs->bslist.at(i).systemT);
+				avg_T_UE_LTE += cs->bslist.at(i).systemT;
 			}
 		}	
 		else
 		{
 			number_AP++;
-			avg_T_WIFI += bslist->at(i).systemT;
+			avg_T_WIFI += cs->bslist.at(i).systemT;
 			//cout << i << " :" << bslist->at(i).systemT << " ; " << bslist->at(i).T_max << endl;
-			avg_UE_number_WIFI += bslist->at(i).connectingUE.size();
-			for (int j = 0; j < bslist->at(i).connectingUE.size(); j++)
+			avg_UE_number_WIFI += cs->bslist.at(i).connectingUE.size();
+			for (int j = 0; j < cs->bslist.at(i).connectingUE.size(); j++)
 			{
 				number_UE_WIFI++;
-				if (bslist->at(i).connectingUE.at(j)->delay_budget == 50)
+				if (cs->bslist.at(i).connectingUE.at(j)->delay_budget == 50)
 				{
 					number_UE_DB_50++;
 					UE_DB[i][0]++;
-					if (bslist->at(i).systemT < 50)
+					if (cs->bslist.at(i).systemT < 50)
 						DB50_satisfied++;
 				}
 				else
 				{
-					if (bslist->at(i).connectingUE.at(j)->delay_budget == 100)
+					if (cs->bslist.at(i).connectingUE.at(j)->delay_budget == 100)
 					{
 						number_UE_DB_100++;
 						UE_DB[i][1]++;
-						if (bslist->at(i).systemT < 100)
+						if (cs->bslist.at(i).systemT < 100)
 							DB100_satisfied++;
 					}
 
@@ -117,35 +117,35 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 					{
 						number_UE_DB_300++;
 						UE_DB[i][2]++;
-						if (bslist->at(i).systemT < 300)
+						if (cs->bslist.at(i).systemT < 300)
 							DB300_satisfied++;
 					}
 				}
-				double capacity = get_C(bslist->at(i).connectingUE.at(j));
+				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j));
 				capacity_WIFIUE.push_back(capacity);
 				avg_capacity_WIFIUE += capacity;
-				if (capacity > bslist->at(i).connectingUE.at(j)->bit_rate)
-					throughput += bslist->at(i).connectingUE.at(j)->bit_rate;
+				if (capacity > cs->bslist.at(i).connectingUE.at(j)->bit_rate)
+					throughput += cs->bslist.at(i).connectingUE.at(j)->bit_rate;
 				else
 					throughput += capacity;
-				T_WIFIUE.push_back(bslist->at(i).systemT);
-				avg_T_UE_WIFI += bslist->at(i).systemT;
+				T_WIFIUE.push_back(cs->bslist.at(i).systemT);
+				avg_T_UE_WIFI += cs->bslist.at(i).systemT;
 			}
 		}
 
-		avg_T += bslist->at(i).systemT;
-		avg_UE_number += bslist->at(i).connectingUE.size();		
+		avg_T += cs->bslist.at(i).systemT;
+		avg_UE_number += cs->bslist.at(i).connectingUE.size();
 	}
 
 	non_outage_UE = number_UE_LTE + number_UE_WIFI;
-	outage_UE = uelist->size() - non_outage_UE;
+	outage_UE = cs->uelist.size() - non_outage_UE;
 	DB_satisfied = DB50_satisfied + DB100_satisfied + DB300_satisfied;
 
-	avg_T /= bslist->size();
+	avg_T /= cs->bslist.size();
 	avg_T_LTE /= (double)number_eNB;
 	avg_T_WIFI /= (double)number_AP;
 	
-	avg_UE_number /= bslist->size();
+	avg_UE_number /= cs->bslist.size();
 	avg_UE_number_LTE /= (double)number_eNB;
 	avg_UE_number_WIFI /= (double)number_AP;
 	
@@ -164,31 +164,31 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	double stdev_UE_number_LTE = 0;	//┮ΤLTE eNBUE计秖夹非畉
 	double stdev_UE_number_WIFI = 0;//┮ΤWIFI APUE计秖夹非畉
 
-	for (int i = 0; i < bslist->size(); i++)
+	for (int i = 0; i < cs->bslist.size(); i++)
 	{
-		if (bslist->at(i).type == macro)
+		if (cs->bslist.at(i).type == macro)
 		{
-			stdev_T_LTE += pow(bslist->at(i).systemT - avg_T_LTE, 2);
-			stdev_UE_number_LTE += pow(bslist->at(i).connectingUE.size() - avg_UE_number_LTE, 2);
+			stdev_T_LTE += pow(cs->bslist.at(i).systemT - avg_T_LTE, 2);
+			stdev_UE_number_LTE += pow(cs->bslist.at(i).connectingUE.size() - avg_UE_number_LTE, 2);
 		}
 		else
 		{
-			stdev_T_WIFI += pow(bslist->at(i).systemT - avg_T_WIFI, 2);
-			stdev_UE_number_WIFI += pow(bslist->at(i).connectingUE.size() - avg_UE_number_WIFI, 2);
+			stdev_T_WIFI += pow(cs->bslist.at(i).systemT - avg_T_WIFI, 2);
+			stdev_UE_number_WIFI += pow(cs->bslist.at(i).connectingUE.size() - avg_UE_number_WIFI, 2);
 		}
 
-		stdev_T += pow(bslist->at(i).systemT - avg_T, 2);
-		stdev_UE_number += pow(bslist->at(i).connectingUE.size() - avg_UE_number, 2);
+		stdev_T += pow(cs->bslist.at(i).systemT - avg_T, 2);
+		stdev_UE_number += pow(cs->bslist.at(i).connectingUE.size() - avg_UE_number, 2);
 	}
 
-	stdev_T /= bslist->size();
+	stdev_T /= cs->bslist.size();
 	stdev_T = sqrt(stdev_T);
 	stdev_T_LTE /= (double)number_eNB;
 	stdev_T_LTE = sqrt(stdev_T_LTE);
 	stdev_T_WIFI /= (double)number_AP;
 	stdev_T_WIFI = sqrt(stdev_T_WIFI);
 
-	stdev_UE_number /= bslist->size();
+	stdev_UE_number /= cs->bslist.size();
 	stdev_UE_number = sqrt(stdev_UE_number);
 	stdev_UE_number_LTE /= (double)number_eNB;
 	stdev_UE_number_LTE = sqrt(stdev_UE_number_LTE);
@@ -229,9 +229,9 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 	fstream output_result;
 	char filename_result[50];
 	if (UE_dis_type == uniform)
-		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", uelist->size(), algorithm_name);
+		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", cs->uelist.size(), algorithm_name);
 	if (UE_dis_type == hotspot)
-		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", uelist->size(), algorithm_name);
+		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", cs->uelist.size(), algorithm_name);
 	output_result.open(filename_result, ios::out | ios::app);
 
 	//fstream output_extra;
@@ -246,7 +246,8 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," 
-			<< DB_satisfied << "," << (double)throughput/(double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
+			<< DB_satisfied << "," << (double)throughput/(double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
+			<< cs->Offloaded_UE_Number << endl;
 	}
 	else
 	{
@@ -255,7 +256,8 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << ","
-			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << endl;
+			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
+			<< cs->Offloaded_UE_Number << endl;
 	}
 	if (analysis_mode == 1)
 	{
@@ -264,12 +266,12 @@ void result_output(vector <BS> *bslist, vector <UE> *uelist, char algorithm_name
 		double t_max = T_threshold;
 		int x = t_max * 100;
 		if (UE_dis_type == uniform)
-			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, uelist->size());
+			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, cs->uelist.size());
 		if (UE_dis_type == hotspot)
-			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo.csv", algorithm_name, uelist->size());
+			sprintf_s(filename_detail, "hs_%s_UE%d_BSinfo.csv", algorithm_name, cs->uelist.size());
 
 		detail_analysis.open(filename_detail, ios::out | ios::app);
-		for (int i = 0; i < bslist->size(); i++)
-			detail_analysis << bslist->at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << bslist->at(i).systemT << "," << bslist->at(i).T_max << endl;
+		for (int i = 0; i < cs->bslist.size(); i++)
+			detail_analysis << cs->bslist.at(i).num << "," << UE_DB[i][0] << "," << UE_DB[i][1] << "," << UE_DB[i][2] << "," << cs->bslist.at(i).systemT << "," << cs->bslist.at(i).T_max << endl;
 	}
 }

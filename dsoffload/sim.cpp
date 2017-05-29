@@ -171,7 +171,7 @@ int main()
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 10; number <= 12; number++)
+		for (int number = 1; number <= 3; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -217,34 +217,42 @@ void SINR_based(vector<UE> uelist, vector<BS> bslist)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
+	connection_status cs;
+	cs.bslist = bslist;
+	cs.uelist = uelist;
 	for (int i = 0; i < uelist.size(); i++)
-		findbs_sinr(&uelist.at(i), &bslist);
+		findbs_capa(&cs.uelist.at(i), &cs.bslist);
 	end_time = clock();
 	printf("SINR, run time: %f\n", (end_time - start_time) / 1000);
-	result_output(&bslist, &uelist, "SINR");
+	result_output(&cs, "SINR");
 }
 
 void capacity_based(vector<UE> uelist, vector<BS> bslist)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
+	connection_status cs;
+	cs.bslist = bslist;
+	cs.uelist = uelist;
 	for (int i = 0; i < uelist.size(); i++)
-		findbs_capa(&uelist.at(i), &bslist);
+		findbs_capa(&cs.uelist.at(i), &cs.bslist);
 	end_time = clock();
 	printf("Capa, run time: %f\n", (end_time - start_time) / 1000);
-	result_output(&bslist, &uelist, "Capa");
+	result_output(&cs, "Capa");
 }
 
 void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 {
 	double start_time = 0, end_time = 0;
 	start_time = clock();
+	connection_status cs;
+	cs.bslist = bslist;
+	cs.uelist = uelist;
 	for (int i = 0; i < uelist.size(); i++)
-		findbs_minT(&uelist.at(i), &bslist);
-
+		findbs_capa(&cs.uelist.at(i), &cs.bslist);
 	end_time = clock();
 	printf("minT, run time: %f\n", (end_time - start_time) / 1000);
-	result_output(&bslist, &uelist, "minT");
+	result_output(&cs, "minT");
 }
 
 void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, int DB_th)
@@ -255,7 +263,7 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, i
 	connection_status cs;
 	cs.bslist.assign(bslist.begin(), bslist.end());
 	cs.uelist.assign(uelist.begin(), uelist.end());
-	cs.outage_dso = 0;
+	cs.Offloaded_UE_Number = 0;
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
 		//if (i % 1000 == 0)
@@ -269,5 +277,5 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, i
 	bslist.assign(cs.bslist.begin(), cs.bslist.end());
 	char filename[50];
 	sprintf_s(filename, "DSO_%d_%d", depth_max, DB_th);
-	result_output(&bslist, &uelist, filename);
+	result_output(&cs, filename);
 }
