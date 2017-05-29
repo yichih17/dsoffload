@@ -310,6 +310,16 @@ void findbs_minT(UE *u, vector <BS> *bslist)
 		joinBS_simple(u, targetBS, minT);
 }
 
+double get_capa(UE *u, BS *b, int CQI)
+{
+	double capacity;
+	if (b->type == macro)
+		capacity = (resource_element * macro_eff[CQI - 1] * total_RBG) / b->connectingUE.size() + 1;
+	if (b->type == ap)
+		capacity = ap_capacity[CQI - 1] / b->connectingUE.size() + 1;
+	return capacity;
+}
+
 void findbs_capa(UE *u, vector <BS> *bslist)
 {
 	vector <double> capacity;
@@ -320,7 +330,7 @@ void findbs_capa(UE *u, vector <BS> *bslist)
 		if (CQI == 0)
 			continue;
 		availbs.push_back(&bslist->at(i));
-		capacity.push_back(get_C(u, &bslist->at(i)));
+		capacity.push_back(get_capa(u, &bslist->at(i), CQI));
 	}
 
 	while (availbs.size()!=0)
