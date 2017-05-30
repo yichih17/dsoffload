@@ -221,7 +221,7 @@ void SINR_based(vector<UE> uelist, vector<BS> bslist)
 	cs.bslist = bslist;
 	cs.uelist = uelist;
 	for (int i = 0; i < uelist.size(); i++)
-		findbs_capa(&cs.uelist.at(i), &cs.bslist);
+		findbs_sinr(&cs.uelist.at(i), &cs.bslist);
 	end_time = clock();
 	printf("SINR, run time: %f\n", (end_time - start_time) / 1000);
 	result_output(&cs, "SINR");
@@ -249,7 +249,7 @@ void minT_algorithm(vector<UE> uelist, vector<BS> bslist)
 	cs.bslist = bslist;
 	cs.uelist = uelist;
 	for (int i = 0; i < uelist.size(); i++)
-		findbs_capa(&cs.uelist.at(i), &cs.bslist);
+		findbs_minT(&cs.uelist.at(i), &cs.bslist);
 	end_time = clock();
 	printf("minT, run time: %f\n", (end_time - start_time) / 1000);
 	result_output(&cs, "minT");
