@@ -116,12 +116,6 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 	{
 		if (depth == depth_max)								//從受影響基地台擇一
 		{
-			if (offloading_BS.size() == 0)
-				return false;
-
-			if (offloading_BS.size() == 1 && offloading_BST[0] == -1)
-				return false;
-
 			if (join_minT_bs(u, &offloading_BS, &offloading_BST, DB_th))
 				return true;
 			else
@@ -562,19 +556,18 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 	double minT = 0;
 	for (int i = 0; i < list->size(); i++)
 	{
-		if (list_T->at(i) == -1.0)
+		if (list_T->at(i) == -1)
 			continue;
 
 		if (u->connecting_BS != NULL)
 			if (u->connecting_BS->systemT < list_T->at(i))
 				continue;
 
-		if (list_T->at(i) > 50)
-			if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
-				continue;
-
 		if (targetBS == NULL)
 		{
+			if (list_T->at(i) > 50)
+				if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+					continue;
 			targetBS = list->at(i);
 			minT = list_T->at(i);
 		}
@@ -582,6 +575,9 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 		{
 			if (list_T->at(i) < minT)
 			{
+				if (list_T->at(i) > 50)
+					if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+						continue;
 				targetBS = list->at(i);
 				minT = list_T->at(i);
 			}
@@ -593,6 +589,9 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 					double capacity_targetBS = get_C(u, targetBS);
 					if (capacity > capacity_targetBS)
 					{
+						if (list_T->at(i) > 50)
+							if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+								continue;
 						targetBS = list->at(i);
 						minT = list_T->at(i);
 					}
@@ -604,6 +603,9 @@ bool join_minT_bs(UE* u, vector <BS*> *list, vector <double> *list_T, int DB_th)
 							double distance_targetBS = get_distance(u, targetBS);
 							if (distance < distance_targetBS)
 							{
+								if (list_T->at(i) > 50)
+									if (list_T->at(i) > predict_constraint(list->at(i), u, DB_th))
+										continue;
 								targetBS = list->at(i);
 								minT = list_T->at(i);
 							}
@@ -727,6 +729,11 @@ int max_index(vector <T> v)
 
 double get_T_constraint(BS *b, int DB_th)
 {
+	if (DB_th == 100)
+		return 50;
+	if (DB_th == 0)
+		return 1000;
+
 	double threshold = (double)DB_th / (double)100;
 	int type_conut[3] = { 0 };
 	for (int i = 0; i < b->connectingUE.size(); i++)
@@ -760,6 +767,11 @@ double get_T_constraint(BS *b, int DB_th)
 
 double predict_constraint(BS *b, UE *u, int DB_th)
 {
+	if (DB_th == 100)
+		return 50;
+	if (DB_th == 0)
+		return 1000;
+
 	double threshold = (double)DB_th / (double)100;
 	int type_conut[3] = { 0 };
 	for (int i = 0; i < b->connectingUE.size(); i++)

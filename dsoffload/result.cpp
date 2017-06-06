@@ -241,23 +241,23 @@ void result_output(connection_status *cs, char algorithm_name[])
 	
 	if (output_mode == 0)
 	{
-		output_result << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
+		output_result << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << "," << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," 
 			<< DB_satisfied << "," << (double)throughput/(double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
-			<< cs->Offloaded_UE_Number << endl;
+			<< cs->Offloaded_UE_Number / non_outage_UE << endl;
 	}
 	else
 	{
-		cout << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
+		cout << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << "," << outage_UE << "," << avg_T << "," << stdev_T << "," << avg_UE_number << "," << stdev_UE_number << "," << avg_capacity_UE << "," << stdev_capacity_UE << "," << avg_T_UE << "," << stdev_T_UE << ","
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << ","
 			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
-			<< cs->Offloaded_UE_Number << endl;
+			<< cs->Offloaded_UE_Number / non_outage_UE << endl;
 	}
 	if (analysis_mode == 1)
 	{
