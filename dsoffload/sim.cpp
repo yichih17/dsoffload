@@ -167,11 +167,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 1000; times++)
+	for (int times = 1; times <= 20; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 1; number <= 4; number++)
+		for (int number = 5; number <= 9; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
