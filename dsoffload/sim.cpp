@@ -43,6 +43,9 @@ void initialconfig()
 	macro.lambda = 0;
 	macro.systemT = 0;
 	macro.T_max = 1000;
+	macro.db50 = 0;
+	macro.db100 = 0;
+	macro.db300 = 0;
 	vbslist.push_back(macro);
 }
 
@@ -162,6 +165,9 @@ void initialAP()
 		vbslist.at(i).lambda = 0;
 		vbslist.at(i).systemT = 0;
 		vbslist.at(i).T_max = 1000;
+		vbslist.at(i).db50 = 0;
+		vbslist.at(i).db100 = 0;
+		vbslist.at(i).db300 = 0;
 	}
 }
 

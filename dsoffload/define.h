@@ -50,6 +50,9 @@ struct BS
 	double systemT;
 	double T_max;
 	std::vector <UE*> connectingUE;
+	int db50;
+	int db100;
+	int db300;
 };
 
 /*attribute of UE*/

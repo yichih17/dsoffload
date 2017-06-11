@@ -540,8 +540,11 @@ double update_T(BS* b)
 
 bool influence(BS* b, double T)
 {
-	if (T < 50)
+	if (T <= 50)
 		return false;
+	if (b->db50 > 0)
+		return true;
+
 	for (int i = 0; i < b->connectingUE.size(); i++)
 	{
 		if (T > b->connectingUE.at(i)->delay_budget)
@@ -638,6 +641,15 @@ void joinBS(UE* u, BS* targetBS, double T, int DB_th)
 	if (u->connecting_BS != NULL)
 	{
 		u->connecting_BS->lambda -= u->lambdai;
+		if (u->delay_budget == 50)
+			u->connecting_BS->db50--;
+		else
+		{
+			if (u->delay_budget == 100)
+				u->connecting_BS->db100--;
+			else
+				u->connecting_BS->db300--;
+		}
 		int delete_ue;
 		for (delete_ue = 0; delete_ue < u->connecting_BS->connectingUE.size(); delete_ue++)
 		{
@@ -656,6 +668,15 @@ void joinBS(UE* u, BS* targetBS, double T, int DB_th)
 	u->CQI = get_CQI(u, targetBS);
 	targetBS->lambda += u->lambdai;
 	targetBS->connectingUE.push_back(u);
+	if (u->delay_budget == 50)
+		targetBS->db50++;
+	else
+	{
+		if (u->delay_budget == 100)
+			targetBS->db100++;
+		else
+			targetBS->db300++;
+	}
 	targetBS->systemT = T;
 //	int old_constrain = targetBS->T_max;
 	targetBS->T_max = get_T_constraint(targetBS, DB_th);
@@ -735,28 +756,12 @@ double get_T_constraint(BS *b, int DB_th)
 		return 1000;
 
 	double threshold = (double)DB_th / (double)100;
-	int type_conut[3] = { 0 };
-	for (int i = 0; i < b->connectingUE.size(); i++)
-	{
-		if (b->connectingUE.at(i)->delay_budget == 50)
-			type_conut[0]++;
-		else
-		{
-			if (b->connectingUE.at(i)->delay_budget == 100)
-				type_conut[1]++;
-			else
-			{
-				type_conut[2]++;
-			}	
-		}
-	}
-
-	double index = b->connectingUE.size() * threshold;
-	if (type_conut[2] >= index)
+	double HaveToSatisfyUENumber = b->connectingUE.size() * threshold;
+	if (b->db300 >= HaveToSatisfyUENumber)
 		return 300;
 	else
 	{
-		if ((type_conut[2] + type_conut[1]) >= index)
+		if ((b->db300 + b->db100) >= HaveToSatisfyUENumber)
 			return 100;
 		else
 		{
@@ -774,20 +779,9 @@ double predict_constraint(BS *b, UE *u, int DB_th)
 
 	double threshold = (double)DB_th / (double)100;
 	int type_conut[3] = { 0 };
-	for (int i = 0; i < b->connectingUE.size(); i++)
-	{
-		if (b->connectingUE.at(i)->delay_budget == 50)
-			type_conut[0]++;
-		else
-		{
-			if (b->connectingUE.at(i)->delay_budget == 100)
-				type_conut[1]++;
-			else
-			{
-				type_conut[2]++;
-			}	
-		}
-	}
+	type_conut[0] = b->db50;
+	type_conut[1] = b->db100;
+	type_conut[2] = b->db300;
 
 	if(u->delay_budget == 50)
 		type_conut[0]++;
@@ -800,13 +794,12 @@ double predict_constraint(BS *b, UE *u, int DB_th)
 			type_conut[2]++;
 		}	
 	}
-
-	double index = (b->connectingUE.size() + 1) * threshold;
-	if (type_conut[2] >= index)
+	double HaveToSatisfyUENumber = (b->connectingUE.size() + 1) * threshold;
+	if (type_conut[2] >= HaveToSatisfyUENumber)
 		return 300;
 	else
 	{
-		if ((type_conut[2] + type_conut[1]) >= index)
+		if ((type_conut[2] + type_conut[1]) >= HaveToSatisfyUENumber)
 			return 100;
 		else
 		{
