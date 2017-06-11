@@ -173,7 +173,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 20; times++)
+	for (int times = 1; times <= 40; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();

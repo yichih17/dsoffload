@@ -76,7 +76,7 @@ void result_output(connection_status *cs, char algorithm_name[])
 							DB300_satisfied++;
 					}
 				}
-				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j));
+				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j)) / cs->bslist.at(i).connectingUE.size();
 				capacity_LTEUE.push_back(capacity);
 				avg_capacity_LTEUE += capacity;
 				if (capacity > cs->bslist.at(i).connectingUE.at(j)->bit_rate)
@@ -121,7 +121,7 @@ void result_output(connection_status *cs, char algorithm_name[])
 							DB300_satisfied++;
 					}
 				}
-				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j));
+				double capacity = get_C(cs->bslist.at(i).connectingUE.at(j)) / cs->bslist.at(i).connectingUE.size();
 				capacity_WIFIUE.push_back(capacity);
 				avg_capacity_WIFIUE += capacity;
 				if (capacity > cs->bslist.at(i).connectingUE.at(j)->bit_rate)

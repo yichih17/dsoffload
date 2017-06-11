@@ -695,18 +695,24 @@ int influence(UE *u)
 		double T = predict_T(u, u->availBS.at(i));
 		if (T == -1)
 			continue;
-		if (T < 50)
+		if (T <= 50)
 			return 0;
 
 		bool influence = false;
-		for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
+		if (u->availBS[i]->db50 > 0)
+			influence = true;
+		else
 		{
-			if (T > u->availBS[i]->connectingUE[j]->delay_budget)
+			for (int j = 0; j < u->availBS[i]->connectingUE.size(); j++)
 			{
-				influence = true;
-				break;
+				if (T > u->availBS[i]->connectingUE[j]->delay_budget)
+				{
+					influence = true;
+					break;
+				}
 			}
 		}
+		
 		if (influence == false)
 		{
 			has_no_influence_bs = true;
