@@ -29,10 +29,15 @@ int is_all_ue_be_satisify_count = 0;
 int ue_join_bs_count = 0;
 int check_satisfy_count = 0;
 int outage_proposed = 0;
+double eNB_capacity[15] = { 0 };
 
 /*環境初始設定*/
 void initialconfig()
 {
+	//Calculate eNB Channel Capatity
+	for (int i = 0; i < 15; i++)
+		eNB_capacity[i] = resource_element * macro_eff[i] * total_RBG;
+
 	//Define Macro eNB
 	BS macro;
 	macro.num = 0;
@@ -173,7 +178,7 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 40; times++)
+	for (int times = 1; times <= 10; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
@@ -228,7 +233,6 @@ int main()
 			sinr_thread.join();
 			thread capa_thread(capacity_based, vuelist, vbslist);
 			capa_thread.join();
-
 
 			dso_2_50.join();
 			dso_2_25.join();

@@ -308,7 +308,7 @@ double get_capa(UE *u, BS *b, int CQI)
 {
 	double capacity;
 	if (b->type == macro)
-		capacity = (resource_element * macro_eff[CQI - 1] * total_RBG) / b->connectingUE.size() + 1;
+		capacity = eNB_capacity[CQI - 1] / b->connectingUE.size() + 1;
 	if (b->type == ap)
 		capacity = ap_capacity[CQI - 1] / b->connectingUE.size() + 1;
 	return capacity;
@@ -422,7 +422,7 @@ int get_CQI(UE* u, BS* b)
 double predict_C(UE* u)
 {
 	if (u->connecting_BS->type == macro)
-		return resource_element * macro_eff[u->CQI - 1] * total_RBG;
+		return eNB_capacity[u->CQI - 1];
 	if (u->connecting_BS->type == ap)
 		return ap_capacity[u->CQI - 1];
 }
@@ -430,7 +430,7 @@ double predict_C(UE* u)
 double predict_C(UE* u, BS* b)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[get_CQI(u, b) - 1] * total_RBG;
+		return eNB_capacity[get_CQI(u, b) - 1];
 	if (b->type == ap)
 		return ap_capacity[get_CQI(u, b) - 1];
 }
@@ -438,7 +438,7 @@ double predict_C(UE* u, BS* b)
 double predict_C(UE* u, BS* b, int CQI)
 {
 	if (b->type == macro)
-		return resource_element * macro_eff[CQI - 1] * total_RBG;
+		return eNB_capacity[CQI - 1];
 	if (b->type == ap)
 		return ap_capacity[CQI - 1];
 }
@@ -447,7 +447,7 @@ double get_C(UE* u)
 {
 	double capacity;
 	if (u->connecting_BS->type == macro)
-		capacity = resource_element * macro_eff[u->CQI - 1] * total_RBG;
+		capacity = eNB_capacity[u->CQI - 1];
 	if (u->connecting_BS->type == ap)
 		capacity = ap_capacity[u->CQI - 1];
 	return capacity;
@@ -458,7 +458,7 @@ double get_C(UE* u, BS *b)
 	int CQI = get_CQI(u, b);
 	double capacity;
 	if (b->type == macro)
-		capacity = resource_element * macro_eff[CQI - 1] * total_RBG;
+		capacity =  eNB_capacity[CQI - 1];
 	if (b->type == ap)
 		capacity = ap_capacity[CQI - 1];
 	return capacity;
@@ -468,7 +468,7 @@ double get_C(UE* u, BS *b, int CQI)
 {
 	double capacity;
 	if (b->type == macro)
-		capacity = resource_element * macro_eff[CQI - 1] * total_RBG;
+		capacity = eNB_capacity[CQI - 1];
 	if (b->type == ap)
 		capacity = ap_capacity[CQI - 1];
 	return capacity;

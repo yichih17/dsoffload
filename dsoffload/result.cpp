@@ -245,9 +245,9 @@ void result_output(connection_status *cs, char algorithm_name[])
 			<< avg_T_LTE << "," << avg_T_WIFI << "," << stdev_T_WIFI << ","
 			<< avg_UE_number_LTE << "," << avg_UE_number_WIFI << "," << stdev_UE_number_WIFI << ","
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
-			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << "," 
-			<< DB_satisfied << "," << (double)throughput/(double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
-			<< (double)cs->Offloaded_UE_Number / (double)non_outage_UE << "," << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << endl;
+			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << ","
+			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
+			<< (double)cs->Offloaded_UE_Number / (double)non_outage_UE << "," << non_outage_UE << "," << cs->Offloaded_UE_Number << "," << DB_satisfied << "," << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << endl;
 	}
 	else
 	{
@@ -257,7 +257,7 @@ void result_output(connection_status *cs, char algorithm_name[])
 			<< avg_capacity_LTEUE << "," << stdev_capacity_UE_LTE << "," << avg_capacity_WIFIUE << "," << stdev_capacity_UE_WIFI << ","
 			<< avg_T_UE_LTE << "," << avg_T_UE_WIFI << "," << stdev_T_UE_WIFI << ","
 			<< DB_satisfied << "," << (double)throughput / (double)1000 << "," << (double)DB_satisfied / (double)non_outage_UE << "," << (double)DB50_satisfied / (double)number_UE_DB_50 << "," << (double)DB100_satisfied / (double)number_UE_DB_100 << "," << (double)DB300_satisfied / (double)number_UE_DB_300 << ","
-			<< (double)cs->Offloaded_UE_Number / (double)non_outage_UE << "," << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << endl;
+			<< (double)cs->Offloaded_UE_Number / (double)non_outage_UE << "," << non_outage_UE << "," << cs->Offloaded_UE_Number << "," << DB_satisfied << "," << cs->uelist.at(0).coor_X << "," << cs->uelist.at(0).coor_Y << endl;
 	}
 	if (analysis_mode == 1)
 	{

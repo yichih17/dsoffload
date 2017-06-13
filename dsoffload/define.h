@@ -39,6 +39,7 @@ int range_macro[];
 int range_ap[];
 extern double macro_eff[15];
 extern double ap_capacity[8];
+extern double eNB_capacity[15];
 
 /*attribute of BS*/
 struct BS
