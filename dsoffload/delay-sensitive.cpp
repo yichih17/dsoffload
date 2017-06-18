@@ -308,9 +308,9 @@ double get_capa(UE *u, BS *b, int CQI)
 {
 	double capacity;
 	if (b->type == macro)
-		capacity = eNB_capacity[CQI - 1] / b->connectingUE.size() + 1;
+		capacity = eNB_capacity[CQI - 1] / (b->connectingUE.size() + 1);
 	if (b->type == ap)
-		capacity = ap_capacity[CQI - 1] / b->connectingUE.size() + 1;
+		capacity = ap_capacity[CQI - 1] / (b->connectingUE.size() + 1);
 	return capacity;
 }
 
