@@ -759,7 +759,7 @@ double get_T_constraint(BS *b, int DB_th)
 	if (DB_th == 100)
 		return 50;
 	if (DB_th == 0)
-		return 1000;
+		return 99999;
 
 	double threshold = (double)DB_th / (double)100;
 	double HaveToSatisfyUENumber = b->connectingUE.size() * threshold;
@@ -781,7 +781,7 @@ double predict_constraint(BS *b, UE *u, int DB_th)
 	if (DB_th == 100)
 		return 50;
 	if (DB_th == 0)
-		return 1000;
+		return 99999;
 
 	double threshold = (double)DB_th / (double)100;
 	int type_conut[3] = { 0 };

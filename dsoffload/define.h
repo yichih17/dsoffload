@@ -18,6 +18,7 @@
 #define UE_type_number 3	//Number of UE types 
 #define rho_max 0.9999		//Max load of BSs
 #define T_threshold 0.75	//Guarantee satisfied UE percentage
+#define ThreadExeMode 1		//0: in algorithm sequence; 1: in execution time sequqence
 
 //For debug
 #define read_mode 0			//UE distribution input mode. 0:store UE/BS coordination in program; 1:output UE/BS coordinaiton to txt file, and read from txt file later.

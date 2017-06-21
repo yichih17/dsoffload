@@ -110,7 +110,7 @@ void readAP()
 			temp.connectingUE.clear();
 			temp.lambda = 0;
 			temp.systemT = 0;
-			temp.T_max = 1000;
+			temp.T_max = 99999;
 			vbslist.push_back(temp);
 		}
 	}
@@ -169,7 +169,7 @@ void initialAP()
 		vbslist.at(i).connectingUE.clear();
 		vbslist.at(i).lambda = 0;
 		vbslist.at(i).systemT = 0;
-		vbslist.at(i).T_max = 1000;
+		vbslist.at(i).T_max = 99999;
 		vbslist.at(i).db50 = 0;
 		vbslist.at(i).db100 = 0;
 		vbslist.at(i).db300 = 0;
@@ -178,11 +178,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 10; times++)
+	for (int times = 1; times <= 5; times++)
 	{
 		double start_time = 0, end_time = 0;
 		start_time = clock();
-		for (int number = 5; number <= 9; number++)
+		for (int number = 10; number <= 12; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -200,43 +200,87 @@ int main()
 			initialUE();						//UE把计﹍て
 			initialAP();						//AP把计﹍て
 
-			thread dso_2_0(proposed_algorithm, vuelist, vbslist, 2, 0);
-			thread dso_2_25(proposed_algorithm, vuelist, vbslist, 2, 25);
-			thread dso_2_50(proposed_algorithm, vuelist, vbslist, 2, 50);
-			thread dso_2_75(proposed_algorithm, vuelist, vbslist, 2, 75);
-			thread dso_2_100(proposed_algorithm, vuelist, vbslist, 2, 100);
-			dso_2_100.join();
-			thread dso_1_0(proposed_algorithm, vuelist, vbslist, 1, 0);
-			dso_2_75.join();
-			thread dso_1_25(proposed_algorithm, vuelist, vbslist, 1, 25);
-			dso_1_25.join();
-			thread dso_1_50(proposed_algorithm, vuelist, vbslist, 1, 50);
-			dso_1_50.join();
-			thread dso_1_75(proposed_algorithm, vuelist, vbslist, 1, 75);
-			dso_1_75.join();
-			thread dso_1_100(proposed_algorithm, vuelist, vbslist, 1, 100);
-			dso_1_100.join();
-			dso_1_0.join();			
+			if (ThreadExeMode == 0)
+			{
+				thread dso_2_0(proposed_algorithm, vuelist, vbslist, 2, 0);
+				thread dso_2_25(proposed_algorithm, vuelist, vbslist, 2, 25);
+				thread dso_2_50(proposed_algorithm, vuelist, vbslist, 2, 50);
+				thread dso_2_75(proposed_algorithm, vuelist, vbslist, 2, 75);
+				thread dso_2_100(proposed_algorithm, vuelist, vbslist, 2, 100);
 
-			thread dso_0_0(proposed_algorithm, vuelist, vbslist, 0, 0);
-			dso_0_0.join();
-			thread dso_0_25(proposed_algorithm, vuelist, vbslist, 0, 25);
-			dso_0_25.join();
-			thread dso_0_50(proposed_algorithm, vuelist, vbslist, 0, 50);
-			dso_0_50.join();
-			thread dso_0_75(proposed_algorithm, vuelist, vbslist, 0, 75);
-			dso_0_75.join();
-			thread dso_0_100(proposed_algorithm, vuelist, vbslist, 0, 100);
-			dso_0_100.join();
+				dso_2_0.join();
+				dso_2_25.join();
+				dso_2_50.join();
+				dso_2_75.join();
+				dso_2_100.join();
 
-			thread sinr_thread(SINR_based, vuelist, vbslist);
-			sinr_thread.join();
-			thread capa_thread(capacity_based, vuelist, vbslist);
-			capa_thread.join();
+				thread dso_1_0(proposed_algorithm, vuelist, vbslist, 1, 0);
+				thread dso_1_25(proposed_algorithm, vuelist, vbslist, 1, 25);
+				thread dso_1_50(proposed_algorithm, vuelist, vbslist, 1, 50);
+				thread dso_1_75(proposed_algorithm, vuelist, vbslist, 1, 75);
+				thread dso_1_100(proposed_algorithm, vuelist, vbslist, 1, 100);
+				dso_1_0.join();
+				dso_1_25.join();
+				dso_1_50.join();
+				dso_1_75.join();
+				dso_1_100.join();
 
-			dso_2_50.join();
-			dso_2_25.join();
-			dso_2_0.join();
+				thread dso_0_0(proposed_algorithm, vuelist, vbslist, 0, 0);
+				thread dso_0_25(proposed_algorithm, vuelist, vbslist, 0, 25);
+				thread dso_0_50(proposed_algorithm, vuelist, vbslist, 0, 50);
+				thread dso_0_75(proposed_algorithm, vuelist, vbslist, 0, 75);
+				thread dso_0_100(proposed_algorithm, vuelist, vbslist, 0, 100);
+				dso_0_0.join();
+				dso_0_25.join();
+				dso_0_50.join();
+				dso_0_75.join();
+				dso_0_100.join();
+
+				thread sinr_thread(SINR_based, vuelist, vbslist);
+				thread capa_thread(capacity_based, vuelist, vbslist);
+				sinr_thread.join();
+				capa_thread.join();
+			}
+			else
+			{
+				thread dso_2_0(proposed_algorithm, vuelist, vbslist, 2, 0);
+				thread dso_2_25(proposed_algorithm, vuelist, vbslist, 2, 25);
+				thread dso_2_50(proposed_algorithm, vuelist, vbslist, 2, 50);
+				thread dso_2_75(proposed_algorithm, vuelist, vbslist, 2, 75);
+				thread dso_2_100(proposed_algorithm, vuelist, vbslist, 2, 100);
+				dso_2_100.join();
+				thread dso_1_0(proposed_algorithm, vuelist, vbslist, 1, 0);
+				dso_2_75.join();
+				thread dso_1_25(proposed_algorithm, vuelist, vbslist, 1, 25);
+				dso_1_25.join();
+				thread dso_1_50(proposed_algorithm, vuelist, vbslist, 1, 50);
+				dso_1_50.join();
+				thread dso_1_75(proposed_algorithm, vuelist, vbslist, 1, 75);
+				dso_1_75.join();
+				thread dso_1_100(proposed_algorithm, vuelist, vbslist, 1, 100);
+				dso_1_100.join();
+				dso_1_0.join();
+
+				thread dso_0_0(proposed_algorithm, vuelist, vbslist, 0, 0);
+				dso_0_0.join();
+				thread dso_0_25(proposed_algorithm, vuelist, vbslist, 0, 25);
+				dso_0_25.join();
+				thread dso_0_50(proposed_algorithm, vuelist, vbslist, 0, 50);
+				dso_0_50.join();
+				thread dso_0_75(proposed_algorithm, vuelist, vbslist, 0, 75);
+				dso_0_75.join();
+				thread dso_0_100(proposed_algorithm, vuelist, vbslist, 0, 100);
+				dso_0_100.join();
+
+				thread sinr_thread(SINR_based, vuelist, vbslist);
+				sinr_thread.join();
+				thread capa_thread(capacity_based, vuelist, vbslist);
+				capa_thread.join();
+
+				dso_2_50.join();
+				dso_2_25.join();
+				dso_2_0.join();
+			}
 		}
 		end_time = clock();
 		cout << "近磅︽丁 : " << (end_time - start_time) / 1000 << " s\n\n";

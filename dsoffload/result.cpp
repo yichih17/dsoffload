@@ -229,9 +229,9 @@ void result_output(connection_status *cs, char algorithm_name[])
 	fstream output_result;
 	char filename_result[50];
 	if (UE_dis_type == uniform)
-		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", cs->uelist.size(), algorithm_name);
-	if (UE_dis_type == hotspot)
 		sprintf_s(filename_result, "UE%d_%s_result.csv", cs->uelist.size(), algorithm_name);
+	if (UE_dis_type == hotspot)
+		sprintf_s(filename_result, "hs_UE%d_%s_result.csv", cs->uelist.size(), algorithm_name);
 	output_result.open(filename_result, ios::out | ios::app);
 
 	//fstream output_extra;
