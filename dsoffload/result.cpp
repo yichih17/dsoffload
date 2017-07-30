@@ -263,8 +263,6 @@ void result_output(connection_status *cs, char algorithm_name[])
 	{
 		fstream detail_analysis;
 		char filename_detail[50];
-		double t_max = T_threshold;
-		int x = t_max * 100;
 		if (UE_dis_type == uniform)
 			sprintf_s(filename_detail, "%s_UE%d_BSinfo_%d.csv", algorithm_name, cs->uelist.size());
 		if (UE_dis_type == hotspot)

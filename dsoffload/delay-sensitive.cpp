@@ -35,29 +35,30 @@ double ap_capacity[8] = { 6500, 13000, 19500, 26000, 39000, 52000, 58500, 65000 
 bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_th)
 {
 	//計算可連接基地台
-	vector <BS*> uninfluence_BS;
-	vector <double> uninfluence_BST;
-	vector <BS*> offloading_BS;
-	vector <double> offloading_BST;
+	vector <BS*> uninfluence_BS;		//不受影響基地台
+	vector <double> uninfluence_BST;	//暫存計算的delay (T = System Time = Delay)
+	vector <BS*> offloading_BS;			//需要被offload的基地台
+	vector <double> offloading_BST;		//暫存計算的delay (T = System Time = Delay)
 
-	if (u->availBS.size() == 0)
+	if (u->connecting_BS == NULL)		//代表是New UE
 	{
-		//UE_u是New UE
-		for (int i = 0; i < cs->bslist.size(); i++)					//尋找可連接基地台
+		//尋找可連接基地台
+		for (int i = 0; i < cs->bslist.size(); i++)
 		{
-			int CQI = get_CQI(u, &cs->bslist[i]);						//計算CQI
+			int CQI = get_CQI(u, &cs->bslist[i]);				//計算CQI
 			if (CQI == 0)
 				continue;
-			u->availBS.push_back(&cs->bslist.at(i));				//BS_i可連接
-			double T = predict_T(u, &cs->bslist[i], CQI);			//試算T
-			if (T == -1)											//Load飽和
+			u->availBS.push_back(&cs->bslist.at(i));			//BS i可連接
+
+			double T = predict_T(u, &cs->bslist[i], CQI);		//試算T
+			if (T == -1)										//基地台飽和
 			{
 				offloading_BS.push_back(&cs->bslist[i]);
 				offloading_BST.push_back(T);
 			}
 			else
 			{
-				//看有沒有影響原本在BS_i底下的UE
+				//看有沒有影響原本在BS i底下的UE
 				if (influence(&cs->bslist[i], T))
 				{
 					//有
@@ -75,7 +76,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 	}
 	else
 	{
-		//UE_u是offload UE
+		//代表UE是要被offload的UE
 		for (int i = 0; i < u->availBS.size(); i++)
 		{
 			if (u->connecting_BS->num == u->availBS[i]->num)
@@ -105,7 +106,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 		}
 	}
 
-	if (uninfluence_BS.size() != 0)						//優先加入不受影響基地台
+	if (uninfluence_BS.size() != 0)		//優先加入不受影響基地台
 	{
 		if (join_minT_bs(u, &uninfluence_BS, &uninfluence_BST, DB_th))
 			return true;
@@ -114,7 +115,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 	}
 	else
 	{
-		if (depth == depth_max)								//從受影響基地台擇一
+		if (depth == depth_max)			//到達演算法執行深度上限
 		{
 			if (join_minT_bs(u, &offloading_BS, &offloading_BST, DB_th))
 				return true;
@@ -132,18 +133,19 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 
 			for (int i = 0; i < offloading_BS.size(); i++)
 			{
-				*cs = cs_origin;
-				vector <UE*> influence_ue;
-				vector <UE*> no_influence_ue;
+				*cs = cs_origin;				//初始化連線狀態 (回歸原始狀態)
+				vector <UE*> influence_ue;		//  會影響其他基地台的UE
+				vector <UE*> no_influence_ue;	//不會影響其他基地台的UE
 
 				double T = offloading_BST[i];
 				for (int j = 0; j < offloading_BS[i]->connectingUE.size(); j++)
 				{
-					if (offloading_BS[i]->connectingUE[j]->availBS.size() < 2)
+					if (offloading_BS[i]->connectingUE[j]->availBS.size() < 2)							//如果沒有其他基地台可以連接就跳過
 						continue;
-					if (offloading_BS[i]->connectingUE[j]->delay_budget > offloading_BS[i]->systemT)
+					if (offloading_BS[i]->connectingUE[j]->delay_budget > offloading_BS[i]->systemT)	//如果UE的DB被滿足就跳過
 						continue;
-					switch (influence(offloading_BS[i]->connectingUE[j]))
+
+					switch (influence(offloading_BS[i]->connectingUE[j]))								//看看UE加入其他基地台會不會影響別人
 					{
 					case 0:
 						no_influence_ue.push_back(offloading_BS[i]->connectingUE[j]);
@@ -155,10 +157,11 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 					}
 				}
 
+				//將UE依照影響排序
 				vector <UE*> ue_sorted;
-				if (no_influence_ue.size() > 0)
+				if (no_influence_ue.size() > 0)															//不會影響別人UE優先
 				{
-					sort(no_influence_ue.begin(), no_influence_ue.end(), ue_cp);		//大到小排序
+					sort(no_influence_ue.begin(), no_influence_ue.end(), ue_cp);						//按照Impact_factor從大到小排序
 					ue_sorted = no_influence_ue;
 					if (influence_ue.size() > 0)
 					{
@@ -175,29 +178,31 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 					}
 				}
 
-				int offloaedd_ue_number = 0;
+				int offloaedd_ue_number = 0;				//已經offload的UE個數
 				for (int j = 0; j < ue_sorted.size(); j++)
 				{
 //					double T_before = offload_bs.at(i)->systemT;
 					if (findbs_dso(ue_sorted.at(j), cs, depth + 1, depth_max, DB_th))
 					{
+						//成功offload UE
 						offloaedd_ue_number++;
 						cs->influence++;
 						T = predict_T(u, offloading_BS[i]);
-						if (T == -1)
+						if (T == -1)												//offload UE後還是飽和，再繼續offload
 							continue;
-						if (T > predict_constraint(offloading_BS[i], u, DB_th))
+						if (T > predict_constraint(offloading_BS[i], u, DB_th))		//offload UE後T還是大於T上限，再繼續offload
 							continue;
-						if (all_ue_satisfy(offloading_BS[i], T))
+						if (all_ue_satisfy(offloading_BS[i], T))					//如果BS下所有UE DB都被滿族，停止offload
 							break;
 					}
 				}
 
-				if (T == -1)
+				if (T == -1)												//能offload的UE都offload完了還是飽和
 					continue;
-				if (T > predict_constraint(offloading_BS[i], u, DB_th))
+				if (T > predict_constraint(offloading_BS[i], u, DB_th))		//能offload的UE都offload完了T還是大於T上限
 					continue;
 
+				//比較T是否最小
 				if (bs_min_T == NULL)
 				{
 					bs_min_T = offloading_BS[i];
@@ -226,6 +231,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 					}
 				}
 			}
+
 			if (bs_min_T == NULL)		//沒有辦法為UE offload UE 出去
 			{
 				*cs = cs_origin;
@@ -243,6 +249,7 @@ bool findbs_dso(UE* u, connection_status* cs, int depth, int depth_max, int DB_t
 	return true;
 }
 
+/* MinT演算法: 找T最小的加入 */
 void findbs_minT(UE *u, vector <BS> *bslist)
 {
 	double minT = 0;
@@ -304,6 +311,7 @@ void findbs_minT(UE *u, vector <BS> *bslist)
 		joinBS_simple(u, targetBS, minT);
 }
 
+/* 計算UE加入後的Channel Capacity (Capacity-base演算法專用) */
 double get_capa(UE *u, BS *b, int CQI)
 {
 	double capacity;
@@ -314,10 +322,11 @@ double get_capa(UE *u, BS *b, int CQI)
 	return capacity;
 }
 
+/* Capacity-based演算法: 加入能得到最多的Channel Capacity最大的基地台 */
 void findbs_capa(UE *u, vector <BS> *bslist)
 {
-	vector <double> capacity;
-	vector <BS*> availbs;
+	vector <double> capacity;					//暫存可加入的基地台的Capacity
+	vector <BS*> availbs;						//可加入的基地台
 	for (int i = 0; i < bslist->size(); i++)
 	{
 		int CQI = get_CQI(u, &bslist->at(i));
@@ -329,9 +338,9 @@ void findbs_capa(UE *u, vector <BS> *bslist)
 
 	while (availbs.size()!=0)
 	{
-		int max = max_index(capacity);
+		int max = max_index(capacity);			//找出Capacity最大的基地台的index
 		double T = predict_T(u, availbs[max]);
-		if (T == -1)
+		if (T == -1)							//不行加入就刪掉再找
 		{
 			availbs.erase(availbs.begin() + max);
 			capacity.erase(capacity.begin() + max);
@@ -358,13 +367,9 @@ int get_CQI(BS* b, double distance)
 		for (int i = 0; i < 15; i++)
 		{
 			if (distance <= range_macro[i])
-			{
 				CQI++;
-			}	
 			else
-			{
 				break;
-			}	
 		}
 	}
 	if (b->type == ap)		//計算Wifi的CQI
@@ -372,13 +377,9 @@ int get_CQI(BS* b, double distance)
 		for (int i = 0; i < 8; i++)
 		{
 			if (distance <= range_ap[i])
-			{
 				CQI++;
-			}	
 			else
-			{
 				break;
-			}	
 		}
 	}
 	return CQI;
@@ -393,13 +394,9 @@ int get_CQI(UE* u, BS* b)
 		for (int i = 0; i < 15; i++)
 		{
 			if (distance <= range_macro[i])
-			{
 				CQI++;
-			}	
 			else
-			{
 				break;
-			}	
 		}
 	}
 	if (b->type == ap)		//計算Wifi的CQI
@@ -407,40 +404,12 @@ int get_CQI(UE* u, BS* b)
 		for (int i = 0; i < 8; i++)
 		{
 			if (distance <= range_ap[i])
-			{
 				CQI++;
-			}	
 			else
-			{
 				break;
-			}	
 		}
 	}
 	return CQI;
-}
-
-double predict_C(UE* u)
-{
-	if (u->connecting_BS->type == macro)
-		return eNB_capacity[u->CQI - 1];
-	if (u->connecting_BS->type == ap)
-		return ap_capacity[u->CQI - 1];
-}
-
-double predict_C(UE* u, BS* b)
-{
-	if (b->type == macro)
-		return eNB_capacity[get_CQI(u, b) - 1];
-	if (b->type == ap)
-		return ap_capacity[get_CQI(u, b) - 1];
-}
-
-double predict_C(UE* u, BS* b, int CQI)
-{
-	if (b->type == macro)
-		return eNB_capacity[CQI - 1];
-	if (b->type == ap)
-		return ap_capacity[CQI - 1];
 }
 
 double get_C(UE* u)

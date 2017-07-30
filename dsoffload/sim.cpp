@@ -65,20 +65,53 @@ void readUE()
 	}
 	else
 	{
-		int num = 0;						//num = UE編號
-		string bufferx, buffery;
+		int type_count[UE_type_number] = { 0 };					//各Type UE數量統計
+		int type_max = vuelist.size() / UE_type_number + 1;		//各Type UE數量上限 ( 1:1:1 )
+		srand((unsigned)time(NULL));							//亂數種子
+
+		int num = 0;											//UE編號初始化
+		string bufferx;											//暫存X座標
+		string buffery;											//暫存Y座標
+
 		while (freadUE >> bufferx)
 		{
-			freadUE >> buffery;				//讀取y座標
+			freadUE >> buffery;
 			UE temp;
-			temp.num = num++;				//assign編號，然後index++
-			temp.coor_X = stof(bufferx);	//String to double
-			temp.coor_Y = stof(buffery);	//把座標給UE
+			temp.num = num++;									//給編號
+			temp.coor_X = stof(bufferx);						//給座標
+			temp.coor_Y = stof(buffery);
+
+			int type;											
+			do
+			{
+				type = rand() % 3;
+			} while (type_count[type] == type_max);
+			temp.type = (type_ue)type;							//給Type
+			type_count[type]++;
+
+			switch (temp.type)									//給Type參數
+			{
+			case type_ue::type1:
+				temp.bit_rate = UE_type1_bit_rate;
+				temp.packet_size = UE_type1_pkt_size;
+				temp.delay_budget = UE_type1_delay_budget;
+				break;
+			case type_ue::type2:
+				temp.bit_rate = UE_type2_bit_rate;
+				temp.packet_size = UE_type2_pkt_size;
+				temp.delay_budget = UE_type2_delay_budget;
+				break;
+			case type_ue::type3:
+				temp.bit_rate = UE_type3_bit_rate;
+				temp.packet_size = UE_type3_pkt_size;
+				temp.delay_budget = UE_type3_delay_budget;
+				break;
+			default:
+				break;
+			}
+			
 			//initialize
 			temp.connecting_BS = NULL;
-			temp.bit_rate = 10;
-			temp.packet_size = 800;
-			temp.delay_budget = 100;
 			temp.lambdai = temp.bit_rate / temp.packet_size;
 			vuelist.push_back(temp);
 		}
@@ -110,7 +143,7 @@ void readAP()
 			temp.connectingUE.clear();
 			temp.lambda = 0;
 			temp.systemT = 0;
-			temp.T_max = 99999;
+			temp.T_max = BS_T_max;
 			vbslist.push_back(temp);
 		}
 	}
@@ -118,9 +151,9 @@ void readAP()
 
 void initialUE()
 {
-	int type_count[UE_type_number] = { 0 };
-	int type_max = vuelist.size() / UE_type_number + 1;
-	srand((unsigned)time(NULL));			//給定亂數種子
+	int type_count[UE_type_number] = { 0 };							//各Type UE數量統計
+	int type_max = vuelist.size() / UE_type_number + 1;				//各Type UE數量上限 ( 1:1:1 )
+	srand((unsigned)time(NULL));									//亂數種子
 
 	for (int i = 0; i < vuelist.size(); i++)
 	{
@@ -129,26 +162,25 @@ void initialUE()
 		{
 			type = rand() % 3;
 		} while (type_count[type] == type_max);
-
+		vuelist.at(i).type = (type_ue)type;							//給Type
 		type_count[type]++;
-		vuelist.at(i).type = (type_ue)type;
 
-		switch (vuelist.at(i).type)
+		switch (vuelist.at(i).type)									//給Type參數
 		{
-		case 0:
-			vuelist.at(i).bit_rate = 300;
-			vuelist.at(i).packet_size = 8000;
-			vuelist.at(i).delay_budget = 50;
+		case type_ue::type1:
+			vuelist.at(i).bit_rate = UE_type1_bit_rate;
+			vuelist.at(i).packet_size = UE_type1_pkt_size;
+			vuelist.at(i).delay_budget = UE_type1_delay_budget;
 			break;
-		case 1:
-			vuelist.at(i).bit_rate = 300;
-			vuelist.at(i).packet_size = 8000;
-			vuelist.at(i).delay_budget = 100;
+		case type_ue::type2:
+			vuelist.at(i).bit_rate = UE_type2_bit_rate;
+			vuelist.at(i).packet_size = UE_type2_pkt_size;
+			vuelist.at(i).delay_budget = UE_type2_delay_budget;
 			break;
-		case 2:
-			vuelist.at(i).bit_rate = 300;
-			vuelist.at(i).packet_size = 8000;
-			vuelist.at(i).delay_budget = 300;
+		case type_ue::type3:
+			vuelist.at(i).bit_rate = UE_type3_bit_rate;
+			vuelist.at(i).packet_size = UE_type3_pkt_size;
+			vuelist.at(i).delay_budget = UE_type3_delay_budget;
 			break;
 		default:
 			break;
@@ -169,7 +201,7 @@ void initialAP()
 		vbslist.at(i).connectingUE.clear();
 		vbslist.at(i).lambda = 0;
 		vbslist.at(i).systemT = 0;
-		vbslist.at(i).T_max = 99999;
+		vbslist.at(i).T_max = BS_T_max;
 		vbslist.at(i).db50 = 0;
 		vbslist.at(i).db100 = 0;
 		vbslist.at(i).db300 = 0;
@@ -178,11 +210,11 @@ void initialAP()
 
 int main()
 {
-	for (int times = 1; times <= 5; times++)
+	for (int times = 1; times <= 100; times++)
 	{
-		double start_time = 0, end_time = 0;
+		double start_time = 0, end_time = 0;			//計算程式執行時間(s)
 		start_time = clock();
-		for (int number = 10; number <= 12; number++)
+		for (int number = 1; number <= 12; number++)
 		{
 			int number_ap = 200;
 			int number_ue = number * 1000;
@@ -192,15 +224,17 @@ int main()
 
 			initialconfig();					//macro eNB初始化
 			distribution(number_ap, number_ue);	//產生AP、UE分布
-			if (read_mode == 1)
+
+			if (read_mode == 1)					//從外部.txt檔讀取座標
 			{
-				readAP();							//讀入BS
-				readUE();							//讀入UE
+				readAP();						//讀入BS
+				readUE();						//讀入UE
 			}
+
 			initialUE();						//UE參數初始化
 			initialAP();						//AP參數初始化
 
-			if (ThreadExeMode == 0)
+			if (ThreadExeMode == 0)				//按照演算法名稱順序執行
 			{
 				thread dso_2_0(proposed_algorithm, vuelist, vbslist, 2, 0);
 				thread dso_2_25(proposed_algorithm, vuelist, vbslist, 2, 25);
@@ -242,7 +276,7 @@ int main()
 				capa_thread.join();
 			}
 			else
-			{
+			{	//按照演算法執行時間 (利用CPU的空檔算別的演算法)
 				thread dso_2_0(proposed_algorithm, vuelist, vbslist, 2, 0);
 				thread dso_2_25(proposed_algorithm, vuelist, vbslist, 2, 25);
 				thread dso_2_50(proposed_algorithm, vuelist, vbslist, 2, 50);
@@ -341,7 +375,7 @@ void proposed_algorithm(vector <UE> uelist, vector <BS> bslist, int depth_max, i
 	cs.Offloaded_UE_Number = 0;
 	for (int i = 0; i < cs.uelist.size(); i++)
 	{
-		//if (i % 1000 == 0)
+		//if (i % 1000 == 0)			//程式執行進度
 		//	cout << i << endl;
 		cs.influence = 0;
 		findbs_dso(&cs.uelist[i], &cs, 0, depth_max, DB_th);
